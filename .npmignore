@@ -1,0 +1,6 @@
+dist/**/__test__
+.github
+.idea
+.vscode
+.travis.yml
+src/

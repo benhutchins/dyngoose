@@ -1,0 +1,30 @@
+version: "3"
+
+services:
+  dynamodb:
+    image: amazon/dynamodb-local
+    # command: -jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data/
+    ports:
+      - "8000:8000"
+    volumes:
+      - dynamodb-data:/home/dynamodblocal/data/
+    networks:
+      - dyngoose-test
+
+  dynamodb-admin:
+    image: aaronshaf/dynamodb-admin
+    environment:
+      AWS_REGION: localhost
+      AWS_ACCESS_KEY_ID: abcde
+      AWS_SECRET_ACCESS_KEY: abcde
+      DYNAMO_ENDPOINT: http://dynamodb:8000
+    ports:
+      - "8001:8001"
+    networks:
+      - dyngoose-test
+
+networks:
+  dyngoose-test:
+
+volumes:
+  dynamodb-data:

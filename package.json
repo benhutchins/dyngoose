@@ -1,0 +1,70 @@
+{
+  "name": "dyngoose",
+  "version": "0.9.0",
+  "description": "DynamoDB ORM/ODM written for Typescript",
+  "main": "./dist/index.js",
+  "typings": "./dist/index.d.ts",
+  "scripts": {
+    "prebuild": "check-engine && rm -rf dist",
+    "build": "tsc",
+    "pretest": "npm run build -- -p ./tsconfig.test.json",
+    "test": "env AWS_REGION=us-east-1 AWS_ACCESS_KEY_ID=abcde AWS_SECRET_ACCESS_KEY=abcde mocha -t 20000 dist/**/*.spec.js",
+    "test:local": "env DYNAMO_ENDPOINT=http://127.0.0.1:8000 npm test",
+    "prepublishOnly": "npm run build",
+    "lint": "tslint -c tslint.json 'src/**/*.ts'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benhutchins/dyngoose.git"
+  },
+  "engines": {
+    "node": ">=8.10.0"
+  },
+  "author": "Benjamin Hutchins",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/benhutchins/dyngoose/issues"
+  },
+  "homepage": "https://github.com/benhutchins/dyngoose#readme",
+  "devDependencies": {
+    "@types/chai": "4.2.8",
+    "@types/faker": "4.1.9",
+    "@types/lodash": "4.14.149",
+    "@types/mocha": "5.2.7",
+    "@types/node": "8.10.59",
+    "@types/reflect-metadata": "0.1.0",
+    "@vingle/commitlint-preset": "1.0.3",
+    "@vingle/semantic-release-config": "1.0.5",
+    "@vingle/tslint-preset": "1.0.0",
+    "chai": "4.2.0",
+    "check-engine": "1.8.1",
+    "dynamo-local": "0.0.4",
+    "faker": "4.1.0",
+    "husky": "3.1.0",
+    "mocha": "6.2.2",
+    "tslint": "5.20.1",
+    "typescript": "3.7.5"
+  },
+  "dependencies": {
+    "amazon-dax-client": "^1.2.2",
+    "aws-sdk": "^2.614.0",
+    "aws-xray-sdk-core": "^2.3.6",
+    "lodash": "^4.17.15",
+    "moment": "^2.24.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "commitlint": {
+    "extends": [
+      "@vingle/commitlint-preset"
+    ]
+  }
+}
