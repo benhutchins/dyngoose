@@ -12,6 +12,10 @@ export class StringAttributeType extends AttributeType<Value, Metadata> implemen
   type = DynamoAttributeType.String
 
   toDynamo(value: Value) {
+    if (typeof value !== 'string') {
+      throw new Error(`Expected ${this.propertyName} to be a string, but was given a ${typeof value}`)
+    }
+
     if (this.metadata.trim) {
       value = trim(value)
 

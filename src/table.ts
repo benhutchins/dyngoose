@@ -1,5 +1,6 @@
 import { DynamoDB } from 'aws-sdk'
 import * as _ from 'lodash'
+import { Attribute } from './attribute'
 import { DocumentClient } from './document-client'
 import { createTable } from './tables/create-table'
 import { deleteTable } from './tables/delete-table'
@@ -140,34 +141,41 @@ export class Table {
    * methods to help standardize the attribute values as much as possible.
    *
    * @param {any} json A JSON object
-   * @param {boolean} ignoreArbitrary Whether arbitrary attributes should be ignored.
-   *        When false, new attributes will accept or rejected based on the table's
-   *        metadata setting ``allowArbitraryAttributes``.
+   * @param {boolean} [ignoreArbitrary] Whether arbitrary attributes should be ignored.
+   *        When false, unknown attributes will result in an error being thrown.
    *        When true, any non-recognized attribute will be ignored. Useful if you're
    *        passing in raw request body objects or dealing with user input.
+   *        Defaults to false.
    */
   public fromJSON(json: { [attribute: string]: any }, ignoreArbitrary = false) {
     const blacklist: string[] = this.table.getBlacklist()
 
-    _.each(json, (value: any, attributeName: string) => {
-      if (!_.includes(blacklist, attributeName)) {
-        const attr = this.table.schema.getAttributeByName(attributeName, false)
+    _.each(json, (value: any, propertyName: string) => {
+      let attribute: Attribute<any> | void
 
-        if (!attr && ignoreArbitrary) {
+      try {
+        attribute = this.table.schema.getAttributeByPropertyName(propertyName)
+      } catch (ex) {
+        if (ignoreArbitrary) {
           return
+        } else {
+          throw ex
+        }
+      }
+
+      if (!_.includes(blacklist, attribute.name)) {
+        if (typeof attribute.type.fromJSON === 'function') {
+          value = attribute.type.fromJSON(value)
         }
 
-        if (attr && _.isFunction(attr.type.fromJSON)) {
-          value = attr.type.fromJSON(value)
-        }
+        const currentValue = this.getAttribute(attribute.name)
 
-        const currentValue = this.getAttribute(attributeName)
-
+        // compare to current value, to avoid unnecessarily marking attributes as needing to be saved
         if (!_.isEqual(currentValue, value)) {
           if (isTrulyEmpty(value)) {
-            this.deleteAttribute(attributeName)
+            this.deleteAttribute(attribute.name)
           } else {
-            this.setAttribute(attributeName, value)
+            this.setByAttribute(attribute, value)
           }
         }
       }
@@ -177,20 +185,33 @@ export class Table {
   }
 
   /**
-   * Returns the DynamoDB.AttributeValue object
+   * Returns the DynamoDB.AttributeValue value for an attribute.
+   *
+   * To get the transformed value, use {@link this.getAttribute}
    */
   public getAttributeDynamoValue(attributeName: string): DynamoDB.AttributeValue {
     return this.__attributes[attributeName]
   }
 
+  /**
+   * Gets the JavaScript transformed value for an attribute.
+   *
+   * While you can read values directly on the Table record by it's property name,
+   * sometimes you need to get attribute.
+   *
+   * Unlike {@link this.get}, this excepts the attribute name, not the property name.
+   */
   public getAttribute(attributeName: string) {
-    const attributeValue = this.getAttributeDynamoValue(attributeName)
     const attribute = this.table.schema.getAttributeByName(attributeName)
-    const value = attribute.fromDynamo(attributeValue)
-    return value
+    return this.getByAttribute(attribute)
   }
 
-  public setAttributeValue(attributeName: string, attributeValue: DynamoDB.AttributeValue) {
+  /**
+   * Sets the DynamoDB.AttributeValue for an attribute
+   *
+   * To set the value from a JavaScript object, use {@link this.setAttribute}
+  */
+  public setAttributeDynamoValue(attributeName: string, attributeValue: DynamoDB.AttributeValue) {
     // save the original value before we update the attributes value
     if (!_.isUndefined(this.__attributes[attributeName]) && _.isUndefined(this.__original[attributeName])) {
       this.__original[attributeName] = this.getAttributeDynamoValue(attributeName)
@@ -203,37 +224,36 @@ export class Table {
     _.pull(this.__deletedAttributes, attributeName)
   }
 
+  /**
+   * Sets the value of an attribute from a JavaScript object.
+   *
+   * Unlike {@link this.set}, this excepts the attribute name, not the property name.
+   */
   public setAttribute(attributeName: string, value: any, force = false) {
     const attribute = this.table.schema.getAttributeByName(attributeName)
-    const attributeValue = attribute.toDynamo(value)
-
-    // avoid recording the value if it is unchanged, so we do not send it as an updated value during a save
-    if (!force && !_.isUndefined(this.__attributes[attributeName]) && _.isEqual(this.__attributes[attributeName], attributeValue)) {
-      return
-    }
-
-    if (attributeValue) {
-      this.setAttributeValue(attributeName, attributeValue)
-    } else {
-      this.deleteAttribute(attributeName)
-    }
+    return this.setByAttribute(attribute, value)
   }
-
-  public setAttributes(attributes: { [name: string]: any }) {
-    _.forEach(attributes, (value, name) => {
-      this.setAttribute(name, value)
+  /**
+   * Sets several attribute values at at once.
+   *
+   * @param {object} values An object, where the keys are the attribute names,
+   *                        and the values are the values you'd like to set.
+  */
+  public setAttributes(values: { [name: string]: any }) {
+    _.forEach(values, (value, attributeName) => {
+      this.setAttribute(attributeName, value)
     })
   }
 
   /**
    * Marks an attribute to be deleted.
    */
-  public deleteAttribute(attribute: string) {
+  public deleteAttribute(attributeName: string) {
     // delete the attribute as long as it existed and wasn't already null
-    if (!_.isNil(this.__attributes[attribute])) {
-      this.__attributes[attribute] = { NULL: true }
-      this.__deletedAttributes.push(attribute)
-      _.pull(this.__updatedAttributes, attribute)
+    if (!_.isNil(this.__attributes[attributeName])) {
+      this.__attributes[attributeName] = { NULL: true }
+      this.__deletedAttributes.push(attributeName)
+      _.pull(this.__updatedAttributes, attributeName)
     }
   }
 
@@ -246,38 +266,48 @@ export class Table {
     }
   }
 
-  /** Utility for {@link Table.setAttribute} */
-  public set(attributeName: string, value: any) {
-    return this.setAttribute(attributeName, value)
-  }
-
-  /** Utility for {@link Table.getAttribute} */
-  public get(attributeName: string) {
-    return this.getAttribute(attributeName)
+  /**
+   * Sets a value of an attribute by it's property name.
+   *
+   * To set a value by an attribute name, use {@link this.setAttribute}
+   */
+  public set(propertyName: string, value: any) {
+    const attribute = this.table.schema.getAttributeByPropertyName(propertyName)
+    return this.setByAttribute(attribute, value)
   }
 
   /**
-   * Determines if this record has any attributes pending an update or deletion
+   * Gets a value of an attribute by it's property name.
+   *
+   * To get a value by an attribute name, use {@link this.getAttribute}
+   */
+  public get(propertyName: string) {
+    const attribute = this.table.schema.getAttributeByPropertyName(propertyName)
+    return this.getByAttribute(attribute)
+  }
+
+  /**
+   * Determines if this record has any attributes pending an update or deletion.
    */
   public hasChanges(): boolean {
     return this.__updatedAttributes.length > 0 || this.__deletedAttributes.length > 0
   }
 
   /**
-   * Gets the unchanged values for the record, if it was loaded from DynamoDB
+   * Return the original values for the record, if it was loaded from DynamoDB.
    */
   public getOriginalValues() {
     return this.__original
   }
 
   /**
-   * Saves this record.
+   * Save this record to DynamoDB.
    *
    * Will check to see if there are changes to the record, if there are none the save request is ignored.
-   * To skip this check, use {@link Table.forceSave} instead.
+   * To skip this check, use {@link this.forceSave} instead.
    *
-   * Calls the {@link Table.beforeSave} before saving the record.
-   * If {@link Table.beforeSave} returns false, the save request is ignored.
+   * Calls the {@link this.beforeSave} before saving the record.
+   * If {@link this.beforeSave} returns false, the save request is ignored.
    *
    * Automatically determines if the the save should use use a PutItem or UpdateItem request.
    */
@@ -308,7 +338,15 @@ export class Table {
   }
 
   /**
-   * Deletes this record.
+   * Deletes this record from DynamoDB.
+   *
+   * Before deleting, it will call {@link this.beforeDelete}. If {@link this.beforeDelete}
+   * returns false then this record will not be deleted.
+   *
+   * After deleting, {@link this.afterDelete} will be called.
+   *
+   * @param {any} meta Optional metadata for the action, passed to {@link this.beforeDelete}
+   *                   and {@link this.afterDelete}.
    */
   public async delete(meta?: any): Promise<void> {
     const allowDeletion = await this.beforeDelete(meta)
@@ -319,16 +357,29 @@ export class Table {
     }
   }
 
+  /**
+   * Convert this record to a JSON-exportable object.
+   *
+   * Has no consideration for "views" or "permissions", so all attributes
+   * will be exported.
+   *
+   * Export object uses the property names as the object keys. To convert
+   * a JSON object back into a Table record, use {@link Table.fromJSON}.
+   *
+   * Each attribute type can define a custom toJSON and fromJSON method,
+   * @see {@link https://github.com/benhutchins/dyngoose/wiki/Attributes#custom-attribute-types}.
+   */
   public toJSON() {
     const json: any = {}
 
-    for (const [attrName, attribute] of this.table.schema.getAttributes()) {
-      const value = this.getAttribute(attrName)
+    for (const [attributeName, attribute] of this.table.schema.getAttributes()) {
+      const propertyName = attribute.propertyName
+      const value = this.getAttribute(attributeName)
 
       if (_.isFunction(attribute.type.toJSON)) {
-        json[attrName] = attribute.type.toJSON(value, attribute)
+        json[propertyName] = attribute.type.toJSON(value, attribute)
       } else {
-        json[attrName] = value
+        json[propertyName] = value
       }
     }
 
@@ -360,6 +411,27 @@ export class Table {
    */
   protected async afterDelete(output: DynamoDB.DeleteItemOutput, meta?: any): Promise<void> {
     return
+  }
+
+  protected setByAttribute(attribute: Attribute<any>, value: any, force = false) {
+    const attributeValue = attribute.toDynamo(value)
+
+    // avoid recording the value if it is unchanged, so we do not send it as an updated value during a save
+    if (!force && !_.isUndefined(this.__attributes[attribute.name]) && _.isEqual(this.__attributes[attribute.name], attributeValue)) {
+      return
+    }
+
+    if (attributeValue) {
+      this.setAttributeDynamoValue(attribute.name, attributeValue)
+    } else {
+      this.deleteAttribute(attribute.name)
+    }
+  }
+
+  protected getByAttribute(attribute: Attribute<any>) {
+    const attributeValue = this.getAttributeDynamoValue(attribute.name)
+    const value = attribute.fromDynamo(attributeValue)
+    return value
   }
 
   /**

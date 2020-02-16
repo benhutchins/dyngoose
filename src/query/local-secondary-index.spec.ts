@@ -10,18 +10,10 @@ class Card extends Table {
   public static readonly primaryKey: Query.PrimaryKey<Card, number, string>
 
   @Decorator.LocalSecondaryIndex('count')
-  public static readonly countIndex: Query.LocalSecondaryIndex<Card, number, number>
+  public static readonly countIndex: Query.LocalSecondaryIndex<Card>
 
   @Decorator.DocumentClient()
   public static documentClient: DocumentClient<Card>
-
-  public static create(id: number, title: string, count: number) {
-    const record = new this()
-    record.id = id
-    record.title = title
-    record.count = count
-    return record
-  }
 
   @Decorator.Attribute.Number()
   public id: number
@@ -45,20 +37,20 @@ describe('Query/LocalSecondaryIndex', () => {
   describe('#query', () => {
     it('should find items', async () => {
       await Card.documentClient.batchPut([
-        Card.create(10, 'a', 4),
-        Card.create(10, 'b', 3),
-        Card.create(10, 'c', 2),
-        Card.create(10, 'd', 1),
+        new Card({ id: 10, title: 'a', count: 4 }),
+        new Card({ id: 10, title: 'b', count: 3 }),
+        new Card({ id: 10, title: 'c', count: 2 }),
+        new Card({ id: 10, title: 'd', count: 1 }),
       ])
 
       const res = await Card.countIndex.query({
-        hash: 10,
+        id: 10,
+        count: ['>', 2],
+      }, {
         rangeOrder: 'DESC',
-        range: ['>', 2],
       })
 
       expect(res.records.length).to.eq(2)
-
       expect(res.records[0].count).to.eq(4)
       expect(res.records[1].count).to.eq(3)
     })

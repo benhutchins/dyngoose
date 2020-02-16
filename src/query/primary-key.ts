@@ -5,10 +5,10 @@ import { batchGet } from './batch_get'
 import { batchWrite } from './batch_write'
 import { buildQueryExpression } from './expression'
 import { Filters as QueryFilters } from './filters'
-import * as Query from './query'
+import { ConditionValueType } from './query'
 import { Results as QueryResults } from './results'
 
-type PrimaryKeyType = Query.ConditionValueType
+type PrimaryKeyType = ConditionValueType
 
 type PrimaryKeyBatchInput<HashKeyType extends PrimaryKeyType, RangeKeyType extends PrimaryKeyType> = [HashKeyType, RangeKeyType]
 

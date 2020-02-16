@@ -3,10 +3,7 @@ import * as Metadata from '../metadata'
 import { ITable, Table } from '../table'
 import { buildQueryExpression } from './expression'
 import { Filters as QueryFilters } from './filters'
-import { ConditionValueType } from './query'
 import { Results as QueryResults } from './results'
-
-type PrimaryKeyType = ConditionValueType
 
 interface LocalSecondaryIndexQueryInput {
   rangeOrder?: 'ASC' | 'DESC'
@@ -25,7 +22,7 @@ interface LocalSecondaryIndexScanInput {
   consistent?: DynamoDB.ConsistentRead
 }
 
-export class LocalSecondaryIndex<T extends Table, HashKeyType extends PrimaryKeyType, RangeKeyType extends PrimaryKeyType> {
+export class LocalSecondaryIndex<T extends Table> {
   constructor(
     readonly tableClass: ITable<T>,
     readonly metadata: Metadata.Index.LocalSecondaryIndex,
@@ -51,11 +48,17 @@ export class LocalSecondaryIndex<T extends Table, HashKeyType extends PrimaryKey
 
   public async query(filters: QueryFilters, input: LocalSecondaryIndexQueryInput = {}): Promise<QueryResults<T>> {
     if (!filters[this.tableClass.schema.primaryKey.hash.propertyName]) {
-      throw new Error('Cannot perform a query on a GlobalSecondaryIndex without specifying a hash key value')
+      throw new Error('Cannot perform a query on a LocalSecondaryIndex without specifying a hash key value')
     }
 
     const queryInput = this.getQueryInput(input)
-    const expression = buildQueryExpression(this.tableClass.schema, filters, this.metadata)
+
+    // convert the LocalSecondaryIndex metadata to a GlobalSecondaryIndex, which just adds the hash property
+    const metadata: Metadata.Index.GlobalSecondaryIndex = Object.assign({
+      hash: this.tableClass.schema.primaryKey.hash,
+    }, this.metadata)
+
+    const expression = buildQueryExpression(this.tableClass.schema, filters, metadata)
     queryInput.FilterExpression = expression.FilterExpression
     queryInput.KeyConditionExpression = expression.KeyConditionExpression
     queryInput.ExpressionAttributeNames = expression.ExpressionAttributeNames

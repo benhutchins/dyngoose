@@ -16,8 +16,8 @@ export function GlobalSecondaryIndex(options: GlobalSecondaryIndexOptions) {
     const index: Metadata.Index.GlobalSecondaryIndex = {
       propertyName,
       name: options.name || propertyName,
-      hash: table.schema.getAttributeByName(options.hashKey, false),
-      range: options.rangeKey ? table.schema.getAttributeByName(options.rangeKey, false) : undefined,
+      hash: table.schema.getAttributeByName(options.hashKey),
+      range: options.rangeKey ? table.schema.getAttributeByName(options.rangeKey) : undefined,
       projection: options.projection,
       nonKeyAttributes: options.nonKeyAttributes,
       throughput: options.throughput,

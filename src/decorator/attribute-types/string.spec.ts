@@ -17,6 +17,12 @@ describe('AttributeType/String', () => {
     expect(record.getAttributeDynamoValue('testString')).deep.eq({ S: 'some value' })
   })
 
+  it('rejects non-string values', () => {
+    expect(record.testString).eq(null)
+    // we do this primarily to ensure typing is enforced for queries
+    expect(() => { record.testString = 10 as any as string }).to.throw()
+  })
+
   describe('default values', () => {
     it('supports default values', () => {
       expect(record.defaultedString).eq('SomeDefault')

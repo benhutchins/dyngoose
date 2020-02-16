@@ -137,7 +137,7 @@ export class Schema {
     return this.attributes.entries()
   }
 
-  public getAttributeByName(attributeName: string, allowAutoCreate = true): Attribute<any> {
+  public getAttributeByName(attributeName: string): Attribute<any> {
     let childSegment: string | void
     if (attributeName.includes('.')) {
       [attributeName, childSegment] = attributeName.split('.')
@@ -153,6 +153,16 @@ export class Schema {
     }
   }
 
+  public getAttributeByPropertyName(propertyName: string): Attribute<any> {
+    for (const [attributeName, attribute] of this.attributes) {
+      if (attribute.propertyName === propertyName) {
+        return attribute
+      }
+    }
+
+    throw new Error(`Schema for ${this.name} has no attribute by property name ${propertyName}`)
+  }
+
   public addAttribute(attribute: Attribute<any>): Attribute<any> {
     if (this.attributes.has(attribute.name)) {
       throw new Error(`Table ${this.name} has several attributes named ${attribute.name}`)
@@ -163,7 +173,7 @@ export class Schema {
   }
 
   public setPrimaryKey(hashKey: string, rangeKey: string | void, propertyName: string) {
-    const hash = this.getAttributeByName(hashKey, false)
+    const hash = this.getAttributeByName(hashKey)
     if (!hash) {
       throw new Error(`Specified hashKey ${hashKey} attribute for the PrimaryKey for table ${this.name} does not exist`)
     }
@@ -171,7 +181,7 @@ export class Schema {
     let range: Attribute<any> | undefined
 
     if (rangeKey) {
-      range = this.getAttributeByName(rangeKey, false)
+      range = this.getAttributeByName(rangeKey)
 
       if (!range) {
         throw new Error(`Specified rangeKey ${rangeKey} attribute for the PrimaryKey for table ${this.name} does not exist`)
