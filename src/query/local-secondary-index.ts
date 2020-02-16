@@ -1,15 +1,29 @@
 import { DynamoDB } from 'aws-sdk'
-import * as _ from 'lodash'
 import * as Metadata from '../metadata'
 import { ITable, Table } from '../table'
-import * as Query from './query'
+import { buildQueryExpression } from './expression'
+import { Filters as QueryFilters } from './filters'
+import { ConditionValueType } from './query'
+import { Results as QueryResults } from './results'
 
-const HASH_KEY_REF = '#hk'
-const HASH_VALUE_REF = ':hkv'
+type PrimaryKeyType = ConditionValueType
 
-const RANGE_KEY_REF = '#rk'
+interface LocalSecondaryIndexQueryInput {
+  rangeOrder?: 'ASC' | 'DESC'
+  limit?: number
+  exclusiveStartKey?: DynamoDB.Key
+  consistent?: DynamoDB.ConsistentRead
+}
 
-type PrimaryKeyType = Query.ConditionValueType
+interface LocalSecondaryIndexScanInput {
+  limit?: number
+  select?: DynamoDB.Select
+  totalSegments?: DynamoDB.ScanTotalSegments
+  segment?: DynamoDB.ScanSegment
+  exclusiveStartKey?: DynamoDB.Key
+  projectionExpression?: DynamoDB.ProjectionExpression
+  consistent?: DynamoDB.ConsistentRead
+}
 
 export class LocalSecondaryIndex<T extends Table, HashKeyType extends PrimaryKeyType, RangeKeyType extends PrimaryKeyType> {
   constructor(
@@ -17,81 +31,76 @@ export class LocalSecondaryIndex<T extends Table, HashKeyType extends PrimaryKey
     readonly metadata: Metadata.Index.LocalSecondaryIndex,
   ) {}
 
-  public async query(options: {
-    hash: HashKeyType,
-    range?: Query.Condition<RangeKeyType>,
-    rangeOrder?: 'ASC' | 'DESC',
-    limit?: number,
-    exclusiveStartKey?: DynamoDB.DocumentClient.Key,
-    consistent?: boolean,
-  }) {
-    if (!options.rangeOrder) {
-      options.rangeOrder = 'ASC'
+  public getQueryInput(input: LocalSecondaryIndexQueryInput = {}): DynamoDB.QueryInput {
+    if (!input.rangeOrder) {
+      input.rangeOrder = 'ASC'
     }
-    const ScanIndexForward = options.rangeOrder === 'ASC'
-
-    const params: DynamoDB.DocumentClient.QueryInput = {
+    const ScanIndexForward = input.rangeOrder === 'ASC'
+    const queryInput: DynamoDB.QueryInput = {
       TableName: this.tableClass.schema.name,
-      Limit: options.limit,
+      Limit: input.limit,
       IndexName: this.metadata.name,
       ScanIndexForward,
-      ExclusiveStartKey: options.exclusiveStartKey,
+      ExclusiveStartKey: input.exclusiveStartKey,
       ReturnConsumedCapacity: 'TOTAL',
-      KeyConditionExpression: `${HASH_KEY_REF} = ${HASH_VALUE_REF}`,
-      ExpressionAttributeNames: {
-        [HASH_KEY_REF]: this.tableClass.schema.primaryKey.hash.name,
-      },
-      ExpressionAttributeValues: {
-        [HASH_VALUE_REF]: this.tableClass.schema.primaryKey.hash.toDynamoAssert(options.hash),
-      },
-      ConsistentRead: options.consistent,
+      ConsistentRead: input.consistent,
     }
 
-    if (options.range) {
-      const rangeKeyOptions = Query.parseCondition(this.metadata.range, options.range, RANGE_KEY_REF)
-      params.KeyConditionExpression += ` AND ${rangeKeyOptions.conditionExpression}`
-      Object.assign(params.ExpressionAttributeNames, { [RANGE_KEY_REF]: this.metadata.range.name })
-      Object.assign(params.ExpressionAttributeValues, rangeKeyOptions.expressionAttributeValues)
-    }
-
-    const result = await this.tableClass.schema.dynamo.query(params).promise()
-
-    return {
-      records: (result.Items || []).map((item) => {
-        return this.tableClass.fromDynamo(item)
-      }),
-      count: result.Count,
-      scannedCount: result.ScannedCount,
-      lastEvaluatedKey: result.LastEvaluatedKey,
-      consumedCapacity: result.ConsumedCapacity,
-    }
+    return queryInput
   }
 
-  public async scan(options: {
-    limit?: number,
-    totalSegments?: number,
-    segment?: number,
-    exclusiveStartKey?: DynamoDB.DocumentClient.Key,
-  } = {}) {
-    const params: DynamoDB.DocumentClient.ScanInput = {
-      TableName: this.tableClass.schema.name,
-      Limit: options.limit,
-      ExclusiveStartKey: options.exclusiveStartKey,
-      ReturnConsumedCapacity: 'TOTAL',
-      TotalSegments: options.totalSegments,
-      Segment: options.segment,
+  public async query(filters: QueryFilters, input: LocalSecondaryIndexQueryInput = {}): Promise<QueryResults<T>> {
+    if (!filters[this.tableClass.schema.primaryKey.hash.propertyName]) {
+      throw new Error('Cannot perform a query on a GlobalSecondaryIndex without specifying a hash key value')
     }
 
-    const result = await this.tableClass.schema.dynamo.scan(params).promise()
+    const queryInput = this.getQueryInput(input)
+    const expression = buildQueryExpression(this.tableClass.schema, filters, this.metadata)
+    queryInput.FilterExpression = expression.FilterExpression
+    queryInput.KeyConditionExpression = expression.KeyConditionExpression
+    queryInput.ExpressionAttributeNames = expression.ExpressionAttributeNames
+    queryInput.ExpressionAttributeValues = expression.ExpressionAttributeValues
+    const output = await this.tableClass.schema.dynamo.query(queryInput).promise()
+    return this.getQueryResults(output)
+  }
+
+  public getScanInput(input: LocalSecondaryIndexScanInput = {}): DynamoDB.ScanInput {
+    const scanInput: DynamoDB.ScanInput = {
+      TableName: this.tableClass.schema.name,
+      Limit: input.limit,
+      ExclusiveStartKey: input.exclusiveStartKey,
+      ReturnConsumedCapacity: 'TOTAL',
+      TotalSegments: input.totalSegments,
+      Segment: input.segment,
+    }
+
+    return scanInput
+  }
+
+  public async scan(filters: QueryFilters | void | null, input: LocalSecondaryIndexScanInput = {}) {
+    const scanInput = this.getScanInput(input)
+    if (filters && Object.keys(filters).length > 0) {
+      // don't pass the index metadata, avoids KeyConditionExpression
+      const expression = buildQueryExpression(this.tableClass.schema, filters)
+      scanInput.FilterExpression = expression.FilterExpression
+      scanInput.ExpressionAttributeNames = expression.ExpressionAttributeNames
+      scanInput.ExpressionAttributeValues = expression.ExpressionAttributeValues
+    }
+    const output = await this.tableClass.schema.dynamo.scan(scanInput).promise()
+    return this.getQueryResults(output)
+  }
+
+  protected getQueryResults(output: DynamoDB.ScanOutput | DynamoDB.QueryOutput): QueryResults<T> {
+    const records: T[] = (output.Items || []).map((item) => {
+      return this.tableClass.fromDynamo(item)
+    })
 
     return {
-      records: (result.Items || []).map((item) => {
-        return this.tableClass.fromDynamo(item)
-      }),
-      count: result.Count,
-      scannedCount: result.ScannedCount,
-      lastEvaluatedKey: result.LastEvaluatedKey,
-      consumedCapacity: result.ConsumedCapacity,
+      records,
+      count: output.Count || records.length,
+      scannedCount: output.ScannedCount as number,
+      lastEvaluatedKey: output.LastEvaluatedKey,
+      consumedCapacity: output.ConsumedCapacity as DynamoDB.ConsumedCapacity,
     }
   }
 }

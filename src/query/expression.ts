@@ -25,7 +25,7 @@ const keyConditionAllowedOperators: ConditionOperator[] = [
   'beginsWith',
 ]
 
-type IndexMetadata = Metadata.Index.GlobalSecondaryIndex | Metadata.Index.PrimaryKey
+type IndexMetadata = Metadata.Index.GlobalSecondaryIndex | Metadata.Index.LocalSecondaryIndex | Metadata.Index.PrimaryKey
 
 export function buildQueryExpression(schema: Schema, filters: Filters, index?: IndexMetadata): Expression {
   const filterExpression = new FilterExpressionQuery(schema, filters, index)
