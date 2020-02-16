@@ -105,10 +105,6 @@ Dyngoose utilizes TypeScript decorators, to use them you must enable them within
 }
 ```
 
-Then any query that is sent to the Card table will be sent through DAXConnection.
-
-If you don't specify any connection, it automatically uses [default connection](https://github.com/balmbees/dynamo-types/blob/e0391c1c171638d06f9262446d8cbcb14a573cc8/src/config.ts#L5), which is [DynamoDBConnection](https://github.com/balmbees/dynamo-types/blob/e0391c1c171638d06f9262446d8cbcb14a573cc8/src/connections/dynamodb_connection.ts).
-
 ## dynamo-types
 
 Part of this library is based on [dynamo-types](https://www.npmjs.com/package/dynamo-types) by the guys at [Vingle](https://www.vingle.net/). I want to give them some credit for this library.
