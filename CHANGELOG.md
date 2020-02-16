@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/benhutchins/dyngoose/compare/v1.0.0...v1.0.1) (2020-02-16)
+
+
+### Bug Fixes
+
+* PrimaryKey.batchGet ([a116124](https://github.com/benhutchins/dyngoose/commit/a116124b032095baf24759ae0e83bd39d0b539b2))
+
 # 1.0.0 (2020-02-16)
 
 
