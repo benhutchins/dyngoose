@@ -8,7 +8,7 @@
     "prebuild": "check-engine && rm -rf dist",
     "build": "tsc",
     "pretest": "npm run build -- -p ./tsconfig.test.json",
-    "test": "env AWS_REGION=us-east-1 AWS_ACCESS_KEY_ID=abcde AWS_SECRET_ACCESS_KEY=abcde mocha -t 20000 dist/**/*.spec.js",
+    "test": "env AWS_REGION=us-east-1 AWS_ACCESS_KEY_ID=abcde AWS_SECRET_ACCESS_KEY=abcde mocha --timeout 20000 --recursive dist",
     "test:local": "env DYNAMO_ENDPOINT=http://127.0.0.1:8000 npm test",
     "prepublishOnly": "npm run build",
     "lint": "tslint -c tslint.json 'src/**/*.ts'"

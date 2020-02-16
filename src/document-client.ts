@@ -15,17 +15,9 @@ export class DocumentClient<T extends Table> {
   }
 
   public async put(record: T): Promise<DynamoDB.PutItemOutput> {
-    return new Promise((resolve, reject) => {
-      const input = this.getPutInput(record)
-      this.tableClass.schema.dynamo.putItem(input, (err, output) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve(output)
-          // record.setAttributes(res.Attributes || {});
-        }
-      })
-    })
+    const input = this.getPutInput(record)
+    const output = this.tableClass.schema.dynamo.putItem(input).promise()
+    return output
   }
 
   public getUpdateInput(record: T): DynamoDB.UpdateItemInput {
@@ -45,8 +37,8 @@ export class DocumentClient<T extends Table> {
     let valueCounter = 0
 
     _.each(_.uniq(record.getUpdatedAttributes()), (attributeName, i) => {
-      const attr = this.tableClass.schema.getAttributeByName(attributeName)
-      const value = attr.toDynamo(record.getAttribute(attributeName))
+      const attribute = this.tableClass.schema.getAttributeByName(attributeName)
+      const value = attribute.toDynamo(record.getAttribute(attributeName))
       const slug = '#A' + valueCounter
 
       if (value) {
@@ -90,16 +82,9 @@ export class DocumentClient<T extends Table> {
   }
 
   public async update(record: T): Promise<DynamoDB.UpdateItemOutput> {
-    return new Promise((resolve, reject) => {
-      const input = this.getUpdateInput(record)
-      this.tableClass.schema.dynamo.updateItem(input, (err, output) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve(output)
-        }
-      })
-    })
+    const input = this.getUpdateInput(record)
+    const output = this.tableClass.schema.dynamo.updateItem(input).promise()
+    return output
   }
 
   public async batchPut(records: T[]) {

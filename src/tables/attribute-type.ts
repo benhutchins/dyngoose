@@ -6,13 +6,22 @@ import { AttributeMetadata } from '../metadata/attribute'
 import { ITable, Table } from '../table'
 
 export class AttributeType<Value, Metadata extends AttributeMetadata<Value>> implements IAttributeType<Value> {
-  type: DynamoAttributeTypes
+  public type: DynamoAttributeTypes
+
+  private __attribute: Attribute<any>
 
   constructor (
     protected record: Table,
     protected propertyName: string,
     protected metadata: Metadata,
   ) {}
+
+  get attribute(): Attribute<Value> {
+    if (!this.__attribute) {
+      this.__attribute = new Attribute<Value>(this.propertyName, this, this.metadata || {})
+    }
+    return this.__attribute
+  }
 
   protected get table() {
     return this.record.constructor as ITable<any>
@@ -23,12 +32,7 @@ export class AttributeType<Value, Metadata extends AttributeMetadata<Value>> imp
   }
 
   decorate(): void {
-    const attribute = this.attribute()
-    this.schema.addAttribute(attribute)
-  }
-
-  attribute(): Attribute<Value> {
-    return new Attribute<Value>(this.propertyName, this, this.metadata || {})
+    this.schema.addAttribute(this.attribute)
   }
 
   toDynamo(value: Value, attribute: Attribute<Value>): DynamoDB.AttributeValue {

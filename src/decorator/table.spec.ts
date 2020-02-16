@@ -17,6 +17,9 @@ class Card extends Dyngoose.Table {
 
   @Dyngoose.Attribute.String({ name: 'complicated_field' })
   public complicatedField: string
+
+  @Dyngoose.Attribute.String()
+  public testString: string
 }
 
 describe('Table Decorator', () => {

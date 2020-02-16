@@ -1,164 +1,103 @@
-[![Build Status](https://github.com/balmbees/dynamo-types/workflows/workflow/badge.svg)](https://github.com/balmbees/dynamo-types/actions)
-[![npm version](https://badge.fury.io/js/dynamo-types.svg)](https://badge.fury.io/js/dynamo-types)
+[![Build Status](https://github.com/benhutchins/dyngoose/workflows/workflow/badge.svg)](https://github.com/balmbees/dynamo-types/actions)
+[![npm version](https://badge.fury.io/js/dyngoose.svg)](https://badge.fury.io/js/dyngoose)
 [![Semantic Release enabled](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 [![Renovate enabled](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://renovatebot.com/)
 
 
-# dyngoose
+# Dyngoose
 
-Typescript ORM of DynamoDB, written from scratch to fully support DynamoDB.
+Elegant DynamoDB object modeling for Typescript.
+
+Let's face it, all good databases need good model casting. DynamoDB is powerful but libraries that used it were not. That's there where comes in Dyngoose.
 
 ## Features
 
-1. Define your attributes, indexes, tables and models using TypeScript classes.
-2. Supports local migration and seeding for easy development.
-3. Intelligent querying support optimizes use of indexes for queries when available.
-4. Can convert tables into CloudFormation templates for you.
-5. Powerful and simple querying.
-6. Selectively updating item attributes.
+1. Cast your tables, attributes, and indexes using TypeScript classes.
+1. Generate your CloudFormation templates based on your code, or perform your table operations on demand.
+1. Intelligent and querying.
+1. Can convert tables into CloudFormation templates for you.
+1. Selectively updating item attributes.
+1. Data serialization, cast any JavaScript value into a DynamoDB attribute value.
+1. DynamoDB Accelerator (DAX) and Amazon X-Ray support (see [Connections](https://github.com/benhutchins/dyngoose/wiki/connections))
+1. Optimizes connection to DynamoDB HTTP service using Keep-Alive, see [Code](https://github.com/benhutchins/dyngoose/blob/master/src/connections/dynamodb-connection.ts#L32
+1. Incredibly easy [local development](https://github.com/benhutchins/dyngoose/wiki/development), with supporting for seeding.
+1. [Deploy to production](https://github.com/benhutchins/dyngoose/wiki/deployment) using CloudFormation or dynamically.
 
-1. Serialize / Deserialize DynamoDB record -> TS class object based on annotations.
-2. Table Configurations
-   - CreateTable
-     - Create secondary indexes (Both local / global)
-     - Configure TTL
-   - DropTable
-3. PrimaryKey
-   - FullPrimaryKey (Hash, Range)
-   - HashPrimaryKey (Hash)
-4. Indexes
-   - Local, both hash and range key
-   - Global, both hash and range key
-5. Attribute
-   - Type Support (Number / String / Boolean / Array / Object / Buffer)
-   - TimeToLive
-6. DAX Support
-   - You can specify this by setting the connection of table. 
-7. Optimized aws-sdk usage
-   - aws-sdk has a serious problem of not reusing HTTP connection towards DynamoDB by default. check [this issue](https://github.com/aws/aws-sdk-js/issues/900)
-   - this could cause unbearable latency sometimes with showing > 100ms. it's more of an issue of NodeJS HTTP module but nevertheless, it has been optimized here by keep-alive [Code](https://github.com/balmbees/dynamo-types/blob/master/src/connections/dynamodb_connection.ts#L37)
-8. AWS X-Ray support
-   - XRay is serverless distributed tracing service. In order to log DynamoDB transaction into it, you also need to some sort of risk monkey-patching. Here you can turn it on by setting [`process.env.ENABLE_XRAY = "true"`](https://github.com/balmbees/dynamo-types/blob/e0391c1c171638d06f9262446d8cbcb14a573cc8/src/config.ts#L9)
-9. Testing
-   - You can change the endpoint of DynamoDB by setting the environment variable or setting new connection, So you can install [local-dynamo](https://www.npmjs.com/package/local-dynamo) locally at setup endpoint to local. refer package.json for the detailed how-to
+[Read the docs!](https://github.com/benhutchins/dyngoose/wiki)
 
-Also, dynamo-types let you overcome several limits that DynamoDB or the aws-sdk has.
-
-1. BatchWrite (batchDelete / batchPut) has a limit of a maximum of 25 items per request.
-   - dynamo-types automatically splits given items into chunks of 25 and sends requests in parallel
-2. BatchGet has a limit of a maximum of 100 items per requests
-   - dynamo-types automatically splits given keys to chunks of 100 and sends requests in parallel
-3. BatchGet doesn't keep the order of items as it is in input keys,
-   - dynamo-types sort return items based on input keys
-4. BatchGet doesn't handle "missing items".
-   - dynamo-types has "BatchGet" / "BatchGetFull" 
-     - BatchGet  
-        order items follow to keys, missing items are just missing. return type Promise<Array<Item>>  
-        so keys.legnth !== items.keys in this case  
-     - BatchGetFull   
-        order items follow to keys, fill missing items with "null". return type Promise<Array<Item | null>>  
-        so keys.length === items.keys always true  
-
-And most importantly, all of those queries regardless of whether it's from index or primary key, strongly typed. I mean what's the point of using typescript if not anyway?
-
-## Usage
+## Example Usage
 ```typescript
-@Decorator.Table({ name: "prod-Card" })
+import * as Dyngoose from 'dyngoose'
+
+@Dyngoose.$Table({ name: 'Card' })
 class Card extends Table {
-  @Decorator.Attribute()
-  public id: number;
+  @Dyngoose.Attribute.Number()
+  public id: number
 
-  @Decorator.Attribute()
-  public title: string;
+  @Dyngoose.Attribute.String()
+  public title: string
 
-  @Decorator.Attribute({ timeToLive: true })
-  public expiresAt: number;
+  @Dyngoose.Attribute.Date({ timeToLive: true })
+  public expiresAt: Date
 
-  @Decorator.FullPrimaryKey('id', 'title')
-  static readonly primaryKey: Query.FullPrimaryKey<Card, number, string>;
+  @Dyngoose.$PrimaryKey('id', 'title')
+  static readonly primaryKey: Query.PrimaryKey<Card, number, string>
 
-  @Decorator.Writer()
-  static readonly writer: Query.Writer<Card>;
+  @Dyngoose.$DocumentClient()
+  static readonly writer: Dyngoose.DocumentClient<Card>
 }
 
-// Create Table At DynamoDB
-await Card.createTable();
+// Perform table operations
+await Card.createTable()
+await Card.deleteTable()
 
-// Drop Table At DynamoDB
-await Card.dropTable();
+// Creating records
+const card = new Card()
+card.id = 100
+card.title = 'Title'
 
+const card2 = new Card({
+  id: 100,
+  title: 'Title'
+})
 
-// Creating Record
-const card = new Card();
-card.id = 100;
-card.title = "Title";
-//
-await Card.writer.put(card);
-// OR just
-await card.save();
+// Save a record
+await card.save()
 
 // Batch Put
-await Card.writer.batchPut([
-  new Card(),
-  new Card()
-]);
+await Card.documentClient.batchPut([
+  new Card(…),
+  new Card(…)
+])
 
-// Get Record
-await Card.primaryKey.get(100, "Title");
+// Get record by the primary key
+await Card.primaryKey.get(100, 'Title')
 
 // BatchGet
 // This array is strongly typed such as Array<[number, string]> so don't worry.
 await Card.primaryKey.batchGet([
-  [100, "Title"],
-  [200, "Title2"]
+  [100, 'Title'],
+  [200, 'Title2']
 ])
 
 // Query
-// Range key opreations are stringly typed. ([">=", T] | ["=", T] ...)
+// Range key operations are stickly typed. (['>=', T] | ['=', T] ...)
 await Card.primaryKey.query({
   hash: 100,
-  range: [">=", "Title"]
+  range: ['>=', 'Title']
 })
 
 // Delete record
 await card.delete()
 ```
 
-
-```typescript
-import {
-  Config,
-  Decorator,
-  Query,
-  Table,
-} from "dynamo-types";
-
-@Decorator.Table({ name: `table_name` })
-export class CardStat extends Table {
-  @Decorator.HashPrimaryKey("card_id")
-  public static readonly primaryKey: Query.HashPrimaryKey<CardStat, number>;
-
-  @Decorator.Writer()
-  public static readonly writer: Query.Writer<CardStat>;
-
-  @Decorator.Attribute({ name: "card_id" })
-  public cardId: number;
-
-  @Decorator.Attribute({ name: "impressions_count" })
-  public impressionsCount: number = 0;
-
-  @Decorator.Attribute({ name: "shares" })
-  public shares: number = 0;
-}
-```
-
 ### TS Compiler Setting
-DynamoTypes utilize [reflect-metadata](https://github.com/rbuckton/reflect-metadata) to read metadata (usually type of variables) from Typescript code. to do so, you must enable those options.
+Dyngoose utilizes TypeScript decorators, to use them you must enable them within your `tsconfig.json` file:
 
 ```json
 {
     "compilerOptions": {
-        // other options..
+        // other options…
         //
         "experimentalDecorators": true, // required
         "emitDecoratorMetadata": true // required
@@ -166,30 +105,10 @@ DynamoTypes utilize [reflect-metadata](https://github.com/rbuckton/reflect-metad
 }
 ```
 
-### Connection
-DynamoDB supports 2 different kinds of connections. Plain connections to DynamoDB through HTTP, or through DAX.
-dynamo-types supports this by letting you create a separate connection for each table.
-
-```typescript
-@Decorator.Table({ name: "prod-Card1", connection: new DAXConnection({ endpoints: ["dax-domain:8892"] }) })
-class Card extends Table {
-  @AttributeDecorator()
-  public id: number;
-
-  @AttributeDecorator()
-  public title: string;
-
-  @AttributeDecorator({ name: "complicated_field"})
-  public complicatedField: string;
-
-  @FullPrimaryKeyDecorator('id', 'title')
-  static readonly primaryKey: Query.FullPrimaryKey<Card, number, string>;
-
-  @WriterDecorator()
-  static readonly writer: Query.Writer<Card>;
-}
-```
-
 Then any query that is sent to the Card table will be sent through DAXConnection.
 
 If you don't specify any connection, it automatically uses [default connection](https://github.com/balmbees/dynamo-types/blob/e0391c1c171638d06f9262446d8cbcb14a573cc8/src/config.ts#L5), which is [DynamoDBConnection](https://github.com/balmbees/dynamo-types/blob/e0391c1c171638d06f9262446d8cbcb14a573cc8/src/connections/dynamodb_connection.ts).
+
+## dynamo-types
+
+Part of this library is based on [dynamo-types](https://www.npmjs.com/package/dynamo-types) by the guys at [Vingle](https://www.vingle.net/). I want to give them some credit for this library.

@@ -18,7 +18,7 @@ export class Schema {
 
   // Default Index, which every table must have
   public primaryKey: Metadata.Index.PrimaryKey
-  public timeToLiveAttribute: Attribute<Number>
+  public timeToLiveAttribute: Attribute<Date>
 
   // Additional table indexes
   public globalSecondaryIndexes: Metadata.Index.GlobalSecondaryIndex[] = []
@@ -129,7 +129,7 @@ export class Schema {
     }
 
     if (!this.throughput.read || !this.throughput.write) {
-      throw new Error('Invalid throughput: ' + JSON.stringify(this.throughput))
+      throw new Error(`Schema for ${this.name} has invalid throughput ${JSON.stringify(this.throughput)}`)
     }
   }
 
@@ -149,16 +149,15 @@ export class Schema {
       }
       return attribute
     } else {
-      throw new Error(`Unknown attribute: ${attributeName}`)
+      throw new Error(`Schema for ${this.name} has no attribute named ${attributeName}`)
     }
   }
 
   public addAttribute(attribute: Attribute<any>): Attribute<any> {
     if (this.attributes.has(attribute.name)) {
-      throw new Error('Duplicate attribute: ' + attribute.name)
+      throw new Error(`Table ${this.name} has several attributes named ${attribute.name}`)
     }
 
-    // const attribute = createAttribute(this, name, dfn)
     this.attributes.set(attribute.name, attribute)
     return attribute
   }
@@ -190,28 +189,21 @@ export class Schema {
     return createTableInput(this, forCloudFormation)
   }
 
+  public createCloudFormationResource() {
+    return this.createTableInput(true)
+  }
+
   public toDynamo(record: Table | Map<string, any>): DynamoDB.AttributeMap {
-    const dynamoObj: DynamoDB.AttributeMap = {}
+    const attributeMap: DynamoDB.AttributeMap = {}
 
-    // if (this.options.saveUnknown) {
-    //   // automatically create attributes for unknown properties
-    //   for (const name of model.keys()) {
-    //     const attr = this.attributes.get(name)
+    for (const [attributeName, attribute] of this.attributes.entries()) {
+      const attributeValue = attribute.toDynamo(record.get(attributeName))
 
-    //     if (!attr) {
-    //       this.attributes.set(name, createAttribute(this, name, model.get(name)))
-    //     }
-    //   }
-    // }
-
-    for (const [name, attr] of this.attributes.entries()) {
-      const dynamoAttr = attr.toDynamo(record.get(name))
-
-      if (dynamoAttr) {
-        dynamoObj[name] = dynamoAttr
+      if (attributeValue) {
+        attributeMap[attributeName] = attributeValue
       }
     }
 
-    return dynamoObj
+    return attributeMap
   }
 }

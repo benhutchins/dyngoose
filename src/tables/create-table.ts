@@ -1,6 +1,6 @@
 import { Schema } from './schema'
 
-export async function createTable(schema: Schema, waitForReady = false) {
+export async function createTable(schema: Schema, waitForReady = true) {
   const res = await schema.dynamo.createTable(schema.createTableInput()).promise()
 
   if (waitForReady) {

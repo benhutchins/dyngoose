@@ -8,6 +8,8 @@ import { migrateTable } from './tables/migrate-table'
 import { Schema } from './tables/schema'
 import { isTrulyEmpty } from './utils/truly-empty'
 
+type StaticThis<T> = new() => T
+
 export class Table {
   //#region static
   //#region static properties
@@ -40,11 +42,11 @@ export class Table {
   //#endregion static properties
 
   //#region static methods
-  public static fromDynamo(attributes: DynamoDB.AttributeMap) {
+  public static fromDynamo<T extends Table>(this: StaticThis<T>, attributes: DynamoDB.AttributeMap): T {
     return new this().fromDynamo(attributes)
   }
 
-  public static fromJSON(json: { [attribute: string]: any }) {
+  public static fromJSON<T extends Table>(this: StaticThis<T>, json: { [attribute: string]: any }): T {
     return new this().fromJSON(json)
   }
 
@@ -112,12 +114,14 @@ export class Table {
    * Utility to get the DynamoDB.Key for this record
    */
   getDynamoKey(): DynamoDB.Key {
+    const hash = this.getAttribute(this.table.schema.primaryKey.hash.name)
     const key: DynamoDB.Key = {
-      [this.table.schema.primaryKey.hash.name]: this.getAttribute(this.table.schema.primaryKey.hash.name),
+      [this.table.schema.primaryKey.hash.name]: this.table.schema.primaryKey.hash.toDynamoAssert(hash),
     }
 
     if (this.table.schema.primaryKey.range) {
-      key[this.table.schema.primaryKey.range.name] = this.getAttribute(this.table.schema.primaryKey.range.name)
+      const range = this.getAttribute(this.table.schema.primaryKey.range.name)
+      key[this.table.schema.primaryKey.range.name] = this.table.schema.primaryKey.range.toDynamoAssert(range)
     }
 
     return key
@@ -180,14 +184,13 @@ export class Table {
   }
 
   public getAttribute(attributeName: string) {
-    const value = this.getAttributeDynamoValue(attributeName)
+    const attributeValue = this.getAttributeDynamoValue(attributeName)
     const attribute = this.table.schema.getAttributeByName(attributeName)
-    return attribute.fromDynamo(value)
+    const value = attribute.fromDynamo(attributeValue)
+    return value
   }
 
   public setAttributeValue(attributeName: string, attributeValue: DynamoDB.AttributeValue) {
-    this.__attributes[attributeName] = attributeValue
-
     // save the original value before we update the attributes value
     if (!_.isUndefined(this.__attributes[attributeName]) && _.isUndefined(this.__original[attributeName])) {
       this.__original[attributeName] = this.getAttributeDynamoValue(attributeName)
@@ -211,6 +214,8 @@ export class Table {
 
     if (attributeValue) {
       this.setAttributeValue(attributeName, attributeValue)
+    } else {
+      this.deleteAttribute(attributeName)
     }
   }
 
@@ -220,6 +225,9 @@ export class Table {
     })
   }
 
+  /**
+   * Marks an attribute to be deleted.
+   */
   public deleteAttribute(attribute: string) {
     // delete the attribute as long as it existed and wasn't already null
     if (!_.isNil(this.__attributes[attribute])) {
@@ -229,18 +237,21 @@ export class Table {
     }
   }
 
+  /**
+   * Marks several attributes to be deleted.
+   */
   public deleteAttributes(attributes: string[]) {
     for (const attribute of attributes) {
       this.deleteAttribute(attribute)
     }
   }
 
-  /** Utility @see setAttribute */
+  /** Utility for {@link Table.setAttribute} */
   public set(attributeName: string, value: any) {
     return this.setAttribute(attributeName, value)
   }
 
-  /** Utility. @see getAttribute */
+  /** Utility for {@link Table.getAttribute} */
   public get(attributeName: string) {
     return this.getAttribute(attributeName)
   }
@@ -252,6 +263,9 @@ export class Table {
     return this.__updatedAttributes.length > 0 || this.__deletedAttributes.length > 0
   }
 
+  /**
+   * Gets the unchanged values for the record, if it was loaded from DynamoDB
+   */
   public getOriginalValues() {
     return this.__original
   }
@@ -260,12 +274,12 @@ export class Table {
    * Saves this record.
    *
    * Will check to see if there are changes to the record, if there are none the save request is ignored.
-   * To skip this check, @see forceSave
+   * To skip this check, use {@link Table.forceSave} instead.
    *
-   * Calls the @method beforeSave before saving the record. If @method beforeSave returns false, the save
-   * request is ignored.
+   * Calls the {@link Table.beforeSave} before saving the record.
+   * If {@link Table.beforeSave} returns false, the save request is ignored.
    *
-   * Will automatically determine if the the save should use use a put or update.
+   * Automatically determines if the the save should use use a PutItem or UpdateItem request.
    */
   public async save(meta?: any): Promise<void> {
     const allowSave = await this.beforeSave(meta)

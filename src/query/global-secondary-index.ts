@@ -1,4 +1,5 @@
 import { DynamoDB } from 'aws-sdk'
+import { size } from 'lodash'
 import * as Metadata from '../metadata'
 import { ITable, Table } from '../table'
 import { buildQueryExpression } from './expression'
@@ -6,19 +7,19 @@ import { Filters as QueryFilters } from './filters'
 import * as Query from './query'
 import { Results as QueryResults } from './results'
 
-const HASH_KEY_REF = '#hk'
-const HASH_VALUE_REF = ':hkv'
-const RANGE_KEY_REF = '#rk'
-
 type GSIKeyType = Query.ConditionValueType
 
 interface GlobalSecondaryIndexQueryInput<HashKeyType extends GSIKeyType, RangeKeyType extends GSIKeyType> {
-  hash: HashKeyType
-  range?: Query.Condition<RangeKeyType>
   rangeOrder?: 'ASC' | 'DESC'
   limit?: number
   exclusiveStartKey?: DynamoDB.Key
   consistent?: DynamoDB.ConsistentRead
+}
+
+interface GlobalSecondaryIndexGetInput<HashKeyType extends GSIKeyType, RangeKeyType extends GSIKeyType>
+  extends GlobalSecondaryIndexQueryInput<HashKeyType, RangeKeyType> {
+  hash: HashKeyType
+  range?: Query.Condition<RangeKeyType>
 }
 
 interface GlobalSecondaryIndexScanInput {
@@ -50,47 +51,53 @@ export class GlobalSecondaryIndex<T extends Table, HashKeyType extends GSIKeyTyp
    * first received from DynamoDB. Avoid use whenever you do not have uniqueness for the
    * GlobalSecondaryIndex's HASH + RANGE.
    */
-  public async get(options: GlobalSecondaryIndexQueryInput<HashKeyType, RangeKeyType>): Promise<T | null> {
-    const results = await this.query(options)
+  public async get(input: GlobalSecondaryIndexGetInput<HashKeyType, RangeKeyType>): Promise<T | void> {
+    const filters: QueryFilters = {
+      [this.metadata.hash.propertyName]: input.hash,
+    }
+
+    if (this.metadata.range) {
+      filters[this.metadata.range.propertyName] = input.range
+    }
+
+    const results = await this.query(filters, input)
+
     if (results.records.length > 0) {
       return results.records[0]
     }
-    return null
   }
 
-  public async query(options: GlobalSecondaryIndexQueryInput<HashKeyType, RangeKeyType>): Promise<QueryResults<T>> {
-    if (!options.rangeOrder) {
-      options.rangeOrder = 'ASC'
+  public getQueryInput(input: GlobalSecondaryIndexQueryInput<HashKeyType, RangeKeyType> = {}) {
+    if (!input.rangeOrder) {
+      input.rangeOrder = 'ASC'
     }
-    const ScanIndexForward = options.rangeOrder === 'ASC'
 
-    const params: DynamoDB.QueryInput = {
+    const ScanIndexForward = input.rangeOrder === 'ASC'
+    const queryInput: DynamoDB.QueryInput = {
       TableName: this.tableClass.schema.name,
-      Limit: options.limit,
+      Limit: input.limit,
       IndexName: this.metadata.name,
       ScanIndexForward,
-      ExclusiveStartKey: options.exclusiveStartKey,
+      ExclusiveStartKey: input.exclusiveStartKey,
       ReturnConsumedCapacity: 'TOTAL',
-      KeyConditionExpression: `${HASH_KEY_REF} = ${HASH_VALUE_REF}`,
-      ExpressionAttributeNames: {
-        [HASH_KEY_REF]: this.metadata.hash.name,
-      },
-      ExpressionAttributeValues: {
-        [HASH_VALUE_REF]: this.metadata.hash.toDynamoAssert(options.hash),
-      },
-      ConsistentRead: options.consistent,
+      ConsistentRead: input.consistent,
+    }
+    return queryInput
+  }
+
+  public async query(filters: QueryFilters, input?: GlobalSecondaryIndexQueryInput<HashKeyType, RangeKeyType>): Promise<QueryResults<T>> {
+    if (!filters[this.metadata.hash.propertyName]) {
+      throw new Error('Cannot perform a query on a GlobalSecondaryIndex without specifying a hash key value')
     }
 
-    if (this.metadata.range && options.range) {
-      const rangeKeyOptions = Query.parseCondition(this.metadata.range, options.range, RANGE_KEY_REF)
-      params.KeyConditionExpression += ` AND ${rangeKeyOptions.conditionExpression}`
-      Object.assign(params.ExpressionAttributeNames, { [RANGE_KEY_REF]: this.metadata.range.name })
-      Object.assign(params.ExpressionAttributeValues, rangeKeyOptions.expressionAttributeValues)
-    }
-
-    const result = await this.tableClass.schema.dynamo.query(params).promise()
-
-    return this.getQueryResults(result)
+    const queryInput = this.getQueryInput(input)
+    const expression = buildQueryExpression(this.tableClass.schema, filters, this.metadata)
+    queryInput.FilterExpression = expression.FilterExpression
+    queryInput.KeyConditionExpression = expression.KeyConditionExpression
+    queryInput.ExpressionAttributeNames = expression.ExpressionAttributeNames
+    queryInput.ExpressionAttributeValues = expression.ExpressionAttributeValues
+    const output = await this.tableClass.schema.dynamo.query(queryInput).promise()
+    return this.getQueryResults(output)
   }
 
   public getScanInput(input: GlobalSecondaryIndexScanInput = {}) {
@@ -115,27 +122,16 @@ export class GlobalSecondaryIndex<T extends Table, HashKeyType extends GSIKeyTyp
    *
    * *WARNING*: In most circumstances this is not a good thing to do.
    * This will return all the items in this index, does not perform well!
-   *
-   * This method supports no filtering, to use a query, use scanFilter.
    */
-  public async scan(input: GlobalSecondaryIndexScanInput = {}): Promise<QueryResults<T>> {
+  public async scan(filters: QueryFilters | void | null, input: GlobalSecondaryIndexScanInput = {}): Promise<QueryResults<T>> {
     const scanInput = this.getScanInput(input)
-    const output = await this.tableClass.schema.dynamo.scan(scanInput).promise()
-    return this.getQueryResults(output)
-  }
-
-  /**
-   * Performs a filtered DynamoDB Scan.
-   *
-   * *WARNING*: In most circumstances this is not a good thing to do.
-   * This will look at every single item in this index, does not perform well!
-   */
-  public async scanFilter(filters: QueryFilters, input: GlobalSecondaryIndexScanInput = {}) {
-    const scanInput = this.getScanInput(input)
-    const expression = buildQueryExpression(this.tableClass.schema, filters) // don't pass the index metadata, avoids KeyConditionExpression
-    scanInput.FilterExpression = expression.FilterExpression
-    scanInput.ExpressionAttributeNames = expression.ExpressionAttributeNames
-    scanInput.ExpressionAttributeValues = expression.ExpressionAttributeValues
+    if (filters && size(filters) > 0) {
+      // don't pass the index metadata, avoids KeyConditionExpression
+      const expression = buildQueryExpression(this.tableClass.schema, filters)
+      scanInput.FilterExpression = expression.FilterExpression
+      scanInput.ExpressionAttributeNames = expression.ExpressionAttributeNames
+      scanInput.ExpressionAttributeValues = expression.ExpressionAttributeValues
+    }
     const output = await this.tableClass.schema.dynamo.scan(scanInput).promise()
     return this.getQueryResults(output)
   }
@@ -154,23 +150,3 @@ export class GlobalSecondaryIndex<T extends Table, HashKeyType extends GSIKeyTyp
     }
   }
 }
-
-// export class FullGlobalSecondaryIndex<T extends Table, HashKeyType, RangeKeyType> extends GlobalSecondaryIndex<T> {
-//   public async query(input: GlobalSecondaryIndexQueryInput<HashKeyType, RangeKeyType>) {
-//     return super.query(input)
-//   }
-
-//   public async scan(input: GlobalSecondaryIndexScanInput = {}) {
-//     return super.scan(input)
-//   }
-// }
-
-// export class HashGlobalSecondaryIndex<T extends Table, HashKeyType> extends GlobalSecondaryIndex<T> {
-//   public async query(input: GlobalSecondaryIndexQueryInput<HashKeyType, any>) {
-//     return super.query(input)
-//   }
-
-//   public async scan(input: GlobalSecondaryIndexScanInput = {}) {
-//     return super.scan(input)
-//   }
-// }

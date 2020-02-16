@@ -161,7 +161,7 @@ export function createTableInput(schema: Schema, forCloudFormation = false) {
     })
   }
 
-  if (schema.timeToLiveAttribute) {
+  if (forCloudFormation && schema.timeToLiveAttribute) {
     (params as any).TimeToLiveSpecification = {
       AttributeName: schema.timeToLiveAttribute.name,
       Enabled: true,

@@ -7,8 +7,8 @@ export class DynamoDBConnection implements Connection {
   private __client: AWS.DynamoDB
 
   constructor(options: {
-    endpoint: string | undefined,
-    enableAWSXray: boolean,
+    endpoint?: string,
+    enableAWSXray?: boolean,
   }) {
     const dynamoDBOptions = {
       endpoint: options.endpoint,

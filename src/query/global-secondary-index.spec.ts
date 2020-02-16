@@ -24,94 +24,105 @@ class Card extends Table {
   public count: number
 }
 
-describe('HashGlobalSecondaryIndex', () => {
-  beforeEach(async () => {
-    await Card.createTable()
-  })
-
-  afterEach(async () => {
-    await Card.deleteTable()
-  })
-
-  describe('#query', () => {
-    it('should find items', async () => {
-      await new Card({ id: 10, title: 'abc' }).save()
-      await new Card({ id: 11, title: 'abd' }).save()
-      await new Card({ id: 12, title: 'abd' }).save()
-
-      const res = await Card.hashTitleIndex.query({ hash: 'abd' })
-      expect(res.records.length).to.eq(2)
-      expect(res.records[0].id).to.eq(12)
-      expect(res.records[1].id).to.eq(11)
-    })
-  })
-
-  describe('#scan', async () => {
-    const cardIds = [111, 222, 333, 444, 555]
-
+describe('Query/GlobalSecondaryIndex', () => {
+  describe('hash only index', () => {
     beforeEach(async () => {
-      for (const cardId of cardIds) {
-        await new Card({ id: cardId, title: cardId.toString() }).save()
-      }
+      await Card.createTable()
     })
 
-    it('should return results', async () => {
-      const res1 = await Card.hashTitleIndex.scan()
-      const res2 = await Card.hashTitleIndex.scan({ limit: 2 })
-      const res3 = await Card.hashTitleIndex.scan({ limit: 2, exclusiveStartKey: res2.lastEvaluatedKey })
-
-      expect(res1.records.map((r) => r.id)).to.have.all.members(cardIds)
-      expect(cardIds).to.include.members(res2.records.map((r) => r.id))
-      expect(cardIds).to.include.members(res3.records.map((r) => r.id))
+    afterEach(async () => {
+      await Card.deleteTable()
     })
-  })
-})
 
-describe('FullGlobalSecondaryIndex', () => {
-  beforeEach(async () => {
-    await Card.createTable()
-  })
+    describe('#query', () => {
+      it('should find items', async () => {
+        await new Card({ id: 10, title: 'abc' }).save()
+        await new Card({ id: 11, title: 'abd' }).save()
+        await new Card({ id: 12, title: 'abd' }).save()
 
-  afterEach(async () => {
-    await Card.deleteTable()
-  })
-
-  describe('#query', () => {
-    it('should find items', async () => {
-      await new Card({ id: 10, title: 'abc' }).save()
-      await new Card({ id: 11, title: 'abd' }).save()
-      await new Card({ id: 12, title: 'abd' }).save()
-      await new Card({ id: 13, title: 'abd' }).save()
-
-      const res = await Card.fullTitleIndex.query({
-        hash: 'abd',
-        range: ['>=', 12],
-        rangeOrder: 'DESC',
+        const res = await Card.hashTitleIndex.query({ title: 'abd' })
+        expect(res.records.length).to.eq(2)
+        expect(res.records[0].id).to.eq(12)
+        expect(res.records[1].id).to.eq(11)
       })
-      expect(res.records.length).to.eq(2)
+    })
 
-      expect(res.records[0].id).to.eq(13)
-      expect(res.records[1].id).to.eq(12)
+    describe('#scan', async () => {
+      const cardIds = [111, 222, 333, 444, 555]
+
+      beforeEach(async () => {
+        for (const cardId of cardIds) {
+          await new Card({ id: cardId, title: cardId.toString() }).save()
+        }
+      })
+
+      it('should return results', async () => {
+        const res1 = await Card.hashTitleIndex.scan()
+        const res2 = await Card.hashTitleIndex.scan(null, { limit: 2 })
+        const res3 = await Card.hashTitleIndex.scan(null, { limit: 2, exclusiveStartKey: res2.lastEvaluatedKey })
+
+        expect(res1.records.map((r) => r.id)).to.have.all.members(cardIds)
+        expect(cardIds).to.include.members(res2.records.map((r) => r.id))
+        expect(cardIds).to.include.members(res3.records.map((r) => r.id))
+      })
     })
   })
 
-  describe('#scan', async () => {
-    const cardIds = [111, 222, 333, 444, 555]
-
+  describe('hash and range index', () => {
     beforeEach(async () => {
-      for (const cardId of cardIds) {
-        await new Card({ id: cardId, title: cardId.toString() }).save()
-      }
+      await Card.createTable()
     })
 
-    it('should return results', async () => {
-      const res1 = await Card.fullTitleIndex.scan()
-      const res2 = await Card.fullTitleIndex.scan({ limit: 2 })
-      const res3 = await Card.fullTitleIndex.scan({ limit: 2, exclusiveStartKey: res2.lastEvaluatedKey })
+    afterEach(async () => {
+      await Card.deleteTable()
+    })
 
-      expect(res1.records.map((r) => r.id)).to.have.all.members(cardIds)
-      expect(cardIds).to.include.members(res2.records.map((r) => r.id))
-      expect(cardIds).to.include.members(res3.records.map((r) => r.id))
+    describe('#query', () => {
+      it('should find items', async () => {
+        await new Card({ id: 10, title: 'abc' }).save()
+        await new Card({ id: 11, title: 'abd' }).save()
+        await new Card({ id: 12, title: 'abd' }).save()
+        await new Card({ id: 13, title: 'abd' }).save()
+
+        const res = await Card.fullTitleIndex.query({
+          title: 'abd',
+          id: ['>=', 12],
+        }, {
+          rangeOrder: 'DESC',
+        })
+        expect(res.records.length).to.eq(2)
+
+        expect(res.records[0].id).to.eq(13)
+        expect(res.records[1].id).to.eq(12)
+      })
+    })
+
+    describe('#scan', async () => {
+      const cardIds = [111, 222, 333, 444, 555]
+
+      beforeEach(async () => {
+        for (const cardId of cardIds) {
+          await new Card({ id: cardId, title: cardId.toString() }).save()
+        }
+      })
+
+      it('should support filters', async () => {
+        const search = await Card.fullTitleIndex.scan({
+          id: ['includes', cardIds],
+        })
+
+        expect(search.records.map((r) => r.id)).to.have.all.members(cardIds)
+      })
+
+      it('should work without filters', async () => {
+        const res1 = await Card.fullTitleIndex.scan()
+        const res2 = await Card.fullTitleIndex.scan(null, { limit: 2 })
+        const res3 = await Card.fullTitleIndex.scan(null, { limit: 2, exclusiveStartKey: res2.lastEvaluatedKey })
+
+        expect(res1.records.map((r) => r.id)).to.have.all.members(cardIds)
+        expect(cardIds).to.include.members(res2.records.map((r) => r.id))
+        expect(cardIds).to.include.members(res3.records.map((r) => r.id))
+      })
     })
   })
 })

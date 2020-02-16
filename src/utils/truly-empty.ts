@@ -5,6 +5,10 @@ export function isTrulyEmpty(value: any) {
     return false
   }
 
+  if (_.isDate(value)) {
+    return false
+  }
+
   if (_.isNil(value) || value === '') {
     return true
   }
@@ -20,6 +24,7 @@ export function isTrulyEmpty(value: any) {
   if (_.isArrayLike(value) || _.isObjectLike(value)) {
     return _.isEmpty(value)
   }
+
 
   return false
 }

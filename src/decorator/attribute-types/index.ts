@@ -3,28 +3,23 @@ import { AnyAttributeType } from './any'
 import { BinaryAttributeType } from './binary'
 import { BinarySetAttributeType } from './binary-set'
 import { BooleanAttributeType } from './boolean'
-import { DateOnlyAttributeType } from './date-only'
-import { DateTimeAttributeType } from './date-time'
+import { DateAttributeType } from './date'
 import { IMapValue, MapAttributeType } from './map'
 import { NumberAttributeType } from './number'
 import { NumberSetAttributeType } from './number-set'
 import { StringAttributeType } from './string'
 import { StringSetAttributeType } from './string-set'
-import { TimestampAttributeType } from './timestamp'
-// import { Attribute } from '../../attribute'
 
 interface AttributeTypeMap {
   Any: AnyAttributeType
   Binary: BinaryAttributeType
   BinarySet: BinarySetAttributeType
   Boolean: BooleanAttributeType
-  DateOnly: DateOnlyAttributeType
-  DateTime: DateTimeAttributeType
+  Date: DateAttributeType
   Number: NumberAttributeType
   NumberSet: NumberSetAttributeType
   String: StringAttributeType
   StringSet: StringSetAttributeType
-  Timestamp: TimestampAttributeType
 }
 
 interface AttributeOptionsMap {
@@ -32,13 +27,11 @@ interface AttributeOptionsMap {
   Binary: Metadata.AttributeType.Binary
   BinarySet: Metadata.AttributeType.BinarySet
   Boolean: Metadata.AttributeType.Boolean
-  DateOnly: Metadata.AttributeType.DateOnly
-  DateTime: Metadata.AttributeType.DateTime
+  Date: Metadata.AttributeType.Date
   Number: Metadata.AttributeType.Number
   NumberSet: Metadata.AttributeType.NumberSet
   String: Metadata.AttributeType.String
   StringSet: Metadata.AttributeType.StringSet
-  Timestamp: Metadata.AttributeType.Timestamp
 }
 
 const AttributeTypes = {
@@ -46,13 +39,11 @@ const AttributeTypes = {
   Binary: BinaryAttributeType,
   BinarySet: BinarySetAttributeType,
   Boolean: BooleanAttributeType,
-  DateOnly: DateOnlyAttributeType,
-  DateTime: DateTimeAttributeType,
+  Date: DateAttributeType,
   Number: NumberAttributeType,
   NumberSet: NumberSetAttributeType,
   String: StringAttributeType,
   StringSet: StringSetAttributeType,
-  Timestamp: TimestampAttributeType,
 }
 
 export interface AttributeDefinition {
@@ -63,14 +54,14 @@ export interface AttributeDefinition {
 export function Attribute<T extends keyof AttributeTypeMap>(type: T, options?: AttributeOptionsMap[T]): AttributeDefinition {
   const define = function (record: Table, propertyName: string) {
     const attributeType = AttributeTypes[type]
-    const decorator = new attributeType(record, propertyName, options as any)
+    const decorator = new attributeType(record, propertyName, (options || {}) as any)
     decorator.decorate()
   }
 
   define.getAttribute = function (record: Table, propertyName: string) {
     const attributeType = AttributeTypes[type]
-    const decorator = new attributeType(record, propertyName, options as any)
-    return decorator.attribute()
+    const decorator = new attributeType(record, propertyName, (options || {}) as any)
+    return decorator.attribute
   }
 
   return define
@@ -89,47 +80,26 @@ Attribute.BinarySet = (options?: Metadata.AttributeType.BinarySet) => Attribute(
 Attribute.Boolean = (options?: Metadata.AttributeType.Boolean) => Attribute('Boolean', options)
 
 /**
- * Stores a DateTime value in an ISO 8601 compliant format.
+ * Stores a Date value.
  *
- * Retrieved values will always be a Date object. Alternatives:
+ * By default, dates are stored in an ISO 8601 compliant string format in UTC timezone.
  *
- * * Moment attribute to retrieve values as Moment objects.
- * * Timestamp attribute to store values as unix timestamps.
- * * Date attribute to store dates (YYYY-MM-DD) only.
+ * Use metadata options to store values as timestamps or dates without the time.
  */
-Attribute.DateTime = (options?: Metadata.AttributeType.DateTime) => Attribute('DateTime', options)
+Attribute.Date = (options?: Metadata.AttributeType.Date) => Attribute('Date', options)
 
 /**
- * Stores a Date value in an ISO 8601 compliant format of YYYY-MM-DD.
- *
- * Completely ignores the Time aspect of a Date object, for that,
- * use DateTime or Timestamp.
- *
- * This will always store and return the value as a string.
+ * For all your numbers needs.
  */
-Attribute.DateOnly = (options?: Metadata.AttributeType.DateOnly) => Attribute('DateOnly', options)
-
 Attribute.Number = (options?: Metadata.AttributeType.Number) => Attribute('Number', options)
 
 /**
- * NumberSet
- * Value is an array of numbers.
+ * If you have a lot of numbers, a NumberSet is what you need.
  */
 Attribute.NumberSet = (options?: Metadata.AttributeType.NumberSet) => Attribute('NumberSet', options)
 
 Attribute.String = (options?: Metadata.AttributeType.String) => Attribute('String', options)
 Attribute.StringSet = (options?: Metadata.AttributeType.StringSet) => Attribute('StringSet', options)
-
-/**
- * Stores Unix timestamp values. Accepts inputted values as Numbers, Dates,
- * or Moment objects and covers them to standardized Unix timestamps.
- *
- * Alternatives:
- * * Moment attribute to retrieve values as Moment objects.
- * * Date attribute to store dates (YYYY-MM-DD) only.
- * * DateTIme attribute to store values as ISO 8601 strings.
- */
-Attribute.Timestamp = (options?: Metadata.AttributeType.Timestamp) => Attribute('Timestamp', options)
 
 Attribute.Map = <Value extends IMapValue>(options: Metadata.AttributeType.Map<Value>) => {
   return function (record: Table, propertyName: string) {

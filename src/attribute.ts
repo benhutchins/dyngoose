@@ -40,14 +40,14 @@ export class Attribute<Value> {
   /**
    * Convert the given value for this attribute to a DynamoDB AttributeValue
    */
-  toDynamo(value: Value | null, forQuery = false): DynamoDB.AttributeValue | null {
+  toDynamo(value: Value | null): DynamoDB.AttributeValue | null {
     // if there is no value, inject the default value for this attribute
     if (value == null || isTrulyEmpty(value)) {
       value = this.getDefaultValue()
     }
 
     // if we have no value, allow the manipulateWrite a chance to provide a value
-    if (this.metadata.manipulateWrite && (value == null || isTrulyEmpty(value))) {
+    if (this.metadata.manipulateWrite && value == null) {
       const customAttributeValue = this.metadata.manipulateWrite(null, null, this)
 
       if (customAttributeValue) {
@@ -56,21 +56,12 @@ export class Attribute<Value> {
     }
 
     // if there is no value, do not not return an empty DynamoDB.AttributeValue
-    if (value == null || isTrulyEmpty(value)) {
+    if (value == null) {
       if (this.metadata.required) {
         throw new Error('Required value missing: ' + this.name)
       }
       return null
     }
-
-    // if (this.isSet && !forQuery) {
-    //   if (!_.isArray(val)) {
-    //     throw new Error('Values must be array: ' + this.name)
-    //   }
-    //   if (val.length === 0) {
-    //     return null
-    //   }
-    // }
 
     if (typeof this.metadata.validate === 'function' && !this.metadata.validate(value)) {
       throw new Error('Validation failed: ' + this.name)
@@ -83,34 +74,10 @@ export class Attribute<Value> {
     } else {
       return attributeValue
     }
-
-    // } else if (this.type === AttributeType.List) {
-    //   if (!_.isArray(val)) {
-    //     throw new Error('Values must be array in a `list`: ' + this.name)
-    //   }
-
-    //   const dynamoList: DynamoDB.ListAttributeValue = []
-
-    //   for (let i = 0; i < val.length; i++) {
-    //     const item = val[i]
-
-    //     // TODO currently only supports one attribute type
-    //     const objAttr = this.attributes.get(0)
-    //     if (objAttr) {
-    //       const listItem = objAttr.toDynamo(item)
-
-    //       if (listItem) {
-    //         dynamoList.push(listItem)
-    //       }
-    //     }
-    //   }
-
-    //   dynamoObj.L = dynamoList
-    // } else {
   }
 
-  toDynamoAssert(value: any, forQuery = false): DynamoDB.AttributeValue {
-    const attributeValue = this.toDynamo(value, forQuery)
+  toDynamoAssert(value: any): DynamoDB.AttributeValue {
+    const attributeValue = this.toDynamo(value)
 
     if (attributeValue == null) {
       throw new Error(`Attribute.toDynamoAssert called without a valid value`)
@@ -123,6 +90,11 @@ export class Attribute<Value> {
    * Convert DynamoDB raw response to understandable data
    */
   fromDynamo(attributeValue: DynamoDB.AttributeValue | null): Value | null {
+    // if there is no value, apply the default, but allow the value to become null
+    if (attributeValue == null) {
+      attributeValue = this.toDynamo(null)
+    }
+
     // all attributes support null
     if (attributeValue == null || attributeValue.NULL) {
       return null

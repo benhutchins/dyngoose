@@ -165,21 +165,17 @@ class FilterExpressionQuery {
       case '<=':
       case '>':
       case '>=':
-        const filterValue = attr.toDynamo(filter[1], true)
-        if (filterValue) {
-          query = `${attrNameMappedTo} ${operator} ${variableName}`
-          values[variableName] = filterValue
-        }
+        const filterValue = attr.toDynamoAssert(filter[1])
+        query = `${attrNameMappedTo} ${operator} ${variableName}`
+        values[variableName] = filterValue
         break
 
       case 'contains':
       case 'beginsWith':
-        const strValue = attr.toDynamo(filter[1], true)
-        if (strValue) {
-          const queryOperator = operator === 'beginsWith' ? 'begins_with' : operator
-          query = `${queryOperator}(${attrNameMappedTo}, ${variableName})`
-          values[variableName] = strValue
-        }
+        const strValue = attr.toDynamoAssert(filter[1])
+        const queryOperator = operator === 'beginsWith' ? 'begins_with' : operator
+        query = `${queryOperator}(${attrNameMappedTo}, ${variableName})`
+        values[variableName] = strValue
         break
 
       case 'exists':
@@ -194,12 +190,10 @@ class FilterExpressionQuery {
         const possibleVariableNames: string[] = []
 
         _.each(filterValues, (possibleValue, possibleValueIndex) => {
-          const value = attr.toDynamo(possibleValue)
-          if (value) {
-            const possibleVariableName = ':v' + prefix + String(possibleValueIndex)
-            possibleVariableNames.push(possibleVariableName)
-            this.values[possibleVariableName] = value
-          }
+          const value = attr.toDynamoAssert(possibleValue)
+          const possibleVariableName = ':v' + prefix + String(possibleValueIndex)
+          possibleVariableNames.push(possibleVariableName)
+          this.values[possibleVariableName] = value
         })
 
         const possibleVariableNamesStr = possibleVariableNames.join(', ')
@@ -208,7 +202,7 @@ class FilterExpressionQuery {
         // if ((filter.operator === Query.OPERATOR.IN || filter.operator === Query.OPERATOR.NOT_IN) && _.isArray(filter.value)) {
         //   this.parseArrayOfStrings(prefix, attr, filter.value, filter.operator)
         // } else {
-        //   value = attr.toDynamo(filter.value, undefined, true)
+        //   value = attr.toDynamo(filter.value)
         //   operator = filter.operator
 
         //   // convert String Set (SS) to a String (S)
@@ -233,8 +227,8 @@ class FilterExpressionQuery {
         if (typeof filter[1] !== 'undefined' && typeof filter[2] !== 'undefined') {
           const lowerVariableName = ':vl' + prefix
           const upperVariableName = ':vu' + prefix
-          values[lowerVariableName] = attr.toDynamo(filter[1], true) as DynamoDB.AttributeValue
-          values[upperVariableName] = attr.toDynamo(filter[2], true) as DynamoDB.AttributeValue
+          values[lowerVariableName] = attr.toDynamoAssert(filter[1])
+          values[upperVariableName] = attr.toDynamoAssert(filter[2])
 
           query = `${attrNameMappedTo} BETWEEN ${lowerVariableName} AND ${upperVariableName}`
         } else {
