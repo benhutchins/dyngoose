@@ -62,32 +62,32 @@ describe('Query/PrimaryKey', () => {
     })
   })
 
-  // describe('#batchGet', async () => {
-  //   it('should find items', async () => {
-  //     await new Card({ id: 10, title: 'abc' }).save()
-  //     await new Card({ id: 11, title: 'abc' }).save()
-  //     await new Card({ id: 12, title: 'abc' }).save()
+  describe('#batchGet', async () => {
+    it('should find items', async () => {
+      await new Card({ id: 10, title: 'abc' }).save()
+      await new Card({ id: 11, title: 'abc' }).save()
+      await new Card({ id: 12, title: 'abc' }).save()
 
-  //     const items1 = await primaryKey.batchGet([
-  //       [10, 'abc'],
-  //       [11, 'abc'],
-  //     ])
-  //     expect(items1.length).to.eq(2)
-  //     expect(items1[0].id).to.eq(10)
-  //     expect(items1[1].id).to.eq(11)
+      const items1 = await primaryKey.batchGet([
+        [10, 'abc'],
+        [11, 'abc'],
+      ])
+      expect(items1.length).to.eq(2)
+      expect(items1[0].id).to.eq(10)
+      expect(items1[1].id).to.eq(11)
 
-  //     const items2 = await primaryKey.batchGet([
-  //       [10, 'abc'],
-  //       [10000, 'asdgasdgs'],
-  //       [11, 'abc'],
-  //     ])
-  //     expect(items2.length).to.eq(3)
-  //     expect(items2[0].id).to.eq(10)
-  //     expect(items2[0].title).to.eq('abc')
-  //     expect(items2[1].id).to.eq(11)
-  //     expect(items2[1].title).to.eq('abc')
-  //   })
-  // })
+      const items2 = await primaryKey.batchGet([
+        [10, 'abc'],
+        [10000, 'asdgasdgs'],
+        [11, 'abc'],
+      ])
+      expect(items2.length).to.eq(2)
+      expect(items2[0].id).to.eq(10)
+      expect(items2[0].title).to.eq('abc')
+      expect(items2[1].id).to.eq(11)
+      expect(items2[1].title).to.eq('abc')
+    })
+  })
 
   describe('#query', () => {
     it('should find items', async () => {

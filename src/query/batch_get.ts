@@ -8,7 +8,7 @@ export async function batchGet(
   documentClient: DynamoDB,
   tableName: string,
   keys: DynamoDB.KeyList,
-) {
+): Promise<DynamoDB.AttributeMap[]> {
   try {
     return await Promise.all(
       _.chunk(keys, MAX_ITEMS)
@@ -27,7 +27,7 @@ export async function batchGet(
           return chunkedKeys.map((key) => {
             return records.find((record) => {
               for (const keyName of Object.keys(key)) {
-                if (record[keyName] !== key[keyName]) {
+                if (!_.isEqual(record[keyName], key[keyName])) {
                   return false
                 }
               }
@@ -36,11 +36,11 @@ export async function batchGet(
           })
         }),
     ).then((chunks) => {
-      return _.flatten(chunks)
+      return _.filter(_.flatten(chunks)) as DynamoDB.AttributeMap[]
     })
   } catch (e) {
     // tslint:disable-next-line
-    console.log(`Dynamo-Types batchGet - ${JSON.stringify(keys, null, 2)}`);
+    console.error(`Dyngoose batchGet - ${JSON.stringify(keys, null, 2)}`)
     throw e
   }
 }

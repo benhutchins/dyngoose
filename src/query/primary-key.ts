@@ -1,5 +1,4 @@
 import { DynamoDB } from 'aws-sdk'
-import { filter } from 'lodash'
 import * as Metadata from '../metadata'
 import { ITable, Table } from '../table'
 import { batchGet } from './batch_get'
@@ -113,12 +112,10 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     )
 
     const records = res.map((item) => {
-      if (item) {
-        return this.table.fromDynamo(item)
-      }
+      return this.table.fromDynamo(item)
     })
 
-    return filter(records) as T[]
+    return records
   }
 
   public async batchDelete(inputs: PrimaryKeyBatchInput<HashKeyType, RangeKeyType>[]) {

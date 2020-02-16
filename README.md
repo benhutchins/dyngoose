@@ -83,8 +83,8 @@ await Card.primaryKey.batchGet([
 // Query
 // Range key operations are stickly typed. (['>=', T] | ['=', T] ...)
 await Card.primaryKey.query({
-  hash: 100,
-  range: ['>=', 'Title']
+  id: 100,
+  title: ['>=', 'Title']
 })
 
 // Delete record
