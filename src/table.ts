@@ -2,6 +2,9 @@ import { DynamoDB } from 'aws-sdk'
 import * as _ from 'lodash'
 import { Attribute } from './attribute'
 import { DocumentClient } from './document-client'
+import { Filters as QueryFilters } from './query/filters'
+import { Results as QueryResults } from './query/results'
+import { MagicSearch, MagicSearchInput } from './query/search'
 import { createTable } from './tables/create-table'
 import { deleteTable } from './tables/delete-table'
 import { describeTable } from './tables/describe-table'
@@ -58,6 +61,32 @@ export class Table {
     return new this().fromJSON(json)
   }
 
+  /**
+   * Query DynamoDB for what you need.
+   *
+   * This is a powerful all-around querying method. It will detect the best index available for use,
+   * but it ignores indexes that are not set to Projection of 'ALL'. To please use the index-specific
+   * querying when necessary.
+   *
+   * This will avoid performing a scan at all cost, but it will fall back to using a scan if necessary.
+   *
+   * By default, this returns you one "page" of results (allows DynamoDB) to process and return the
+   * maximum of items DynamoDB allows. If you want it to internally page for you to return all possible
+   * results (be cautious as that can easily cause timeouts for Lambda), specify `{ all: true }` as an
+   * input argument for the second argument.
+   */
+  public static async search<T extends Table>(this: StaticThis<T>, filters: QueryFilters<T>, input: MagicSearchInput = {}):
+    Promise<QueryResults<T>> {
+    const searchHelper = new MagicSearch<T>(this as any, filters, input)
+    return searchHelper.search()
+  }
+
+  /**
+   * Create the table in DynamoDB.
+   *
+   * You can also use {@link Table.migrateTable} to create and automatically
+   * migrate and indexes that need changes.
+   */
   public static async createTable(waitForReady = true) {
     return await createTable(this.schema, waitForReady)
   }
@@ -71,6 +100,11 @@ export class Table {
     return await migrateTable(this.schema)
   }
 
+  /**
+   * Deletes the table from DynamoDB.
+   *
+   * Be a bit careful with this in production.
+   */
   public static async deleteTable() {
     return await deleteTable(this.schema)
   }

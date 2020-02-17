@@ -15,7 +15,7 @@ interface Expression {
 }
 
 type ConditionOperator = '=' | '<>' | '<' | '<=' | '>' | '>=' | 'beginsWith' | 'between'
-type FilterOperator = ConditionOperator | 'includes' | 'excludes' | 'or' | 'contains' | 'null' | 'not null' | 'exists' | 'not exists'
+type FilterOperator = ConditionOperator | 'includes' | 'excludes' | 'or' | 'contains' | 'not contains' | 'null' | 'not null' | 'exists' | 'not exists'
 
 const keyConditionAllowedOperators: ConditionOperator[] = [
   '=',
@@ -173,9 +173,10 @@ class FilterExpressionQuery<T extends Table> {
         break
 
       case 'contains':
+      case 'not contains':
       case 'beginsWith':
         const strValue = attr.toDynamoAssert(filter[1])
-        const queryOperator = operator === 'beginsWith' ? 'begins_with' : operator
+        const queryOperator = operator === 'beginsWith' ? 'begins_with' : operator.replace(' ', '_')
         query = `${queryOperator}(${attrNameMappedTo}, ${variableName})`
         values[variableName] = strValue
         break
