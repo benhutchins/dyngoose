@@ -22,6 +22,7 @@ Let's face it, all good databases need good model casting. DynamoDB is powerful 
 1. DynamoDB Accelerator (DAX) and Amazon X-Ray support, see [Connections](https://github.com/benhutchins/dyngoose/wiki/Connections).
 1. Optimizes connection to DynamoDB HTTP service using Keep-Alive, see [Code](https://github.com/benhutchins/dyngoose/blob/master/src/connections/dynamodb-connection.ts#L32).
 1. Incredibly easy [local development](https://github.com/benhutchins/dyngoose/wiki/development), with supporting for seeding a local database.
+1. Supports [conditional writes](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithItems.html#WorkingWithItems.ConditionalUpdate), see [Saving](https://github.com/benhutchins/dyngoose/wiki/Saving#saveconditions).
 
 ## Example Usage
 ```typescript
