@@ -457,14 +457,15 @@ export class Table {
    *
    * After deleting, {@link this.afterDelete} will be called.
    *
+   * @param {UpdateConditions} conditions Optional conditions
    * @param {any} meta Optional metadata for the action, passed to {@link this.beforeDelete}
    *                   and {@link this.afterDelete}.
    */
-  public async delete(meta?: any): Promise<void> {
+  public async delete(conditions?: UpdateConditions<this>, meta?: any): Promise<void> {
     const allowDeletion = await this.beforeDelete(meta)
 
     if (allowDeletion) {
-      const output = await this.table.documentClient.delete(this)
+      const output = await this.table.documentClient.delete(this, conditions)
       await this.afterDelete(output, meta)
     }
   }

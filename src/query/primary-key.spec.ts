@@ -133,6 +133,7 @@ describe('Query/PrimaryKey', () => {
       expect(res.records[1].title).to.eq('abc')
     })
   })
+
   describe('#update', () => {
     it('should be able to update items', async () => {
       await primaryKey.update({

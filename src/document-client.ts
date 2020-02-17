@@ -121,16 +121,25 @@ export class DocumentClient<T extends Table> {
     )
   }
 
-  public getDeleteInput(record: T): DynamoDB.DeleteItemInput {
-    return {
+  public getDeleteInput(record: T, conditions?: UpdateConditions<T>): DynamoDB.DeleteItemInput {
+    const input: DynamoDB.DeleteItemInput = {
       TableName: this.tableClass.schema.name,
       Key: record.getDynamoKey(),
     }
+
+    if (conditions) {
+      const conditionExpression = buildQueryExpression(this.tableClass.schema, conditions)
+      input.ConditionExpression = conditionExpression.FilterExpression
+      input.ExpressionAttributeNames = conditionExpression.ExpressionAttributeNames
+      input.ExpressionAttributeValues = conditionExpression.ExpressionAttributeValues
+    }
+
+    return input
   }
 
-  public async delete(record: T): Promise<DynamoDB.DeleteItemOutput> {
+  public async delete(record: T, conditions?: UpdateConditions<T>): Promise<DynamoDB.DeleteItemOutput> {
     return new Promise((resolve, reject) => {
-      const input = this.getDeleteInput(record)
+      const input = this.getDeleteInput(record, conditions)
       this.tableClass.schema.dynamo.deleteItem(input, (err, output) => {
         if (err) {
           reject(err)

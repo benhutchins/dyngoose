@@ -85,7 +85,44 @@ describe('Table', () => {
         // confirm you are adding a new record and not unintentionally updating an existing one
         await record.save({ id: ['not exists'] })
 
-        const reloaded = TestableTable.primaryKey.getItem({ hash: 22, range: 'bar', consistent: true })
+        const reloaded = await TestableTable.primaryKey.getItem({ hash: 22, range: 'bar', consistent: true })
+        expect(reloaded).to.be.instanceOf(TestableTable)
+      })
+    })
+  })
+
+  describe('deleting should support conditions', () => {
+    context('when condition check was failed', () => {
+      it('should throw error', async () => {
+        const record = TestableTable.new({ id: 23, title: 'something new' })
+        await record.save()
+
+        let error: Error | void
+
+        try {
+          await record.delete({ id: 24 })
+        } catch (ex) {
+          error = ex
+        }
+
+        expect(error).to.be.instanceOf(Error)
+          .with.property('name', 'ConditionalCheckFailedException')
+
+        expect(error).to.have.property('message', 'The conditional request failed')
+      })
+    })
+
+    context('when condition check was passed', () => {
+      it('should delete item as per provided condition', async () => {
+        const record = TestableTable.new({ id: 24, title: 'bar' })
+
+        // save a new record, and confirm the id does not exist… useful to
+        // confirm you are adding a new record and not unintentionally updating an existing one
+        await record.save()
+
+        await record.delete({ id: 24 })
+
+        const reloaded = await TestableTable.primaryKey.getItem({ hash: 24, range: 'bar', consistent: true })
         expect(reloaded).not.to.be.instanceOf(TestableTable)
       })
     })
