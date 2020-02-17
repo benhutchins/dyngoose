@@ -17,7 +17,7 @@ interface Expression {
 type ConditionOperator = '=' | '<>' | '<' | '<=' | '>' | '>=' | 'beginsWith' | 'between'
 type FilterOperator = ConditionOperator | 'includes' | 'excludes' | 'or' | 'contains' | 'not contains' | 'null' | 'not null' | 'exists' | 'not exists'
 
-const keyConditionAllowedOperators: ConditionOperator[] = [
+export const keyConditionAllowedOperators: ConditionOperator[] = [
   '=',
   '<',
   '<=',

@@ -10,6 +10,9 @@ export class TestableTable extends Dyngoose.Table {
   @Dyngoose.$GlobalSecondaryIndex({ hashKey: 'title', projection: 'ALL' })
   public static readonly titleIndex: Dyngoose.Query.GlobalSecondaryIndex<TestableTable>
 
+  @Dyngoose.$DocumentClient()
+  public static readonly documentClient: Dyngoose.DocumentClient<TestableTable>
+
   @Dyngoose.Attribute.Any()
   public generic: string
 

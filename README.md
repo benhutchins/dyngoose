@@ -15,11 +15,11 @@ Let's face it, all good databases need good model casting. DynamoDB is powerful 
 ## Features
 
 1. Cast your tables, attributes, and indexes using TypeScript classes.
-1. Generate your CloudFormation templates based on your code, or perform your table operations on demand. See [Deployment](https://github.com/benhutchins/dyngoose/wiki/deployment).
+1. Generate your CloudFormation templates based on your code, or perform your table operations on demand; see [Deployment](https://github.com/benhutchins/dyngoose/wiki/deployment).
 1. Intelligent and powerful querying syntax, see [Querying](https://github.com/benhutchins/dyngoose/wiki/Querying).
 1. Selectively update item attributes, prevents wasteful uploading of unchanged values.
 1. Data serialization, cast any JavaScript value into a DynamoDB attribute value.
-1. DynamoDB Accelerator (DAX) and Amazon X-Ray support (see [Connections](https://github.com/benhutchins/dyngoose/wiki/Connections)).
+1. DynamoDB Accelerator (DAX) and Amazon X-Ray support, see [Connections](https://github.com/benhutchins/dyngoose/wiki/Connections).
 1. Optimizes connection to DynamoDB HTTP service using Keep-Alive, see [Code](https://github.com/benhutchins/dyngoose/blob/master/src/connections/dynamodb-connection.ts#L32).
 1. Incredibly easy [local development](https://github.com/benhutchins/dyngoose/wiki/development), with supporting for seeding a local database.
 
@@ -104,6 +104,6 @@ Dyngoose utilizes TypeScript decorators, to use them you must enable them within
 }
 ```
 
-## dynamo-types
+## Honorable mentions
 
-Part of this library is based on [dynamo-types](https://www.npmjs.com/package/dynamo-types) by the guys at [Vingle](https://www.vingle.net/). I want to give them some credit for this library.
+I originally based a lot of of this work on [Dynamoose](https://github.com/dynamoosejs/dynamoose), reworking it for TypeScript and adding adding better querying logic. About two years later, I pulled in some work from [dynamo-types](https://github.com/balmbees/dynamo-types) and reworked it further to make what has become Dyngoose. I want to thank the creators and all the people who worked on both of those projects.

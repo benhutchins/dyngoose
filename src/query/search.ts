@@ -1,10 +1,11 @@
 import { DynamoDB } from 'aws-sdk'
-import { get, has } from 'lodash'
+import { get, has, includes, isArray } from 'lodash'
+import { Attribute } from '../attribute'
 import { QueryError } from '../errors'
 import { Metadata } from '../index'
 import { ITable, Table } from '../table'
-import { buildQueryExpression } from './expression'
-import { Filters as QueryFilters } from './filters'
+import { buildQueryExpression, keyConditionAllowedOperators } from './expression'
+import { Filter as QueryFilter, Filters as QueryFilters } from './filters'
 import { Results as QueryResults } from './results'
 
 export interface MagicSearchInput {
@@ -27,7 +28,7 @@ export class MagicSearch<T extends Table> {
   constructor(private tableClass: ITable<T>, private filters: QueryFilters<T>, private input: MagicSearchInput = {}) {
   }
 
-  async search(): Promise<QueryResults<T>> {
+  getInput(): DynamoDB.ScanInput | DynamoDB.QueryInput {
     let indexMetadata: Metadata.Index.GlobalSecondaryIndex | Metadata.Index.PrimaryKey | undefined
 
     if (this.input.indexName) {
@@ -67,10 +68,18 @@ export class MagicSearch<T extends Table> {
       IndexName: this.input.indexName,
       ExpressionAttributeNames: query.ExpressionAttributeNames,
       ExpressionAttributeValues: query.ExpressionAttributeValues,
-      KeyConditionExpression: query.KeyConditionExpression,
       FilterExpression: query.FilterExpression,
     }
 
+    if (query.KeyConditionExpression) {
+      (input as DynamoDB.QueryInput).KeyConditionExpression = query.KeyConditionExpression
+    }
+
+    return input
+  }
+
+  async search(): Promise<QueryResults<T>> {
+    const input = this.getInput()
     if (!this.input.all) {
       return this.page(input)
     } else {
@@ -130,7 +139,7 @@ export class MagicSearch<T extends Table> {
   private findAvailableIndex(): Metadata.Index.GlobalSecondaryIndex | Metadata.Index.PrimaryKey | undefined {
     // look at the primary key first
     const primaryKey = this.tableClass.schema.primaryKey
-    if (has(this.filters, primaryKey.hash.name) && (!primaryKey.range || has(this.filters, primaryKey.range.name))) {
+    if (this.checkFilters(primaryKey.hash, primaryKey.range)) {
       return primaryKey
     }
 
@@ -142,7 +151,7 @@ export class MagicSearch<T extends Table> {
       }
 
       // determine if we can use this index
-      if (has(this.filters, index.hash.name) && (!index.range || has(this.filters, index.range.name))) {
+      if (this.checkFilters(index.hash, index.range)) {
         return index
       }
     }
@@ -155,12 +164,53 @@ export class MagicSearch<T extends Table> {
       }
 
       // determine if we can use this index
-      if (has(this.filters, primaryKey.hash.name) && (!index.range || has(this.filters, index.range.name))) {
+      if (this.checkFilters(primaryKey.hash, index.range)) {
         const metadata: Metadata.Index.GlobalSecondaryIndex = Object.assign({
           hash: primaryKey.hash,
         }, index)
         return metadata
       }
     }
+  }
+
+  private checkFilters(hash: Attribute<any>, range?: Attribute<any>): boolean {
+    // cannot filter by a key without a value for the hash key
+    if (!has(this.filters, hash.name)) {
+      return false
+    }
+
+    const hashFilter: QueryFilter<any> = get(this.filters, hash.name)
+
+    // if there is an operator, ensure it is allowed as a key expression
+    if (isArray(hashFilter)) {
+      const operator = hashFilter[0]
+
+      if (!includes(keyConditionAllowedOperators, operator)) {
+        return false
+      }
+    }
+
+    // if it has no range, then we're all done
+    if (!range) {
+      return true
+    }
+
+    // check for the range now
+    if (!has(this.filters, range.name)) {
+      return false
+    }
+
+    const rangeFilter: QueryFilter<any> = get(this.filters, range.name)
+
+    // if there is an operator, ensure it is allowed as a key expression
+    if (isArray(rangeFilter)) {
+      const operator = rangeFilter[0]
+
+      if (!includes(keyConditionAllowedOperators, operator)) {
+        return false
+      }
+    }
+
+    return true
   }
 }
