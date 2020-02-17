@@ -3,8 +3,8 @@ import { TestableTable } from '../setup-tests.spec'
 import { MagicSearch } from './search'
 
 describe('Query/Search', () => {
-  before(() => {
-    TestableTable.documentClient.batchPut([
+  before(async () => {
+    await TestableTable.documentClient.batchPut([
       TestableTable.new({ id: 500, title: 'Table.search 0', lowercaseString: 'table search 0' }),
       TestableTable.new({ id: 501, title: 'Table.search 1', lowercaseString: 'table search 1' }),
       TestableTable.new({ id: 502, title: 'Table.search 2', lowercaseString: 'table search 2' }),

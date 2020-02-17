@@ -35,7 +35,7 @@ export class DateAttributeType extends AttributeType<Value, Metadata> implements
   }
 
   getDefault() {
-    if (this.metadata.nowOnCreate) {
+    if (this.metadata.nowOnCreate || this.metadata.nowOnUpdate) {
       return new Date()
     }
 

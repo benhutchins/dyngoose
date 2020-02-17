@@ -14,7 +14,7 @@ export class TestableTable extends Dyngoose.Table {
   public static readonly documentClient: Dyngoose.DocumentClient<TestableTable>
 
   @Dyngoose.Attribute.Any()
-  public generic: string
+  public generic: any
 
   @Dyngoose.Attribute.Number({ default: 1 })
   public id: number
@@ -22,8 +22,11 @@ export class TestableTable extends Dyngoose.Table {
   @Dyngoose.Attribute.String()
   public title: string
 
-  @Dyngoose.Attribute.Date()
+  @Dyngoose.Attribute.Date({ nowOnCreate: true })
   public createdAt: Date
+
+  @Dyngoose.Attribute.Date({ nowOnUpdate: true })
+  public updatedAt: Date
 
   @Dyngoose.Attribute.Date({ timeToLive: true })
   public expiresAt: Date

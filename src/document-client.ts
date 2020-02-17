@@ -32,9 +32,10 @@ export class DocumentClient<T extends Table> {
     const attributeNameMap: DynamoDB.ExpressionAttributeNameMap = {}
     const attrValues: DynamoDB.ExpressionAttributeValueMap = {}
 
-    // the counter is taken as it was overwriting the previous value in case of deletedAttributes
-
     let valueCounter = 0
+
+    // we call toDynamo to have the record self-check for any dynamic attributes
+    record.toDynamo()
 
     _.each(_.uniq(record.getUpdatedAttributes()), (attributeName, i) => {
       const attribute = this.tableClass.schema.getAttributeByName(attributeName)
