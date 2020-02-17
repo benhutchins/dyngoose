@@ -52,7 +52,7 @@ export default async function seedTables(input: SeedTablesInput) {
       for (const ExportedProperty of _.values(tableFileExports)) {
         if (ExportedProperty.prototype instanceof Table) {
           const ExportedTable = ExportedProperty as typeof Table
-          ExportedTable.schema.options.name = `${input.tableNamePrefix || ''}${ExportedTable.schema.name}${input.tableNameSuffix}`
+          ExportedTable.schema.options.name = `${input.tableNamePrefix || ''}${ExportedTable.schema.name}${input.tableNameSuffix || ''}`
 
           for (const data of records) {
             if (input.preventDuplication) {

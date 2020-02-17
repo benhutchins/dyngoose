@@ -1,20 +1,13 @@
-// const log = require('fancy-log')
-// const colors = require('ansi-colors')
 import { readdirSync } from 'fs'
 import * as _ from 'lodash'
 import { join } from 'path'
 import { Table } from '../table'
+import { MigrateTablesInput } from './migrate'
 
-export interface MigrateTablesInput {
-  tablesDirectory: string
-  tableFileSuffix: string // maybe .table.js or .model.js
-  tableNamePrefix?: string
-  tableNameSuffix?: string
-}
-
-export default async function migrateTables(input: MigrateTablesInput) {
+export default async function createCloudFormationResources(input: MigrateTablesInput) {
   const tableFiles = readdirSync(input.tablesDirectory)
   const tables: (typeof Table)[] = []
+  const resources: any = {}
 
   for (const file of tableFiles) {
     if (file.endsWith(input.tableFileSuffix)) {
@@ -30,8 +23,15 @@ export default async function migrateTables(input: MigrateTablesInput) {
   }
 
   for (const SomeTable of tables) {
-    SomeTable.schema.options.name = `${input.tableNamePrefix || ''}${SomeTable.schema.name}${input.tableFileSuffix || ''}`
-    // log(`Migrating ${colors.cyan(SomeTable.schema.name)}`)
-    await SomeTable.migrateTable()
+    // log(`Processing ${colors.cyan(SomeTable.schema.name)}`)
+    const properties = SomeTable.schema.createCloudFormationResource()
+    const resourceName = `${SomeTable.schema.name}Table`
+    properties.TableName = `${input.tableNamePrefix || ''}${properties.TableName}${input.tableFileSuffix || ''}`
+    resources[resourceName] = {
+      Type: 'AWS::DynamoDB::Table',
+      Properties: properties,
+    }
   }
+
+  return resources
 }
