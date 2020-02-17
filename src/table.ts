@@ -10,6 +10,9 @@ import { Schema } from './tables/schema'
 import { isTrulyEmpty } from './utils/truly-empty'
 
 type StaticThis<T> = new() => T
+type TableProperties<T> = {
+  [key in Exclude<Exclude<keyof T, keyof Table>, Function>]?: T[key]
+}
 
 export class Table {
   //#region static
@@ -43,6 +46,10 @@ export class Table {
   //#endregion static properties
 
   //#region static methods
+  public static new<T extends Table>(this: StaticThis<T>, values: TableProperties<T>): T {
+    return new this().setValues(values)
+  }
+
   public static fromDynamo<T extends Table>(this: StaticThis<T>, attributes: DynamoDB.AttributeMap): T {
     return new this().fromDynamo(attributes)
   }
@@ -87,6 +94,11 @@ export class Table {
   private __putRequired = true // true when this is a new record and a putItem is required, false when updateItem can be used
   //#endregion properties
 
+  /**
+   * Create a new Table record by attribute names, not property names.
+   *
+   * To create a strongly-typed record by property names, use {@link Table.new}.
+  */
   constructor(values?: { [key: string]: any }) {
     if (values) {
       for (const key of _.keys(values)) {
@@ -96,6 +108,13 @@ export class Table {
   }
 
   //#region public methods
+  /**
+   * Load values from an a DynamoDB.AttributeMap into this Table record.
+   *
+   * This assumes the values are loaded directly from DynamoDB, and after
+   * setting the attributes it resets the attributes pending update and
+   * deletion.
+   */
   public fromDynamo(values: DynamoDB.AttributeMap) {
     this.__attributes = values
 
@@ -107,14 +126,19 @@ export class Table {
     return this
   }
 
+  /**
+   * Converts the current attribute values into a DynamoDB.AttributeMap which
+   * can be sent directly to DynamoDB within a PutItem, UpdateItem, or similar
+   * request.
+  */
   public toDynamo(): DynamoDB.AttributeMap {
     return this.table.schema.toDynamo(this)
   }
 
   /**
-   * Utility to get the DynamoDB.Key for this record
+   * Get the DynamoDB.Key for this record.
    */
-  getDynamoKey(): DynamoDB.Key {
+  public getDynamoKey(): DynamoDB.Key {
     const hash = this.getAttribute(this.table.schema.primaryKey.hash.name)
     const key: DynamoDB.Key = {
       [this.table.schema.primaryKey.hash.name]: this.table.schema.primaryKey.hash.toDynamoAssert(hash),
@@ -128,11 +152,26 @@ export class Table {
     return key
   }
 
-  getUpdatedAttributes(): string[] {
+  /**
+   * Get the list of attributes pending update.
+   *
+   * The result includes attributes that have also been deleted. To get just
+   * the list of attributes pending deletion, use {@link this.getDeletedAttributes}.
+   *
+   * If you want to easily know if this record has updates pending, use {@link this.hasChanges}.
+   */
+  public getUpdatedAttributes(): string[] {
     return this.__updatedAttributes
   }
 
-  getDeletedAttributes(): string[] {
+  /**
+   * Get the list of attributes pending deletion.
+   *
+   * To get all the attributes that have been updated, use {@link this.getUpdatedAttributes}.
+   *
+   * If you want to easily know if this record has updates pending, use {@link this.hasChanges}.
+   */
+  public getDeletedAttributes(): string[] {
     return this.__deletedAttributes
   }
 
@@ -207,7 +246,7 @@ export class Table {
   }
 
   /**
-   * Sets the DynamoDB.AttributeValue for an attribute
+   * Sets the DynamoDB.AttributeValue for an attribute.
    *
    * To set the value from a JavaScript object, use {@link this.setAttribute}
   */
@@ -222,19 +261,25 @@ export class Table {
     // track that this value was updated
     this.__updatedAttributes.push(attributeName)
     _.pull(this.__deletedAttributes, attributeName)
+    return this
   }
 
   /**
-   * Sets the value of an attribute from a JavaScript object.
+   * Sets the value of an attribute by attribute name from a JavaScript object.
    *
-   * Unlike {@link this.set}, this excepts the attribute name, not the property name.
+   * - To set an attribute value by property name, use {@link this.set}.
    */
   public setAttribute(attributeName: string, value: any, force = false) {
     const attribute = this.table.schema.getAttributeByName(attributeName)
     return this.setByAttribute(attribute, value)
   }
+
   /**
-   * Sets several attribute values at at once.
+   * Sets several attribute values on this record by attribute names.
+   *
+   * - To set several values by property names, use {@link this.setValues}.
+   * - To set a single attribute value by attribute name, use {@link this.setAttribute}.
+   * - To set a single attribute value by property name, use {@link this.set}.
    *
    * @param {object} values An object, where the keys are the attribute names,
    *                        and the values are the values you'd like to set.
@@ -243,6 +288,8 @@ export class Table {
     _.forEach(values, (value, attributeName) => {
       this.setAttribute(attributeName, value)
     })
+
+    return this
   }
 
   /**
@@ -255,6 +302,7 @@ export class Table {
       this.__deletedAttributes.push(attributeName)
       _.pull(this.__updatedAttributes, attributeName)
     }
+    return this
   }
 
   /**
@@ -264,12 +312,15 @@ export class Table {
     for (const attribute of attributes) {
       this.deleteAttribute(attribute)
     }
+    return this
   }
 
   /**
    * Sets a value of an attribute by it's property name.
    *
-   * To set a value by an attribute name, use {@link this.setAttribute}
+   * - To set several attribute values by property names, use {@link this.setValues}.
+   * - To set an attribute value by an attribute name, use {@link this.setAttribute}.
+   * - To set several attribute values by attribute names, use {@link this.setAttributes}.
    */
   public set(propertyName: string, value: any) {
     const attribute = this.table.schema.getAttributeByPropertyName(propertyName)
@@ -279,11 +330,27 @@ export class Table {
   /**
    * Gets a value of an attribute by it's property name.
    *
-   * To get a value by an attribute name, use {@link this.getAttribute}
+   * - To get a value by an attribute name, use {@link this.getAttribute}.
+   * - To get the entire record, use {@link this.toJSON}.
    */
   public get(propertyName: string) {
     const attribute = this.table.schema.getAttributeByPropertyName(propertyName)
     return this.getByAttribute(attribute)
+  }
+
+  /**
+   * Sets several attribute values on this record by property names.
+   *
+   * - To set an attribute value by property name, use {@link this.set}.
+   * - To set an attribute value by an attribute names, use {@link this.setAttribute}.
+   * - To set several attribute values by attribute names, use {@link this.setAttributes}.
+   */
+  public setValues(values: TableProperties<this>) {
+    for (const key of _.keys(values)) {
+      this.set(key, _.get(values, key))
+    }
+
+    return this
   }
 
   /**
@@ -320,6 +387,8 @@ export class Table {
 
   /**
    * Saves this record without calling beforeSave or considering if there are changed attributes.
+   *
+   * Most of the time, you should use {@link this.save} instead.
    */
   public async forceSave(meta?: any): Promise<void> {
     let output: DynamoDB.PutItemOutput | DynamoDB.UpdateItemOutput
@@ -387,6 +456,7 @@ export class Table {
   }
   //#endregion public methods
 
+  //#region protected methods
   protected async beforeSave(meta?: any): Promise<boolean> {
     return true
   }
@@ -426,6 +496,8 @@ export class Table {
     } else {
       this.deleteAttribute(attribute.name)
     }
+
+    return this
   }
 
   protected getByAttribute(attribute: Attribute<any>) {
@@ -444,6 +516,7 @@ export class Table {
 
     return blacklist
   }
+  //#endregion protected methods
 }
 
 export interface ITable<T extends Table> {

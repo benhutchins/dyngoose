@@ -37,10 +37,10 @@ describe('Query/LocalSecondaryIndex', () => {
   describe('#query', () => {
     it('should find items', async () => {
       await Card.documentClient.batchPut([
-        new Card({ id: 10, title: 'a', count: 4 }),
-        new Card({ id: 10, title: 'b', count: 3 }),
-        new Card({ id: 10, title: 'c', count: 2 }),
-        new Card({ id: 10, title: 'd', count: 1 }),
+        Card.new({ id: 10, title: 'a', count: 4 }),
+        Card.new({ id: 10, title: 'b', count: 3 }),
+        Card.new({ id: 10, title: 'c', count: 2 }),
+        Card.new({ id: 10, title: 'd', count: 1 }),
       ])
 
       const res = await Card.countIndex.query({

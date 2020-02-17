@@ -22,6 +22,10 @@ class Card extends Table {
 
   @Decorator.Attribute.String()
   public count: number
+
+  customMethod() {
+    return 1
+  }
 }
 
 describe('Query/GlobalSecondaryIndex', () => {
@@ -36,9 +40,9 @@ describe('Query/GlobalSecondaryIndex', () => {
 
     describe('#query', () => {
       it('should find items', async () => {
-        await new Card({ id: 10, title: 'abc' }).save()
-        await new Card({ id: 11, title: 'abd' }).save()
-        await new Card({ id: 12, title: 'abd' }).save()
+        await Card.new({ id: 10, title: 'abc' }).save()
+        await Card.new({ id: 11, title: 'abd' }).save()
+        await Card.new({ id: 12, title: 'abd' }).save()
 
         const res = await Card.hashTitleIndex.query({ title: 'abd' })
         expect(res.records.length).to.eq(2)
@@ -52,7 +56,7 @@ describe('Query/GlobalSecondaryIndex', () => {
 
       beforeEach(async () => {
         for (const cardId of cardIds) {
-          await new Card({ id: cardId, title: cardId.toString() }).save()
+          await Card.new({ id: cardId, title: cardId.toString() }).save()
         }
       })
 
@@ -79,10 +83,10 @@ describe('Query/GlobalSecondaryIndex', () => {
 
     describe('#query', () => {
       it('should find items', async () => {
-        await new Card({ id: 10, title: 'abc' }).save()
-        await new Card({ id: 11, title: 'abd' }).save()
-        await new Card({ id: 12, title: 'abd' }).save()
-        await new Card({ id: 13, title: 'abd' }).save()
+        await Card.new({ id: 10, title: 'abc' }).save()
+        await Card.new({ id: 11, title: 'abd' }).save()
+        await Card.new({ id: 12, title: 'abd' }).save()
+        await Card.new({ id: 13, title: 'abd' }).save()
 
         const res = await Card.fullTitleIndex.query({
           title: 'abd',
@@ -102,7 +106,7 @@ describe('Query/GlobalSecondaryIndex', () => {
 
       beforeEach(async () => {
         for (const cardId of cardIds) {
-          await new Card({ id: cardId, title: cardId.toString() }).save()
+          await Card.new({ id: cardId, title: cardId.toString() }).save()
         }
       })
 

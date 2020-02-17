@@ -29,7 +29,7 @@ describe('AttributeType/String', () => {
     })
 
     it('ignores default when it has a value from constructor', () => {
-      record = new TestableTable({ defaultedString: '123' })
+      record = TestableTable.new({ defaultedString: '123' })
       expect(record.defaultedString).eq('123')
     })
 

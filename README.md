@@ -56,7 +56,8 @@ const card = new Card()
 card.id = 100
 card.title = 'Title'
 
-const card2 = new Card({
+// note: Card.new is correct, this is a custom method that allows for a strongly-typed object
+const card2 = Card.new({
   id: 100,
   title: 'Title'
 })
@@ -66,8 +67,8 @@ await card.save()
 
 // Batch Put
 await Card.documentClient.batchPut([
-  new Card(…),
-  new Card(…)
+  Card.new(…),
+  Card.new(…)
 ])
 
 // Get record by the primary key
@@ -81,7 +82,7 @@ await Card.primaryKey.batchGet([
 ])
 
 // Query
-// Querys are always stickly typed. (['>=', T] | ['=', T] ...)
+// Querys are always strongly typed. (['>=', T] | ['=', T] ...)
 await Card.primaryKey.query({
   id: 100,
   title: ['>=', 'Title']

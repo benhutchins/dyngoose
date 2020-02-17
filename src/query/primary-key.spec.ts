@@ -37,7 +37,7 @@ describe('Query/PrimaryKey', () => {
 
   describe('#delete', async () => {
     it('should delete item if exist', async () => {
-      await new Card({ id: 10, title: 'abc' }).save()
+      await Card.new({ id: 10, title: 'abc' }).save()
 
       await primaryKey.delete(10, 'abc')
 
@@ -52,7 +52,7 @@ describe('Query/PrimaryKey', () => {
     })
 
     it('should find item', async () => {
-      await new Card({ id: 10, title: 'abc' }).save()
+      await Card.new({ id: 10, title: 'abc' }).save()
       const item = await primaryKey.get(10, 'abc')
       expect(item).to.be.instanceof(Card)
       if (item) {
@@ -64,9 +64,9 @@ describe('Query/PrimaryKey', () => {
 
   describe('#batchGet', async () => {
     it('should find items', async () => {
-      await new Card({ id: 10, title: 'abc' }).save()
-      await new Card({ id: 11, title: 'abc' }).save()
-      await new Card({ id: 12, title: 'abc' }).save()
+      await Card.new({ id: 10, title: 'abc' }).save()
+      await Card.new({ id: 11, title: 'abc' }).save()
+      await Card.new({ id: 12, title: 'abc' }).save()
 
       const items1 = await primaryKey.batchGet([
         [10, 'abc'],
@@ -91,9 +91,9 @@ describe('Query/PrimaryKey', () => {
 
   describe('#query', () => {
     it('should find items', async () => {
-      await new Card({ id: 10, title: 'abc' }).save()
-      await new Card({ id: 10, title: 'abd' }).save()
-      await new Card({ id: 10, title: 'aba' }).save()
+      await Card.new({ id: 10, title: 'abc' }).save()
+      await Card.new({ id: 10, title: 'abd' }).save()
+      await Card.new({ id: 10, title: 'aba' }).save()
 
       let res = await primaryKey.query({
         id: 10,
@@ -119,9 +119,9 @@ describe('Query/PrimaryKey', () => {
 
   describe('#scan', () => {
     it('should find items', async () => {
-      await new Card({ id: 10, title: 'abc' }).save()
-      await new Card({ id: 10, title: 'abd' }).save()
-      await new Card({ id: 10, title: 'aba' }).save()
+      await Card.new({ id: 10, title: 'abc' }).save()
+      await Card.new({ id: 10, title: 'abd' }).save()
+      await Card.new({ id: 10, title: 'aba' }).save()
 
       const res = await primaryKey.scan({
         limit: 2,
