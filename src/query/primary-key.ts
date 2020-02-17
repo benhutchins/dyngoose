@@ -4,6 +4,7 @@ import * as moment from 'moment'
 import { QueryError } from '../errors'
 import * as Metadata from '../metadata'
 import { ITable, Table } from '../table'
+import { TableProperties } from '../tables/properties'
 import { batchGet } from './batch_get'
 import { batchWrite } from './batch_write'
 import { buildQueryExpression } from './expression'
@@ -30,10 +31,10 @@ interface PrimaryKeyQueryInput {
   consistent?: boolean
 }
 
-interface PrimaryKeyUpdateItem<HashKeyType extends PrimaryKeyType, RangeKeyType extends RangePrimaryKeyType> {
+interface PrimaryKeyUpdateItem<T extends Table, HashKeyType extends PrimaryKeyType, RangeKeyType extends RangePrimaryKeyType> {
   hash: HashKeyType
   range: RangeKeyType
-  changes: { [key: string]: any }
+  changes: TableProperties<T>
 }
 
 export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, RangeKeyType extends RangePrimaryKeyType> {
@@ -223,7 +224,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
    *
    * It then has the Table.Schema build the DynamoDB.UpdateItemInput with all the requested changes.
    */
-  public async update(input: PrimaryKeyUpdateItem<HashKeyType, RangeKeyType>): Promise<void> {
+  public async update(input: PrimaryKeyUpdateItem<T, HashKeyType, RangeKeyType>): Promise<void> {
     const keyMap: DynamoDB.AttributeMap = {
       [this.metadata.hash.name]: this.metadata.hash.toDynamoAssert(input.hash),
     }

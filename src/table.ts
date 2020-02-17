@@ -9,13 +9,11 @@ import { createTable } from './tables/create-table'
 import { deleteTable } from './tables/delete-table'
 import { describeTable } from './tables/describe-table'
 import { migrateTable } from './tables/migrate-table'
+import { TableProperties } from './tables/properties'
 import { Schema } from './tables/schema'
 import { isTrulyEmpty } from './utils/truly-empty'
 
 type StaticThis<T> = new() => T
-type TableProperties<T> = {
-  [key in Exclude<Exclude<keyof T, keyof Table>, Function>]?: T[key]
-}
 
 export class Table {
   //#region static
