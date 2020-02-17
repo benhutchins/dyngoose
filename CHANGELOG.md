@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/benhutchins/dyngoose/compare/v1.2.0...v1.3.0) (2020-02-17)
+
+
+### Features
+
+* support conditional writes when saving records ([a52d1ee](https://github.com/benhutchins/dyngoose/commit/a52d1ee66d3f0f004ecf714e8e2351f3434b6492))
+
 # [1.2.0](https://github.com/benhutchins/dyngoose/compare/v1.1.0...v1.2.0) (2020-02-17)
 
 
