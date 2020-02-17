@@ -8,7 +8,7 @@
 
 Elegant DynamoDB object modeling for Typescript.
 
-Let's face it, all good databases need good model casting. DynamoDB is powerful but libraries that used it were not. That's there where comes in Dyngoose.
+Let's face it, all good databases need good model casting. DynamoDB is powerful but libraries that used it were not. That's where Dyngoose comes in.
 
 [Read the docs!](https://github.com/benhutchins/dyngoose/wiki)
 
