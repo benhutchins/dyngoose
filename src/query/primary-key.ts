@@ -1,14 +1,16 @@
 import { DynamoDB } from 'aws-sdk'
+import { has } from 'lodash'
+import * as moment from 'moment'
+import { QueryError } from '../errors'
 import * as Metadata from '../metadata'
 import { ITable, Table } from '../table'
 import { batchGet } from './batch_get'
 import { batchWrite } from './batch_write'
 import { buildQueryExpression } from './expression'
 import { Filters as QueryFilters } from './filters'
-import { ConditionValueType } from './query'
 import { Results as QueryResults } from './results'
 
-type PrimaryKeyType = ConditionValueType
+type PrimaryKeyType = string | number | Date | moment.Moment
 
 type PrimaryKeyBatchInput<HashKeyType extends PrimaryKeyType, RangeKeyType extends PrimaryKeyType> = [HashKeyType, RangeKeyType]
 
@@ -159,9 +161,9 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     return queryInput
   }
 
-  public async query(filters: QueryFilters, input?: PrimaryKeyQueryInput): Promise<QueryResults<T>> {
-    if (!filters[this.metadata.hash.propertyName]) {
-      throw new Error('Cannot perform a query on the PrimaryKey index without specifying a hash key value')
+  public async query(filters: QueryFilters<T>, input?: PrimaryKeyQueryInput): Promise<QueryResults<T>> {
+    if (!has(filters, this.metadata.hash.propertyName)) {
+      throw new QueryError('Cannot perform a query on the PrimaryKey index without specifying a hash key value')
     }
 
     const queryInput = this.getQueryInput(input)

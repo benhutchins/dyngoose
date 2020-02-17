@@ -2,8 +2,9 @@ import { DynamoDB } from 'aws-sdk'
 import * as _ from 'lodash'
 import { Attribute } from '../attribute'
 import * as Metadata from '../metadata'
+import { Table } from '../table'
 import { Schema } from '../tables/schema'
-import { Filter, Filters, FilterValueType } from './filters'
+import { Filter, Filters } from './filters'
 
 interface Expression {
   ExpressionAttributeNames: DynamoDB.ExpressionAttributeNameMap
@@ -27,8 +28,8 @@ const keyConditionAllowedOperators: ConditionOperator[] = [
 
 type IndexMetadata = Metadata.Index.GlobalSecondaryIndex | Metadata.Index.PrimaryKey
 
-export function buildQueryExpression(schema: Schema, filters: Filters, index?: IndexMetadata): Expression {
-  const filterExpression = new FilterExpressionQuery(schema, filters, index)
+export function buildQueryExpression<T extends Table>(schema: Schema, filters: Filters<T>, index?: IndexMetadata): Expression {
+  const filterExpression = new FilterExpressionQuery<T>(schema, filters, index)
   const filterConditions = filterExpression.filterConditions
   const keyConditions = filterExpression.keyConditions
 
@@ -53,7 +54,7 @@ interface FilterCondition {
   filter: string
 }
 
-class FilterExpressionQuery {
+class FilterExpressionQuery<T extends Table> {
   // public query: string[] = []
   public attrs: DynamoDB.ExpressionAttributeNameMap = {}
   public values: DynamoDB.ExpressionAttributeValueMap = {}
@@ -69,7 +70,7 @@ class FilterExpressionQuery {
     return this.keyConditionsMap.map((condition) => condition.filter)
   }
 
-  constructor(public schema: Schema, public filters: Filters, public indexMetadata?: IndexMetadata) {
+  constructor(public schema: Schema, public filters: Filters<T>, public indexMetadata?: IndexMetadata) {
     this.parse()
 
     // double check, we can't filter by the range as a key condition without a value for the HASH
@@ -90,10 +91,10 @@ class FilterExpressionQuery {
     _.each(this.filters, (value, attrName: string) => {
       const attribute = this.schema.getAttributeByName(attrName)
 
-      let filter: Filter
+      let filter: Filter<any>
 
       if (_.isArray(value)) {
-        filter = value
+        filter = value as any
       } else {
         filter = ['=', value]
       }
@@ -134,7 +135,7 @@ class FilterExpressionQuery {
   private parseFilter(
     prefix: string,
     attr: Attribute<any>,
-    filter: Filter,
+    filter: Filter<any>,
     attrName?: string,
   ): QueryFilterQuery {
     const attrs: DynamoDB.ExpressionAttributeNameMap = {}
@@ -186,7 +187,7 @@ class FilterExpressionQuery {
 
       case 'includes':
       case 'excludes':
-        const filterValues = filter[1] as FilterValueType[]
+        const filterValues = filter[1] as any[]
         const possibleVariableNames: string[] = []
 
         _.each(filterValues, (possibleValue, possibleValueIndex) => {

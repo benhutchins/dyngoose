@@ -8,7 +8,7 @@ export class TestableTable extends Dyngoose.Table {
   public static readonly primaryKey: Dyngoose.Query.PrimaryKey<TestableTable, number, string>
 
   @Dyngoose.$GlobalSecondaryIndex({ hashKey: 'title', projection: 'ALL' })
-  public static readonly titleIndex: Dyngoose.Query.GlobalSecondaryIndex<TestableTable, string, void>
+  public static readonly titleIndex: Dyngoose.Query.GlobalSecondaryIndex<TestableTable>
 
   @Dyngoose.Attribute.Any()
   public generic: string

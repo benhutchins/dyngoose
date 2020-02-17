@@ -14,10 +14,10 @@ describe('query/expression', () => {
     public static readonly primaryKey: Dyngoose.Query.PrimaryKey<DummyTable, string, string>
 
     @Dyngoose.$GlobalSecondaryIndex({ hashKey: 'customer' })
-    public static readonly customerIndex: Dyngoose.Query.GlobalSecondaryIndex<DummyTable, string, void>
+    public static readonly customerIndex: Dyngoose.Query.GlobalSecondaryIndex<DummyTable>
 
     @Dyngoose.$GlobalSecondaryIndex({ hashKey: 'id', rangeKey: 'someNumber' })
-    public static readonly someIndex: Dyngoose.Query.GlobalSecondaryIndex<DummyTable, string, void>
+    public static readonly someIndex: Dyngoose.Query.GlobalSecondaryIndex<DummyTable>
 
     @Dyngoose.Attribute.String()
     public id: string

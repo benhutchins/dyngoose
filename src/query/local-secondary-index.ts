@@ -1,4 +1,6 @@
 import { DynamoDB } from 'aws-sdk'
+import { has } from 'lodash'
+import { QueryError } from '../errors'
 import * as Metadata from '../metadata'
 import { ITable, Table } from '../table'
 import { buildQueryExpression } from './expression'
@@ -46,9 +48,9 @@ export class LocalSecondaryIndex<T extends Table> {
     return queryInput
   }
 
-  public async query(filters: QueryFilters, input: LocalSecondaryIndexQueryInput = {}): Promise<QueryResults<T>> {
-    if (!filters[this.tableClass.schema.primaryKey.hash.propertyName]) {
-      throw new Error('Cannot perform a query on a LocalSecondaryIndex without specifying a hash key value')
+  public async query(filters: QueryFilters<T>, input: LocalSecondaryIndexQueryInput = {}): Promise<QueryResults<T>> {
+    if (!has(filters, this.tableClass.schema.primaryKey.hash.propertyName)) {
+      throw new QueryError('Cannot perform a query on a LocalSecondaryIndex without specifying a hash key value')
     }
 
     const queryInput = this.getQueryInput(input)
@@ -80,7 +82,7 @@ export class LocalSecondaryIndex<T extends Table> {
     return scanInput
   }
 
-  public async scan(filters: QueryFilters | void | null, input: LocalSecondaryIndexScanInput = {}) {
+  public async scan(filters: QueryFilters<T> | void | null, input: LocalSecondaryIndexScanInput = {}) {
     const scanInput = this.getScanInput(input)
     if (filters && Object.keys(filters).length > 0) {
       // don't pass the index metadata, avoids KeyConditionExpression

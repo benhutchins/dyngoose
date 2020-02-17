@@ -81,7 +81,7 @@ await Card.primaryKey.batchGet([
 ])
 
 // Query
-// Range key operations are stickly typed. (['>=', T] | ['=', T] ...)
+// Querys are always stickly typed. (['>=', T] | ['=', T] ...)
 await Card.primaryKey.query({
   id: 100,
   title: ['>=', 'Title']

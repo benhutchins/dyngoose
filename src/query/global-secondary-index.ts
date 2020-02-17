@@ -1,24 +1,17 @@
 import { DynamoDB } from 'aws-sdk'
+import { has } from 'lodash'
+import { QueryError } from '../errors'
 import * as Metadata from '../metadata'
 import { ITable, Table } from '../table'
 import { buildQueryExpression } from './expression'
 import { Filters as QueryFilters } from './filters'
-import { Condition, ConditionValueType } from './query'
 import { Results as QueryResults } from './results'
-
-type GSIKeyType = ConditionValueType
 
 interface GlobalSecondaryIndexQueryInput {
   rangeOrder?: 'ASC' | 'DESC'
   limit?: number
   exclusiveStartKey?: DynamoDB.Key
   consistent?: DynamoDB.ConsistentRead
-}
-
-interface GlobalSecondaryIndexGetInput<HashKeyType extends GSIKeyType, RangeKeyType extends GSIKeyType>
-  extends GlobalSecondaryIndexQueryInput {
-  hash: HashKeyType
-  range?: Condition<RangeKeyType>
 }
 
 interface GlobalSecondaryIndexScanInput {
@@ -31,7 +24,7 @@ interface GlobalSecondaryIndexScanInput {
   consistent?: DynamoDB.ConsistentRead
 }
 
-export class GlobalSecondaryIndex<T extends Table, HashKeyType extends GSIKeyType, RangeKeyType extends GSIKeyType> {
+export class GlobalSecondaryIndex<T extends Table> {
   constructor(
     readonly tableClass: ITable<T>,
     readonly metadata: Metadata.Index.GlobalSecondaryIndex,
@@ -50,16 +43,14 @@ export class GlobalSecondaryIndex<T extends Table, HashKeyType extends GSIKeyTyp
    * first received from DynamoDB. Avoid use whenever you do not have uniqueness for the
    * GlobalSecondaryIndex's HASH + RANGE.
    */
-  public async get(input: GlobalSecondaryIndexGetInput<HashKeyType, RangeKeyType>): Promise<T | void> {
-    const filters: QueryFilters = {
-      [this.metadata.hash.propertyName]: input.hash,
+  public async get(filters: QueryFilters<T>): Promise<T | void> {
+    if (!has(filters, this.metadata.hash.propertyName)) {
+      throw new QueryError('Cannot perform a query on a GlobalSecondaryIndex without specifying a hash key value')
+    } else if (this.metadata.range && !has(filters, this.metadata.range.propertyName)) {
+      throw new QueryError('Cannot perform a query on a GlobalSecondaryIndex with a range key without specifying a range value')
     }
 
-    if (this.metadata.range) {
-      filters[this.metadata.range.propertyName] = input.range
-    }
-
-    const results = await this.query(filters, input)
+    const results = await this.query(filters)
 
     if (results.records.length > 0) {
       return results.records[0]
@@ -84,9 +75,9 @@ export class GlobalSecondaryIndex<T extends Table, HashKeyType extends GSIKeyTyp
     return queryInput
   }
 
-  public async query(filters: QueryFilters, input?: GlobalSecondaryIndexQueryInput): Promise<QueryResults<T>> {
-    if (!filters[this.metadata.hash.propertyName]) {
-      throw new Error('Cannot perform a query on a GlobalSecondaryIndex without specifying a hash key value')
+  public async query(filters: QueryFilters<T>, input?: GlobalSecondaryIndexQueryInput): Promise<QueryResults<T>> {
+    if (!has(filters, this.metadata.hash.propertyName)) {
+      throw new QueryError('Cannot perform a query on a GlobalSecondaryIndex without specifying a hash key value')
     }
 
     const queryInput = this.getQueryInput(input)
@@ -122,7 +113,7 @@ export class GlobalSecondaryIndex<T extends Table, HashKeyType extends GSIKeyTyp
    * *WARNING*: In most circumstances this is not a good thing to do.
    * This will return all the items in this index, does not perform well!
    */
-  public async scan(filters: QueryFilters | void | null, input: GlobalSecondaryIndexScanInput = {}): Promise<QueryResults<T>> {
+  public async scan(filters: QueryFilters<T> | void | null, input: GlobalSecondaryIndexScanInput = {}): Promise<QueryResults<T>> {
     const scanInput = this.getScanInput(input)
     if (filters && Object.keys(filters).length > 0) {
       // don't pass the index metadata, avoids KeyConditionExpression
