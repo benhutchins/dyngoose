@@ -10,20 +10,18 @@ Elegant DynamoDB object modeling for Typescript.
 
 Let's face it, all good databases need good model casting. DynamoDB is powerful but libraries that used it were not. That's there where comes in Dyngoose.
 
+[Read the docs!](https://github.com/benhutchins/dyngoose/wiki)
+
 ## Features
 
 1. Cast your tables, attributes, and indexes using TypeScript classes.
-1. Generate your CloudFormation templates based on your code, or perform your table operations on demand.
+1. Generate your CloudFormation templates based on your code, or perform your table operations on demand. See [Deployment](https://github.com/benhutchins/dyngoose/wiki/deployment).
 1. Intelligent and powerful querying syntax, see [Querying](https://github.com/benhutchins/dyngoose/wiki/Querying).
-1. Can convert tables into CloudFormation templates for you.
-1. Selectively updating item attributes.
+1. Selectively update item attributes, prevents wasteful uploading of unchanged values.
 1. Data serialization, cast any JavaScript value into a DynamoDB attribute value.
-1. DynamoDB Accelerator (DAX) and Amazon X-Ray support (see [Connections](https://github.com/benhutchins/dyngoose/wiki/connections))
-1. Optimizes connection to DynamoDB HTTP service using Keep-Alive, see [Code](https://github.com/benhutchins/dyngoose/blob/master/src/connections/dynamodb-connection.ts#L32
-1. Incredibly easy [local development](https://github.com/benhutchins/dyngoose/wiki/development), with supporting for seeding.
-1. [Deploy to production](https://github.com/benhutchins/dyngoose/wiki/deployment) using CloudFormation or dynamically.
-
-[Read the docs!](https://github.com/benhutchins/dyngoose/wiki)
+1. DynamoDB Accelerator (DAX) and Amazon X-Ray support (see [Connections](https://github.com/benhutchins/dyngoose/wiki/Connections)).
+1. Optimizes connection to DynamoDB HTTP service using Keep-Alive, see [Code](https://github.com/benhutchins/dyngoose/blob/master/src/connections/dynamodb-connection.ts#L32).
+1. Incredibly easy [local development](https://github.com/benhutchins/dyngoose/wiki/development), with supporting for seeding a local database.
 
 ## Example Usage
 ```typescript
