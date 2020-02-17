@@ -37,8 +37,8 @@ export class LocalSecondaryIndex<T extends Table> {
     const ScanIndexForward = input.rangeOrder === 'ASC'
     const queryInput: DynamoDB.QueryInput = {
       TableName: this.tableClass.schema.name,
-      Limit: input.limit,
       IndexName: this.metadata.name,
+      Limit: input.limit,
       ScanIndexForward,
       ExclusiveStartKey: input.exclusiveStartKey,
       ReturnConsumedCapacity: 'TOTAL',
@@ -72,6 +72,7 @@ export class LocalSecondaryIndex<T extends Table> {
   public getScanInput(input: LocalSecondaryIndexScanInput = {}): DynamoDB.ScanInput {
     const scanInput: DynamoDB.ScanInput = {
       TableName: this.tableClass.schema.name,
+      IndexName: this.metadata.name,
       Limit: input.limit,
       ExclusiveStartKey: input.exclusiveStartKey,
       ReturnConsumedCapacity: 'TOTAL',

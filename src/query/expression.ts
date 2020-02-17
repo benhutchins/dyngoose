@@ -39,6 +39,10 @@ export function buildQueryExpression<T extends Table>(schema: Schema, filters: F
     ExpressionAttributeNames: filterExpression.attrs,
   }
 
+  if (_.size(query.ExpressionAttributeValues) === 0) {
+    delete query.ExpressionAttributeValues
+  }
+
   if (filterConditions.length > 0) {
     query.FilterExpression = filterConditions.join(' AND ')
   }

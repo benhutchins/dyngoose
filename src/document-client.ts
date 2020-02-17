@@ -1,26 +1,37 @@
 import { DynamoDB } from 'aws-sdk'
 import * as _ from 'lodash'
 import { batchWrite } from './query/batch_write'
+import { buildQueryExpression } from './query/expression'
+import { UpdateConditions } from './query/filters'
 import { ITable, Table } from './table'
 
 export class DocumentClient<T extends Table> {
   constructor(private tableClass: ITable<T>) {
   }
 
-  public getPutInput(record: T): DynamoDB.PutItemInput {
-    return {
+  public getPutInput(record: T, conditions?: UpdateConditions<T>): DynamoDB.PutItemInput {
+    const input: DynamoDB.PutItemInput = {
       TableName: this.tableClass.schema.name,
       Item: record.toDynamo(),
     }
+
+    if (conditions) {
+      const conditionExpression = buildQueryExpression(this.tableClass.schema, conditions)
+      input.ConditionExpression = conditionExpression.FilterExpression
+      input.ExpressionAttributeNames = conditionExpression.ExpressionAttributeNames
+      input.ExpressionAttributeValues = conditionExpression.ExpressionAttributeValues
+    }
+
+    return input
   }
 
-  public async put(record: T): Promise<DynamoDB.PutItemOutput> {
-    const input = this.getPutInput(record)
+  public async put(record: T, conditions?: UpdateConditions<T>): Promise<DynamoDB.PutItemOutput> {
+    const input = this.getPutInput(record, conditions)
     const output = this.tableClass.schema.dynamo.putItem(input).promise()
     return output
   }
 
-  public getUpdateInput(record: T): DynamoDB.UpdateItemInput {
+  public getUpdateInput(record: T, conditions?: UpdateConditions<T>): DynamoDB.UpdateItemInput {
     const input: DynamoDB.UpdateItemInput = {
       TableName: this.tableClass.schema.name,
       Key: record.getDynamoKey(),
@@ -30,7 +41,7 @@ export class DocumentClient<T extends Table> {
     const sets: string[] = []
     const removes: string[] = []
     const attributeNameMap: DynamoDB.ExpressionAttributeNameMap = {}
-    const attrValues: DynamoDB.ExpressionAttributeValueMap = {}
+    const attributeValueMap: DynamoDB.ExpressionAttributeValueMap = {}
 
     let valueCounter = 0
 
@@ -40,50 +51,56 @@ export class DocumentClient<T extends Table> {
     _.each(_.uniq(record.getUpdatedAttributes()), (attributeName, i) => {
       const attribute = this.tableClass.schema.getAttributeByName(attributeName)
       const value = attribute.toDynamo(record.getAttribute(attributeName))
-      const slug = '#A' + valueCounter
+      const slug = '#UA' + valueCounter
 
       if (value) {
         attributeNameMap[slug] = attributeName
-        attrValues[`:v${valueCounter}`] = value
-        sets.push(`${slug} = :v${valueCounter}`)
+        attributeValueMap[`:u${valueCounter}`] = value
+        sets.push(`${slug} = :u${valueCounter}`)
         valueCounter++
       }
     })
 
     _.each(_.uniq(record.getDeletedAttributes()), (attrName, i) => {
-      const slug = '#D' + valueCounter
+      const slug = '#DA' + valueCounter
       attributeNameMap[slug] = attrName
       removes.push(slug)
       valueCounter++
     })
 
-    let expression = ''
+    let updateExpression = ''
 
     if (sets.length > 0) {
-      expression += 'SET ' + sets.join(', ')
+      updateExpression += 'SET ' + sets.join(', ')
     }
 
     if (removes.length > 0) {
-      if (expression.length > 0) {
-        expression += ' '
+      if (updateExpression.length > 0) {
+        updateExpression += ' '
       }
 
-      expression += 'REMOVE ' + removes.join(', ')
+      updateExpression += 'REMOVE ' + removes.join(', ')
     }
 
+    if (conditions) {
+      const conditionExpression = buildQueryExpression(this.tableClass.schema, conditions)
+      input.ConditionExpression = conditionExpression.FilterExpression
+      Object.assign(attributeNameMap, conditionExpression.ExpressionAttributeNames)
+      Object.assign(attributeValueMap, conditionExpression.ExpressionAttributeValues)
+    }
 
     input.ExpressionAttributeNames = attributeNameMap
-    input.UpdateExpression = expression
+    input.UpdateExpression = updateExpression
 
-    if (_.size(attrValues) > 0) {
-      input.ExpressionAttributeValues = attrValues
+    if (_.size(attributeValueMap) > 0) {
+      input.ExpressionAttributeValues = attributeValueMap
     }
 
     return input
   }
 
-  public async update(record: T): Promise<DynamoDB.UpdateItemOutput> {
-    const input = this.getUpdateInput(record)
+  public async update(record: T, conditions?: UpdateConditions<T>): Promise<DynamoDB.UpdateItemOutput> {
+    const input = this.getUpdateInput(record, conditions)
     const output = this.tableClass.schema.dynamo.updateItem(input).promise()
     return output
   }

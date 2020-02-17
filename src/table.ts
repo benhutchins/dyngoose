@@ -2,7 +2,7 @@ import { DynamoDB } from 'aws-sdk'
 import * as _ from 'lodash'
 import { Attribute } from './attribute'
 import { DocumentClient } from './document-client'
-import { Filters as QueryFilters } from './query/filters'
+import { Filters as QueryFilters, UpdateConditions } from './query/filters'
 import { Results as QueryResults } from './query/results'
 import { MagicSearch, MagicSearchInput } from './query/search'
 import { createTable } from './tables/create-table'
@@ -423,10 +423,10 @@ export class Table {
    *
    * Automatically determines if the the save should use use a PutItem or UpdateItem request.
    */
-  public async save(meta?: any): Promise<void> {
-    const allowSave = await this.beforeSave(meta)
+  public async save(conditions?: UpdateConditions<this>, meta?: any): Promise<void> {
+    const allowSave = await this.beforeSave(conditions, meta)
     if (allowSave && this.hasChanges()) {
-      await this.forceSave(meta)
+      await this.forceSave(conditions, meta)
     }
   }
 
@@ -435,13 +435,13 @@ export class Table {
    *
    * Most of the time, you should use {@link this.save} instead.
    */
-  public async forceSave(meta?: any): Promise<void> {
+  public async forceSave(conditions?: UpdateConditions<this>, meta?: any): Promise<void> {
     let output: DynamoDB.PutItemOutput | DynamoDB.UpdateItemOutput
     if (this.__putRequired) {
-      output = await this.table.documentClient.put(this)
+      output = await this.table.documentClient.put(this, conditions)
       this.__putRequired = false
     } else {
-      output = await this.table.documentClient.update(this)
+      output = await this.table.documentClient.update(this, conditions)
     }
 
     // reset internal tracking of changes attributes
@@ -502,7 +502,7 @@ export class Table {
   //#endregion public methods
 
   //#region protected methods
-  protected async beforeSave(meta?: any): Promise<boolean> {
+  protected async beforeSave(meta?: any, conditions?: any): Promise<boolean> {
     return true
   }
 

@@ -48,10 +48,46 @@ describe('Table', () => {
     card.expiresAt = new Date(Date.now() + 5000) // 5 secs away
     await card.save()
 
-    // Wait 15 sec
+    // Wait 15 seconds
     await new Promise((resolve) => setTimeout(resolve, 15000))
 
     const reloaded = await TestableTable.primaryKey.getItem({ hash: 10, range: '100', consistent: true })
     expect(reloaded).to.eq(undefined)
+  })
+
+  describe('saving should support conditions', () => {
+    context('when condition check was failed', () => {
+      it('should throw error', async () => {
+        const record = TestableTable.new({ id: 22, title: 'something new' })
+        await record.save()
+
+        let error: Error | void
+
+        try {
+          record.title = 'something blue'
+          await record.save({ id: 23 })
+        } catch (ex) {
+          error = ex
+        }
+
+        expect(error).to.be.instanceOf(Error)
+          .with.property('name', 'ConditionalCheckFailedException')
+
+        expect(error).to.have.property('message', 'The conditional request failed')
+      })
+    })
+
+    context('when condition check was passed', () => {
+      it('should put item as per provided condition', async () => {
+        const record = TestableTable.new({ id: 22, title: 'bar' })
+
+        // save a new record, and confirm the id does not exist… useful to
+        // confirm you are adding a new record and not unintentionally updating an existing one
+        await record.save({ id: ['not exists'] })
+
+        const reloaded = TestableTable.primaryKey.getItem({ hash: 22, range: 'bar', consistent: true })
+        expect(reloaded).not.to.be.instanceOf(TestableTable)
+      })
+    })
   })
 })

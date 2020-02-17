@@ -16,3 +16,5 @@ export type Filter<Type> = Condition<Type> | (
 export type Filters<T extends Table> = {
   [key in Exclude<Exclude<keyof T, keyof Table>, Function>]?: T[key] | Filter<T[key]>
 }
+
+export type UpdateConditions<T extends Table> = Filters<T>
