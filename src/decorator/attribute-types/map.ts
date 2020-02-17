@@ -2,16 +2,13 @@ import { DynamoDB } from 'aws-sdk'
 import * as _ from 'lodash'
 import { Attribute } from '../../attribute'
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
+import { ValidationError } from '../../errors'
 import { IAttributeType } from '../../interfaces/attribute-type.interface'
 import { MapAttributeMetadata } from '../../metadata/attribute-types/map.metadata'
 import { Table } from '../../table'
 import { AttributeType } from '../../tables/attribute-type'
 
-export interface IMapValue {
-  [key: string]: string
-}
-
-export class MapAttributeType<Value extends IMapValue> extends AttributeType<Value, MapAttributeMetadata<Value>>
+export class MapAttributeType<Value> extends AttributeType<Value, MapAttributeMetadata<Value>>
   implements IAttributeType<Value> {
   type = DynamoAttributeType.String
   attributes: { [key: string]: Attribute<any> }
@@ -39,11 +36,15 @@ export class MapAttributeType<Value extends IMapValue> extends AttributeType<Val
   }
 
   toDynamo(mapValue: Value) {
+    if (!_.isObject(mapValue)) {
+      throw new ValidationError(`Map attributes require values to be an Object, but was given a ${typeof mapValue}`)
+    }
+
     const map: DynamoDB.MapAttributeValue = {}
 
     for (const propertyName of Object.keys(mapValue)) {
       const attribute = _.find(this.attributes, (attr) => attr.propertyName === propertyName)
-      const value = mapValue[propertyName]
+      const value = _.get(mapValue, propertyName)
 
       if (attribute) {
         const attributeValue = attribute.toDynamo(value)
@@ -51,7 +52,7 @@ export class MapAttributeType<Value extends IMapValue> extends AttributeType<Val
           map[attribute.propertyName] = attributeValue
         }
       } else {
-        // TODO
+        throw new ValidationError(`Unknown property set on Map, ${propertyName}`)
       }
     }
 
@@ -69,7 +70,7 @@ export class MapAttributeType<Value extends IMapValue> extends AttributeType<Val
       if (attribute) {
         map[attribute.propertyName] = attribute.fromDynamo(value)
       } else {
-        // TODO
+        throw new ValidationError(`Unknown attribute seen on Map, ${attributeName}`)
       }
     }
 

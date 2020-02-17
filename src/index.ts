@@ -36,5 +36,4 @@ export { PrimaryKey as $PrimaryKey } from './decorator/primary-key'
 export { Table as $Table } from './decorator/table'
 
 export { Attribute } from './decorator'
-export { IMapValue } from './decorator/attribute-types/map'
 export { DocumentClient } from './document-client'

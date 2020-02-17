@@ -11,10 +11,11 @@ import { Filters as QueryFilters } from './filters'
 import { Results as QueryResults } from './results'
 
 type PrimaryKeyType = string | number | Date | moment.Moment
+type RangePrimaryKeyType = PrimaryKeyType | void
 
-type PrimaryKeyBatchInput<HashKeyType extends PrimaryKeyType, RangeKeyType extends PrimaryKeyType> = [HashKeyType, RangeKeyType]
+type PrimaryKeyBatchInput<HashKeyType extends PrimaryKeyType, RangeKeyType extends RangePrimaryKeyType> = [HashKeyType, RangeKeyType]
 
-interface PrimaryKeyGetInput<HashKeyType extends PrimaryKeyType, RangeKeyType extends PrimaryKeyType> {
+interface PrimaryKeyGetInput<HashKeyType extends PrimaryKeyType, RangeKeyType extends RangePrimaryKeyType> {
   hash: HashKeyType
   range: RangeKeyType
   projectionExpression?: DynamoDB.ProjectionExpression
@@ -29,13 +30,13 @@ interface PrimaryKeyQueryInput {
   consistent?: boolean
 }
 
-interface PrimaryKeyUpdateItem<HashKeyType extends PrimaryKeyType, RangeKeyType extends PrimaryKeyType> {
+interface PrimaryKeyUpdateItem<HashKeyType extends PrimaryKeyType, RangeKeyType extends RangePrimaryKeyType> {
   hash: HashKeyType
   range: RangeKeyType
   changes: { [key: string]: any }
 }
 
-export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, RangeKeyType extends PrimaryKeyType> {
+export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, RangeKeyType extends RangePrimaryKeyType> {
   constructor(
     readonly table: ITable<T>,
     readonly metadata: Metadata.Index.PrimaryKey,

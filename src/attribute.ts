@@ -103,17 +103,6 @@ export class Attribute<Value> {
 
     const value = this.type.fromDynamo(attributeValue, this) || null
 
-    // // if this is a set/map (SS or NS), we need to treat it like an array
-    // if (this.isSet && _.isArrayLike(raw)) {
-    //   parsed = raw.map((value: any) => {
-    //     if (this.metadata.fromDynamo) {
-    //       return this.metadata.fromDynamo(value, this)
-    //     }
-    //   })
-    // } else {
-    //   parsed = this.metadata.fromDynamo(raw, this)
-    // }
-
     if (this.metadata.manipulateRead) {
       return this.metadata.manipulateRead(value, attributeValue, this)
     } else {

@@ -65,10 +65,13 @@ export class MagicSearch<T extends Table> {
     const input: DynamoDB.ScanInput | DynamoDB.QueryInput = {
       TableName: this.tableClass.schema.name,
       ConsistentRead: false,
-      IndexName: this.input.indexName,
       ExpressionAttributeNames: query.ExpressionAttributeNames,
       ExpressionAttributeValues: query.ExpressionAttributeValues,
       FilterExpression: query.FilterExpression,
+    }
+
+    if (this.input.indexName) {
+      input.IndexName = this.input.indexName
     }
 
     if (query.KeyConditionExpression) {
@@ -80,6 +83,7 @@ export class MagicSearch<T extends Table> {
 
   async search(): Promise<QueryResults<T>> {
     const input = this.getInput()
+
     if (!this.input.all) {
       return this.page(input)
     } else {

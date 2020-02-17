@@ -547,7 +547,7 @@ export class Table {
 
   protected getByAttribute(attribute: Attribute<any>) {
     const attributeValue = this.getAttributeDynamoValue(attribute.name)
-    const value = attribute.fromDynamo(attributeValue)
+    const value = attribute.fromDynamo(_.cloneDeep(attributeValue))
     return value
   }
 

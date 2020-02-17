@@ -4,7 +4,7 @@ import { BinaryAttributeType } from './binary'
 import { BinarySetAttributeType } from './binary-set'
 import { BooleanAttributeType } from './boolean'
 import { DateAttributeType } from './date'
-import { IMapValue, MapAttributeType } from './map'
+import { MapAttributeType } from './map'
 import { NumberAttributeType } from './number'
 import { NumberSetAttributeType } from './number-set'
 import { StringAttributeType } from './string'
@@ -101,7 +101,7 @@ Attribute.NumberSet = (options?: Metadata.AttributeType.NumberSet) => Attribute(
 Attribute.String = (options?: Metadata.AttributeType.String) => Attribute('String', options)
 Attribute.StringSet = (options?: Metadata.AttributeType.StringSet) => Attribute('StringSet', options)
 
-Attribute.Map = <Value extends IMapValue>(options: Metadata.AttributeType.Map<Value>) => {
+Attribute.Map = <Value>(options: Metadata.AttributeType.Map<Value>) => {
   return function (record: Table, propertyName: string) {
     const decorator = new MapAttributeType<Value>(record, propertyName, options as any)
     decorator.decorate()

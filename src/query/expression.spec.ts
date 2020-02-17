@@ -3,7 +3,7 @@ import * as Dyngoose from '..'
 import { buildQueryExpression } from './expression'
 
 describe('query/expression', () => {
-  interface ISomeMap extends Dyngoose.IMapValue {
+  interface ISomeMap {
     first: string
     second: string
   }
