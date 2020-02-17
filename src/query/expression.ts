@@ -1,6 +1,7 @@
 import { DynamoDB } from 'aws-sdk'
 import * as _ from 'lodash'
 import { Attribute } from '../attribute'
+import { QueryError } from '../errors'
 import * as Metadata from '../metadata'
 import { Table } from '../table'
 import { Schema } from '../tables/schema'
@@ -233,7 +234,7 @@ class FilterExpressionQuery<T extends Table> {
 
           query = `${attrNameMappedTo} BETWEEN ${lowerVariableName} AND ${upperVariableName}`
         } else {
-          throw new Error('BETWEEN filter missing a lower or upper bound')
+          throw new QueryError('BETWEEN filter missing a lower or upper bound')
         }
         break
     }

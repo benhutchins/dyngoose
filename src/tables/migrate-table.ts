@@ -1,5 +1,6 @@
 import { DynamoDB } from 'aws-sdk'
 import * as _ from 'lodash'
+import { SchemaError } from '../errors'
 import { describeTable } from './describe-table'
 import { Schema } from './schema'
 
@@ -35,7 +36,7 @@ export async function migrateTable(schema: Schema, waitForReady = false) {
         // you can only updated ProvisionedThroughput, which is useless to do on the DynamoDB development server
         // so really we want to verify we're not attempting to change an index's KeySchema or Projection, if we
         // are, error and warn developer… they need to rename the index so the old one is deleted
-        throw new Error(`Cannot update KeySchema or Projection for ${oldIndex.IndexName}, you must rename the index to delete the one and create a new one`)
+        throw new SchemaError(`Cannot update KeySchema or Projection for ${oldIndex.IndexName}, you must rename the index to delete the one and create a new one`)
       }
     })
   }

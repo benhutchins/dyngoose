@@ -1,5 +1,6 @@
 import { DynamoDB } from 'aws-sdk'
 import { Attribute } from '../attribute'
+import { SchemaError } from '../errors'
 import { IThroughput } from '../interfaces'
 import * as Metadata from '../metadata'
 import * as Query from '../query'
@@ -129,7 +130,7 @@ export class Schema {
     }
 
     if (!this.throughput.read || !this.throughput.write) {
-      throw new Error(`Schema for ${this.name} has invalid throughput ${JSON.stringify(this.throughput)}`)
+      throw new SchemaError(`Schema for ${this.name} has invalid throughput ${JSON.stringify(this.throughput)}`)
     }
   }
 
@@ -149,7 +150,7 @@ export class Schema {
       }
       return attribute
     } else {
-      throw new Error(`Schema for ${this.name} has no attribute named ${attributeName}`)
+      throw new SchemaError(`Schema for ${this.name} has no attribute named ${attributeName}`)
     }
   }
 
@@ -160,12 +161,12 @@ export class Schema {
       }
     }
 
-    throw new Error(`Schema for ${this.name} has no attribute by property name ${propertyName}`)
+    throw new SchemaError(`Schema for ${this.name} has no attribute by property name ${propertyName}`)
   }
 
   public addAttribute(attribute: Attribute<any>): Attribute<any> {
     if (this.attributes.has(attribute.name)) {
-      throw new Error(`Table ${this.name} has several attributes named ${attribute.name}`)
+      throw new SchemaError(`Table ${this.name} has several attributes named ${attribute.name}`)
     }
 
     this.attributes.set(attribute.name, attribute)
@@ -175,7 +176,7 @@ export class Schema {
   public setPrimaryKey(hashKey: string, rangeKey: string | void, propertyName: string) {
     const hash = this.getAttributeByName(hashKey)
     if (!hash) {
-      throw new Error(`Specified hashKey ${hashKey} attribute for the PrimaryKey for table ${this.name} does not exist`)
+      throw new SchemaError(`Specified hashKey ${hashKey} attribute for the PrimaryKey for table ${this.name} does not exist`)
     }
 
     let range: Attribute<any> | undefined
@@ -184,7 +185,7 @@ export class Schema {
       range = this.getAttributeByName(rangeKey)
 
       if (!range) {
-        throw new Error(`Specified rangeKey ${rangeKey} attribute for the PrimaryKey for table ${this.name} does not exist`)
+        throw new SchemaError(`Specified rangeKey ${rangeKey} attribute for the PrimaryKey for table ${this.name} does not exist`)
       }
     }
 

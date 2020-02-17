@@ -1,6 +1,7 @@
 import { DynamoDB } from 'aws-sdk'
 import * as moment from 'moment'
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
+import { SchemaError } from '../../errors'
 import { IAttributeType } from '../../interfaces/attribute-type.interface'
 import { DateAttributeMetadata } from '../../metadata/attribute-types/date.metadata'
 import { Table } from '../../table'
@@ -26,7 +27,7 @@ export class DateAttributeType extends AttributeType<Value, Metadata> implements
 
     if (this.metadata.timeToLive) {
       if (this.schema.timeToLiveAttribute) {
-        throw new Error(`Table ${this.schema.name} has two timeToLive attributes defined`)
+        throw new SchemaError(`Table ${this.schema.name} has two timeToLive attributes defined`)
       } else {
         this.schema.timeToLiveAttribute = this.attribute
       }

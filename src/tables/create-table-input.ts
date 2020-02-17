@@ -1,6 +1,7 @@
 import { DynamoDB } from 'aws-sdk'
 import { uniqBy } from 'lodash'
 import { Attribute } from '../attribute'
+import { SchemaError } from '../errors'
 import { Schema } from './schema'
 
 export function createTableInput(schema: Schema, forCloudFormation = false) {
@@ -94,7 +95,7 @@ export function createTableInput(schema: Schema, forCloudFormation = false) {
 
       if (indexMetadata.nonKeyAttributes && indexMetadata.nonKeyAttributes.length > 0) {
         if (indexMetadata.projection !== 'INCLUDE') {
-          throw new Error(`Invalid configuration for LocalSecondaryIndex ${schema.name}/${indexMetadata.name}. nonKeyAttributes can only be used with projection INCLUDE.`)
+          throw new SchemaError(`Invalid configuration for LocalSecondaryIndex ${schema.name}/${indexMetadata.name}. nonKeyAttributes can only be used with projection INCLUDE.`)
         }
 
         index.Projection.NonKeyAttributes = indexMetadata.nonKeyAttributes
@@ -151,7 +152,7 @@ export function createTableInput(schema: Schema, forCloudFormation = false) {
 
       if (indexMetadata.nonKeyAttributes && indexMetadata.nonKeyAttributes.length > 0) {
         if (indexMetadata.projection !== 'INCLUDE') {
-          throw new Error(`Invalid configuration for GlobalSecondaryIndex ${schema.name}/${indexMetadata.name}. nonKeyAttributes can only be used with projection INCLUDE.`)
+          throw new SchemaError(`Invalid configuration for GlobalSecondaryIndex ${schema.name}/${indexMetadata.name}. nonKeyAttributes can only be used with projection INCLUDE.`)
         }
 
         index.Projection.NonKeyAttributes = indexMetadata.nonKeyAttributes

@@ -3,6 +3,7 @@ import * as _ from 'lodash'
 import { IAttributeType } from './interfaces/attribute-type.interface'
 import { AttributeMetadata } from './metadata/attribute'
 import { isTrulyEmpty } from './utils/truly-empty'
+import { ValidationError } from './errors'
 
 export class Attribute<Value> {
   public name: string
@@ -58,13 +59,13 @@ export class Attribute<Value> {
     // if there is no value, do not not return an empty DynamoDB.AttributeValue
     if (value == null) {
       if (this.metadata.required) {
-        throw new Error('Required value missing: ' + this.name)
+        throw new ValidationError('Required value missing: ' + this.name)
       }
       return null
     }
 
     if (typeof this.metadata.validate === 'function' && !this.metadata.validate(value)) {
-      throw new Error('Validation failed: ' + this.name)
+      throw new ValidationError('Validation failed: ' + this.name)
     }
 
     const attributeValue = this.type.toDynamo(value, this)
@@ -80,7 +81,7 @@ export class Attribute<Value> {
     const attributeValue = this.toDynamo(value)
 
     if (attributeValue == null) {
-      throw new Error(`Attribute.toDynamoAssert called without a valid value`)
+      throw new ValidationError(`Attribute.toDynamoAssert called without a valid value`)
     } else {
       return attributeValue
     }

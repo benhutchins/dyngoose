@@ -1,6 +1,7 @@
 import { DynamoDB } from 'aws-sdk'
 import { trim } from 'lodash'
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
+import { ValidationError } from '../../errors'
 import { IAttributeType } from '../../interfaces/attribute-type.interface'
 import { StringAttributeMetadata } from '../../metadata/attribute-types/string.metadata'
 import { AttributeType } from '../../tables/attribute-type'
@@ -13,7 +14,7 @@ export class StringAttributeType extends AttributeType<Value, Metadata> implemen
 
   toDynamo(value: Value) {
     if (typeof value !== 'string') {
-      throw new Error(`Expected ${this.propertyName} to be a string, but was given a ${typeof value}`)
+      throw new ValidationError(`Expected ${this.propertyName} to be a string, but was given a ${typeof value}`)
     }
 
     if (this.metadata.trim) {
