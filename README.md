@@ -14,7 +14,7 @@ Let's face it, all good databases need good model casting. DynamoDB is powerful 
 
 1. Cast your tables, attributes, and indexes using TypeScript classes.
 1. Generate your CloudFormation templates based on your code, or perform your table operations on demand.
-1. Intelligent and querying.
+1. Intelligent and powerful querying syntax, see [Querying](https://github.com/benhutchins/dyngoose/wiki/Querying).
 1. Can convert tables into CloudFormation templates for you.
 1. Selectively updating item attributes.
 1. Data serialization, cast any JavaScript value into a DynamoDB attribute value.
@@ -30,7 +30,7 @@ Let's face it, all good databases need good model casting. DynamoDB is powerful 
 import * as Dyngoose from 'dyngoose'
 
 @Dyngoose.$Table({ name: 'Card' })
-class Card extends Table {
+class Card extends Dyngoose.Table {
   @Dyngoose.Attribute.Number()
   public id: number
 
@@ -41,7 +41,7 @@ class Card extends Table {
   public expiresAt: Date
 
   @Dyngoose.$PrimaryKey('id', 'title')
-  static readonly primaryKey: Query.PrimaryKey<Card, number, string>
+  static readonly primaryKey: Dyngoose.Query.PrimaryKey<Card, number, string>
 
   @Dyngoose.$DocumentClient()
   static readonly writer: Dyngoose.DocumentClient<Card>
@@ -82,7 +82,7 @@ await Card.primaryKey.batchGet([
 ])
 
 // Query
-// Querys are always strongly typed. (['>=', T] | ['=', T] ...)
+// Queries are always strongly typed. (['>=', T] | ['=', T] ...)
 await Card.primaryKey.query({
   id: 100,
   title: ['>=', 'Title']
