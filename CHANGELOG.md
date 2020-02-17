@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/benhutchins/dyngoose/compare/v1.3.0...v1.4.0) (2020-02-17)
+
+
+### Features
+
+* add strong typing for Query.PrimaryKey.update ([f5042e5](https://github.com/benhutchins/dyngoose/commit/f5042e5a3e7e07d8db82d518462295df37086a67))
+
 # [1.3.0](https://github.com/benhutchins/dyngoose/compare/v1.2.0...v1.3.0) (2020-02-17)
 
 
