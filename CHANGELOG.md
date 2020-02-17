@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/benhutchins/dyngoose/compare/v1.4.0...v1.5.0) (2020-02-17)
+
+
+### Features
+
+* support conditions for deleting records ([66a82b3](https://github.com/benhutchins/dyngoose/commit/66a82b32e98ecea72b0cafa178777b5e194c4362))
+
 # [1.4.0](https://github.com/benhutchins/dyngoose/compare/v1.3.0...v1.4.0) (2020-02-17)
 
 
