@@ -1,3 +1,16 @@
+# [1.2.0](https://github.com/benhutchins/dyngoose/compare/v1.1.0...v1.2.0) (2020-02-17)
+
+
+### Bug Fixes
+
+* issue with dynamic attributes and date nowOnCreate and nowOnUpdate ([76eeccb](https://github.com/benhutchins/dyngoose/commit/76eeccbe2ec903ec98b02af0f49d0af3f4bd2ae9))
+* issues with use of map attributes ([4703289](https://github.com/benhutchins/dyngoose/commit/4703289a231f5e426cf3469a91eb1dbf1bec1c8e))
+
+
+### Features
+
+* make Table.search avoid use of indexes for operational searches ([6547b54](https://github.com/benhutchins/dyngoose/commit/6547b546ff1380ce51cbc60ebf7abf1201102481))
+
 # [1.1.0](https://github.com/benhutchins/dyngoose/compare/v1.0.1...v1.1.0) (2020-02-17)
 
 
