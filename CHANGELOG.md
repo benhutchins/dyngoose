@@ -1,3 +1,17 @@
+# [1.1.0](https://github.com/benhutchins/dyngoose/compare/v1.0.1...v1.1.0) (2020-02-17)
+
+
+### Features
+
+* add custom error classes ([94f7329](https://github.com/benhutchins/dyngoose/commit/94f7329c0c95f1c8d9186d80d8e545967d02ebaa))
+* add query filter support for LocalSecondaryIndexes ([9d79660](https://github.com/benhutchins/dyngoose/commit/9d7966064530bdad1f1685d169d7369f1bdddc28))
+* add Table.new for strongly typed creation of new records ([fe821a6](https://github.com/benhutchins/dyngoose/commit/fe821a6910fc9d363fd592140ddc25cdc579e0ab))
+* add Table.search generic search utility that looks for indexes ([94cd2c1](https://github.com/benhutchins/dyngoose/commit/94cd2c10a072ba692dc19565f8e6d568dc9cc64b))
+* add utilities to migrate and seed tables for development ([8e81b3e](https://github.com/benhutchins/dyngoose/commit/8e81b3ea4ca75ee7606538603b0d80626ebb6c0a))
+* add utility to generate CloudFormation resources ([f0d07e2](https://github.com/benhutchins/dyngoose/commit/f0d07e264be3873804339e6c1b260be06eb98a76))
+* make Table.get and Table.set use property names ([2104c03](https://github.com/benhutchins/dyngoose/commit/2104c035718dae483b6cd7fd4ecfd5371edc12fc))
+* stickly type queries using filters ([634c368](https://github.com/benhutchins/dyngoose/commit/634c368b16077d338ac5c0947ff404e8f30f47ef))
+
 ## [1.0.1](https://github.com/benhutchins/dyngoose/compare/v1.0.0...v1.0.1) (2020-02-16)
 
 
