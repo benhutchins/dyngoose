@@ -1,8 +1,15 @@
 {
   "name": "dyngoose",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Elegant DynamoDB object modeling for Typescript",
-  "keywords": ["dynamodb", "orm", "odm", "serverless", "aws-dynamodb", "typescript"],
+  "keywords": [
+    "dynamodb",
+    "orm",
+    "odm",
+    "serverless",
+    "aws-dynamodb",
+    "typescript"
+  ],
   "main": "./dist/index.js",
   "typings": "./dist/index.d.ts",
   "scripts": {

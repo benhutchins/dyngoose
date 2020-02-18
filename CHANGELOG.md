@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/benhutchins/dyngoose/compare/v1.5.0...v1.6.0) (2020-02-18)
+
+
+### Features
+
+* export a Dyngoose object to help intelligent IDEs import Dyngoose ([da7bf07](https://github.com/benhutchins/dyngoose/commit/da7bf07f4849887527297d65b5e9d00bd6856faf))
+
 # [1.5.0](https://github.com/benhutchins/dyngoose/compare/v1.4.0...v1.5.0) (2020-02-17)
 
 
