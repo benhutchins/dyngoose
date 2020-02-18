@@ -1,4 +1,4 @@
-import * as Dyngoose from '.'
+import { Dyngoose } from '.'
 
 @Dyngoose.$Table({
   name: `testable-${Math.random()}`,

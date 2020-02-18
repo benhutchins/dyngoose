@@ -26,7 +26,7 @@ Let's face it, all good databases need good model casting. DynamoDB is powerful 
 
 ## Example Usage
 ```typescript
-import * as Dyngoose from 'dyngoose'
+import { Dyngoose } from 'dyngoose'
 
 @Dyngoose.$Table({ name: 'Card' })
 class Card extends Dyngoose.Table {
