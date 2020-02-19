@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/benhutchins/dyngoose/compare/v1.7.0...v1.8.0) (2020-02-19)
+
+
+### Features
+
+* add type checks to prevent errors when performing queries ([c11ae98](https://github.com/benhutchins/dyngoose/commit/c11ae984b3eac6f3da1cd152bc27945daef77238))
+
 # [1.7.0](https://github.com/benhutchins/dyngoose/compare/v1.6.0...v1.7.0) (2020-02-19)
 
 
