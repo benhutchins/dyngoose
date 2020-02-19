@@ -45,6 +45,12 @@ export class TestableTable extends Dyngoose.Table {
 
   @Dyngoose.Attribute.String({ trim: true })
   public trimmedString: string
+
+  @Dyngoose.Attribute.Number()
+  public testNumber: number
+
+  @Dyngoose.Attribute.Number()
+  public testBigInt: BigInt
 }
 
 before(async () => {

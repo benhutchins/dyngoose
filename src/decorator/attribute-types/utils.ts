@@ -1,8 +1,8 @@
-export function stringToNumber(number: string) {
+export function stringToNumber(number: string): number {
   return JSON.parse(number)
 }
 
-export function numberToString(number: number) {
+export function numberToString(number: number | BigInt) {
   return number.toString()
 }
 
