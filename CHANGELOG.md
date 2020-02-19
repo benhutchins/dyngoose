@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/benhutchins/dyngoose/compare/v1.6.0...v1.7.0) (2020-02-19)
+
+
+### Features
+
+* pass an event with more useful data to the afterSave handler ([5aa3a0c](https://github.com/benhutchins/dyngoose/commit/5aa3a0ca0536aa1ec98bb91104c25fe1ab2127f2))
+
 # [1.6.0](https://github.com/benhutchins/dyngoose/compare/v1.5.0...v1.6.0) (2020-02-18)
 
 
