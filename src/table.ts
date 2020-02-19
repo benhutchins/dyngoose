@@ -2,6 +2,7 @@ import { DynamoDB } from 'aws-sdk'
 import * as _ from 'lodash'
 import { Attribute } from './attribute'
 import { DocumentClient } from './document-client'
+import * as Events from './events'
 import { Filters as QueryFilters, UpdateConditions } from './query/filters'
 import { Results as QueryResults } from './query/results'
 import { MagicSearch, MagicSearchInput } from './query/search'
@@ -435,18 +436,28 @@ export class Table {
    */
   public async forceSave(conditions?: UpdateConditions<this>, meta?: any): Promise<void> {
     let output: DynamoDB.PutItemOutput | DynamoDB.UpdateItemOutput
+    let type: 'put' | 'update'
     if (this.__putRequired) {
       output = await this.table.documentClient.put(this, conditions)
       this.__putRequired = false
+      type = 'put'
     } else {
       output = await this.table.documentClient.update(this, conditions)
+      type = 'update'
     }
+
+    // trigger afterSave before clearing values, so the hook can determine what has been changed
+    await this.afterSave({
+      type,
+      output,
+      meta,
+      deletedAttributes: this.__deletedAttributes,
+      updatedAttributes: this.__updatedAttributes,
+    })
 
     // reset internal tracking of changes attributes
     this.__deletedAttributes = []
     this.__updatedAttributes = []
-
-    await this.afterSave(output, meta)
   }
 
   /**
@@ -508,7 +519,7 @@ export class Table {
   /**
    * After a record is deleted, this handler is called.
    */
-  protected async afterSave(output: DynamoDB.PutItemOutput | DynamoDB.UpdateItemOutput, meta?: any): Promise<void> {
+  protected async afterSave(event: Events.AfterSaveEvent): Promise<void> {
     return
   }
 

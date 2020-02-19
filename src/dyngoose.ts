@@ -3,6 +3,7 @@ import * as Connection from './connections'
 import * as Decorator from './decorator'
 import { DynamoAttributeType } from './dynamo-attribute-types'
 import * as Errors from './errors'
+import * as Events from './events'
 import * as Metadata from './metadata'
 import * as Query from './query'
 import { ITable, Table } from './table'
@@ -22,6 +23,7 @@ export {
   Decorator,
   DynamoAttributeType,
   Errors,
+  Events,
   Metadata,
   Query,
   Table,

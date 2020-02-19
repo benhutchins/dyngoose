@@ -3,6 +3,7 @@
   "version": "1.6.0",
   "description": "Elegant DynamoDB object modeling for Typescript",
   "keywords": [
+    "dynamo",
     "dynamodb",
     "orm",
     "odm",
@@ -35,22 +36,17 @@
   },
   "homepage": "https://github.com/benhutchins/dyngoose#readme",
   "devDependencies": {
+    "@commitlint/cli": "^8.3.5",
+    "@commitlint/config-conventional": "^8.3.4",
     "@types/chai": "4.2.9",
-    "@types/faker": "4.1.9",
     "@types/lodash": "4.14.149",
     "@types/mocha": "7.0.1",
     "@types/node": "13.7.1",
-    "@types/reflect-metadata": "0.1.0",
-    "@vingle/commitlint-preset": "1.0.3",
-    "@vingle/semantic-release-config": "1.0.5",
-    "@vingle/tslint-preset": "1.0.0",
     "chai": "4.2.0",
     "check-engine": "1.8.1",
-    "dynamo-local": "0.0.4",
-    "faker": "4.1.0",
     "husky": "4.2.3",
     "mocha": "7.0.1",
-    "tslint": "5.20.1",
+    "tslint": "^5.20.1",
     "typescript": "3.7.5"
   },
   "dependencies": {
@@ -67,12 +63,8 @@
   },
   "husky": {
     "hooks": {
+      "pre-commit": "npm run lint",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
-  },
-  "commitlint": {
-    "extends": [
-      "@vingle/commitlint-preset"
-    ]
   }
 }
