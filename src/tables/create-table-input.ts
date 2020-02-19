@@ -19,10 +19,15 @@ export function createTableInput(schema: Schema, forCloudFormation = false) {
         KeyType: 'HASH',
       },
     ],
-    ProvisionedThroughput: {
+  }
+
+  if (schema.options.billingMode === 'PAY_PER_REQUEST') {
+    params.BillingMode = 'PAY_PER_REQUEST'
+  } else {
+    params.ProvisionedThroughput = {
       ReadCapacityUnits: schema.throughput.read,
       WriteCapacityUnits: schema.throughput.write,
-    },
+    }
   }
 
   if (schema.primaryKey.range) {
@@ -135,7 +140,7 @@ export function createTableInput(schema: Schema, forCloudFormation = false) {
         })
       }
 
-      // by default, indexes will share the same  throughput as the table
+      // by default, indexes will share the same throughput as the table
       const throughput = indexMetadata.throughput || schema.throughput
 
       const index: DynamoDB.GlobalSecondaryIndex = {

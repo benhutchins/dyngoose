@@ -28,8 +28,21 @@ export interface TableMetadata {
    *
    * Please @see {@link https://github.com/benhutchins/dyngoose/wiki/Deployment} to learn
    * about recommendations for deploying your tables to production.
+   *
+   * You can also set your table's billingMode to `PAY_PER_REQUEST`, which renders this
+   * option meaningless.
    */
   readonly throughput?: IThroughput | number
+
+  /**
+   * Define your table's billing mode.
+   *
+   * Available options are: `PROVISIONED` or `PAY_PER_REQUEST`.
+   * Defaults to `PROVISIONED`.
+   *
+   * The `throughput` option only matters when using `PROVISIONED`.
+   */
+  readonly billingMode?: 'PROVISIONED' | 'PAY_PER_REQUEST'
 
   /**
    * Whether this table data should be encrypted at rest.

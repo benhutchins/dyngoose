@@ -48,14 +48,38 @@ export class Table {
   //#endregion static properties
 
   //#region static methods
+  /**
+   * Creates a new record for this table.
+   *
+   * This method is strongly typed and it is recommended you use over `new Table(…)`
+   */
   public static new<T extends Table>(this: StaticThis<T>, values: TableProperties<T>): T {
     return new this().setValues(values)
   }
 
+  /**
+   * Creates a new instance of Table with values from a given `DynamoDB.AttributeMap`.
+   *
+   * This assumes the record exists in DynamoDB and saving this record will
+   * default to using an `UpdateItem` operation rather than a `PutItem` operation
+   * upon being saved.
+   */
   public static fromDynamo<T extends Table>(this: StaticThis<T>, attributes: DynamoDB.AttributeMap): T {
     return new this().fromDynamo(attributes)
   }
 
+  /**
+   * Creates an instance of Table from raw user input. Designs to be used for creating
+   * records from requests, like:
+   *
+   * express.js:
+   *   ```app.post('/api/create', (req, res) => {
+   *     const card = Card.fromJSON(req.body)
+   *   })```
+   *
+   * Each attribute can optionally define additional validation logic or sanitization
+   * of the user input, @see {@link https://github.com/benhutchins/dyngoose/wiki/Attributes}.
+   */
   public static fromJSON<T extends Table>(this: StaticThis<T>, json: { [attribute: string]: any }): T {
     return new this().fromJSON(json)
   }
@@ -64,7 +88,7 @@ export class Table {
    * Query DynamoDB for what you need.
    *
    * This is a powerful all-around querying method. It will detect the best index available for use,
-   * but it ignores indexes that are not set to Projection of 'ALL'. To please use the index-specific
+   * but it ignores indexes that are not set to Projection of `ALL`. To please use the index-specific
    * querying when necessary.
    *
    * This will avoid performing a scan at all cost, but it will fall back to using a scan if necessary.
@@ -81,7 +105,7 @@ export class Table {
   }
 
   /**
-   * Create the table in DynamoDB.
+   * Creates the table in DynamoDB.
    *
    * You can also use {@link Table.migrateTable} to create and automatically
    * migrate and indexes that need changes.
@@ -91,7 +115,7 @@ export class Table {
   }
 
   /**
-   * Migrate the table to match updated specifications.
+   * Migrates the table to match updated specifications.
    *
    * This will create new indexes and delete legacy indexes.
    */
