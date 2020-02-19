@@ -54,4 +54,36 @@ describe('AttributeType/Date', () => {
       })
     })
   })
+
+  describe(':unixTimestamp', () => {
+    it('should store a date as a unix timestamp', async () => {
+      const now = new Date()
+      record.unixTimestamp = now
+
+      expect(record.unixTimestamp).to.be.a('date')
+
+      // the unixTimestamp should have ben converted to a unix timestamp, so it should be slightly different from `now`
+      expect(record.unixTimestamp.valueOf()).to.not.eq(now.valueOf())
+
+      // the js timestamp to unix timestamp conversion should work
+      expect(record.unixTimestamp.valueOf()).to.eq(Math.floor(now.valueOf() / 1000) * 1000)
+
+      expect(record.getAttributeDynamoValue('unixTimestamp')).to.deep.eq({
+        N: Math.floor(now.valueOf() / 1000).toString(),
+      })
+    })
+  })
+
+  describe(':millisecondTimestamp', () => {
+    it('should store a date as a millisecond timestamp', async () => {
+      const now = new Date()
+      record.msTimestamp = now
+
+      expect(record.msTimestamp).to.be.a('date')
+      expect(record.msTimestamp.valueOf()).to.eq(now.valueOf())
+      expect(record.getAttributeDynamoValue('msTimestamp')).to.deep.eq({
+        N: now.valueOf().toString(),
+      })
+    })
+  })
 })

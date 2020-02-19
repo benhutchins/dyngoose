@@ -31,6 +31,12 @@ export class TestableTable extends Dyngoose.Table {
   @Dyngoose.Attribute.Date({ timeToLive: true })
   public expiresAt: Date
 
+  @Dyngoose.Attribute.Date({ unixTimestamp: true })
+  public unixTimestamp: Date
+
+  @Dyngoose.Attribute.Date({ millisecondTimestamp: true })
+  public msTimestamp: Date
+
   @Dyngoose.Attribute('String', { default: 'SomeDefault' })
   public defaultedString: string
 

@@ -17,7 +17,7 @@ export class DateAttributeType extends AttributeType<Value, Metadata> implements
   constructor(record: Table, propertyName: string, metadata: Metadata) {
     super(record, propertyName, metadata)
 
-    if (this.metadata.timestamp || this.metadata.timeToLive) {
+    if (this.metadata.unixTimestamp || this.metadata.millisecondTimestamp || this.metadata.timeToLive) {
       this.type = DynamoAttributeType.Number
     }
   }
@@ -47,7 +47,7 @@ export class DateAttributeType extends AttributeType<Value, Metadata> implements
       dt = new Date()
     }
 
-    if (this.metadata.timestamp || this.metadata.timeToLive) {
+    if (this.metadata.unixTimestamp || this.metadata.millisecondTimestamp || this.metadata.timeToLive) {
       return {
         N: this.toJSON(dt),
       }
@@ -62,9 +62,13 @@ export class DateAttributeType extends AttributeType<Value, Metadata> implements
     // whenever the value is stored as a number, it must be a timestamp
     // the timestamp will have been stored in UTC
     if (attributeValue.N) {
-      // the timestamp will be converted from UTC (as all timestamps as in UTC), to the local time
-      // so we need to convert it back to UTC to ensure all dates read from the database as in UTC
-      return moment.unix(stringToNumber(attributeValue.N)).utc().toDate()
+      if (this.metadata.millisecondTimestamp) {
+        return new Date(stringToNumber(attributeValue.N))
+      } else {
+        // the timestamp will be converted from UTC (as all timestamps as in UTC), to the local time
+        // so we need to convert it back to UTC to ensure all dates read from the database as in UTC
+        return moment.unix(stringToNumber(attributeValue.N)).utc().toDate()
+      }
     } else if (attributeValue.S) {
       if (this.metadata.dateOnly) {
         return moment.utc(attributeValue.S as string, 'YYYY-MM-DD', true).toDate()
@@ -81,8 +85,10 @@ export class DateAttributeType extends AttributeType<Value, Metadata> implements
 
   toJSON(dt: Value): string {
     const m = moment.utc(dt)
-    if (this.metadata.timestamp || this.metadata.timeToLive) {
+    if (this.metadata.unixTimestamp || this.metadata.timeToLive) {
       return m.unix().toString()
+    } else if (this.metadata.millisecondTimestamp) {
+      return m.valueOf().toString()
     } else if (this.metadata.dateOnly) {
       return m.format('YYYY-MM-DD')
     } else if (this.metadata.format) {
