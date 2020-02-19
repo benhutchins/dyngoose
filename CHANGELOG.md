@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/benhutchins/dyngoose/compare/v1.9.0...v1.10.0) (2020-02-19)
+
+
+### Features
+
+* support migrating the TTL attribute as part of migrateTable ([7a1761b](https://github.com/benhutchins/dyngoose/commit/7a1761b4287b6b54801727d1a448938ecd325c14))
+
 # [1.9.0](https://github.com/benhutchins/dyngoose/compare/v1.8.0...v1.9.0) (2020-02-19)
 
 
