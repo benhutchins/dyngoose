@@ -1,6 +1,7 @@
 import { DynamoDB } from 'aws-sdk'
 import * as _ from 'lodash'
 import { SchemaError } from '../errors'
+import { createTable } from './create-table'
 import { describeTable } from './describe-table'
 import { Schema } from './schema'
 
@@ -11,7 +12,7 @@ export async function migrateTable(schema: Schema, waitForReady = false) {
     description = await describeTable(schema)
   } catch (err) {
     if (err.name === 'ResourceNotFoundException') {
-      return await this.createTable(waitForReady)
+      return await createTable(schema, waitForReady)
     } else {
       throw err
     }
@@ -21,7 +22,6 @@ export async function migrateTable(schema: Schema, waitForReady = false) {
 
   const indexes = _.map(description.GlobalSecondaryIndexes || [], 'IndexName') as string[]
   const expectedIndexes = _.map(expectedDescription.GlobalSecondaryIndexes || [], 'IndexName') as string[]
-  // const updatedIndexes: DynamoDB.GlobalSecondaryIndex[] = []
   const deletedIndexes: DynamoDB.GlobalSecondaryIndexDescriptionList = []
   let hasChanges = indexes.length < expectedIndexes.length
 
@@ -75,15 +75,16 @@ export async function migrateTable(schema: Schema, waitForReady = false) {
     }
 
     // TTL
-    // if (schema.timeToLiveAttribute) {
-    //   await schema.dynamo.updateTimeToLive({
-    //     TableName: schema.name,
-    //     TimeToLiveSpecification: {
-    //       Enabled: true,
-    //       AttributeName: schema.timeToLiveAttribute.name,
-    //     },
-    //   }).promise()
-    // }
+    const ttl = await schema.dynamo.describeTimeToLive({ TableName: schema.name }).promise()
+    if (!ttl.TimeToLiveDescription || ttl.TimeToLiveDescription.AttributeName !== schema.timeToLiveAttribute.name) {
+      await schema.dynamo.updateTimeToLive({
+        TableName: schema.name,
+        TimeToLiveSpecification: {
+          Enabled: true,
+          AttributeName: schema.timeToLiveAttribute.name,
+        },
+      }).promise()
+    }
   }
 
   return description
