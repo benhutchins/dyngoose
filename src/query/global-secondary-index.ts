@@ -1,5 +1,5 @@
 import { DynamoDB } from 'aws-sdk'
-import { has } from 'lodash'
+import { get, has, isArray } from 'lodash'
 import { QueryError } from '../errors'
 import * as Metadata from '../metadata'
 import { ITable, Table } from '../table'
@@ -11,7 +11,6 @@ interface GlobalSecondaryIndexQueryInput {
   rangeOrder?: 'ASC' | 'DESC'
   limit?: number
   exclusiveStartKey?: DynamoDB.Key
-  consistent?: DynamoDB.ConsistentRead
 }
 
 interface GlobalSecondaryIndexScanInput {
@@ -22,6 +21,10 @@ interface GlobalSecondaryIndexScanInput {
   exclusiveStartKey?: DynamoDB.Key
   projectionExpression?: DynamoDB.ProjectionExpression
   consistent?: DynamoDB.ConsistentRead
+}
+
+interface GlobalSecondaryIndexSegmentedScanInput extends GlobalSecondaryIndexScanInput {
+  totalSegments: DynamoDB.ScanTotalSegments
 }
 
 export class GlobalSecondaryIndex<T extends Table> {
@@ -70,7 +73,13 @@ export class GlobalSecondaryIndex<T extends Table> {
       ScanIndexForward,
       ExclusiveStartKey: input.exclusiveStartKey,
       ReturnConsumedCapacity: 'TOTAL',
-      ConsistentRead: input.consistent,
+
+      /**
+       * Global secondary indexes support eventually consistent reads only,
+       * so do not specify ConsistentRead when querying a global secondary index.
+       * @see {@link https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#query-property}
+       */
+      // ConsistentRead: input.consistent,
     }
     return queryInput
   }
@@ -78,6 +87,8 @@ export class GlobalSecondaryIndex<T extends Table> {
   public async query(filters: QueryFilters<T>, input?: GlobalSecondaryIndexQueryInput): Promise<QueryResults<T>> {
     if (!has(filters, this.metadata.hash.propertyName)) {
       throw new QueryError('Cannot perform a query on a GlobalSecondaryIndex without specifying a hash key value')
+    } else if (isArray(get(filters, this.metadata.hash.propertyName)) && get(filters, this.metadata.hash.propertyName)[0] !== '=') {
+      throw new QueryError('DynamoDB only supports using equal operator for the HASH key')
     }
 
     const queryInput = this.getQueryInput(input)
@@ -124,6 +135,54 @@ export class GlobalSecondaryIndex<T extends Table> {
     }
     const output = await this.tableClass.schema.dynamo.scan(scanInput).promise()
     return this.getQueryResults(output)
+  }
+
+  /**
+   * Performs a parallel segmented scan for you.
+   *
+   * You must provide the total number of segments you want to perform.
+   *
+   * It is recommend you also provide a Limit for the segments, which can help prevent situations
+   * where one of the workers consumers all of the provisioned throughput, at the expense of the
+   * other workers.
+   *
+   * @see {@link https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Scan.html#Scan.ParallelScan}
+   */
+  public async segmentedScan(filters: QueryFilters<T> | null, input: GlobalSecondaryIndexSegmentedScanInput): Promise<QueryResults<T>> {
+    const scans: Promise<QueryResults<T>>[] = []
+    for (let i = 0; i < input.totalSegments; i++) {
+      input.segment = i
+      scans.push(this.scan(filters, input))
+    }
+
+    const results = await Promise.all(scans)
+    let records: T[] = []
+    let scannedCount = 0
+    let capacityUnits = 0
+    let writeCapacityUnits = 0
+    let readCapacityUnits = 0
+
+    for (const result of results) {
+      records = records.concat(result.records)
+      scannedCount += result.scannedCount
+
+      if (result.consumedCapacity) {
+        capacityUnits += result.consumedCapacity.CapacityUnits || 0
+        writeCapacityUnits += result.consumedCapacity.WriteCapacityUnits || 0
+        readCapacityUnits += result.consumedCapacity.ReadCapacityUnits || 0
+      }
+    }
+
+    return {
+      records,
+      count: records.length,
+      scannedCount: scannedCount,
+      consumedCapacity: {
+        CapacityUnits: capacityUnits,
+        WriteCapacityUnits: writeCapacityUnits,
+        ReadCapacityUnits: readCapacityUnits,
+      },
+    }
   }
 
   protected getQueryResults(output: DynamoDB.ScanOutput | DynamoDB.QueryOutput): QueryResults<T> {

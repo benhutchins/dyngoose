@@ -1,5 +1,6 @@
 import { expect } from 'chai'
 import * as Decorator from '../decorator'
+import { QueryError } from '../errors'
 import { Table } from '../table'
 import * as Query from './index'
 
@@ -13,6 +14,9 @@ class Card extends Table {
 
   @Decorator.GlobalSecondaryIndex({ hashKey: 'title', rangeKey: 'id' })
   public static readonly fullTitleIndex: Query.GlobalSecondaryIndex<Card>
+
+  @Decorator.GlobalSecondaryIndex({ hashKey: 'id', rangeKey: 'title' })
+  public static readonly filterableTitleIndex: Query.GlobalSecondaryIndex<Card>
 
   @Decorator.Attribute.Number()
   public id: number
@@ -48,6 +52,54 @@ describe('Query/GlobalSecondaryIndex', () => {
         expect(res.records.length).to.eq(2)
         expect(res.records[0].id).to.eq(12)
         expect(res.records[1].id).to.eq(11)
+      })
+
+      it('should complain when HASH key is not provided', async () => {
+        await Card.hashTitleIndex.query({ id: 10 }).then(
+          () => {
+            expect(true).to.be.eq('false')
+          },
+          (err) => {
+            expect(err).to.be.instanceOf(QueryError)
+            expect(err.message).to.contain('Cannot perform')
+          },
+        )
+      })
+
+      it('should complain when HASH key attempts to use unsupported operator', async () => {
+        await Card.hashTitleIndex.query({ title: ['<>', 'abd'] }).then(
+          () => {
+            expect(true).to.be.eq('false')
+          },
+          (err) => {
+            expect(err).to.be.instanceOf(QueryError)
+            expect(err.message).to.contain('DynamoDB only supports')
+          },
+        )
+      })
+
+      it('should allow use of query operators for RANGE', async () => {
+        await Card.new({ id: 10, title: 'prefix/abc' }).save()
+        await Card.new({ id: 10, title: 'prefix/123' }).save()
+        await Card.new({ id: 10, title: 'prefix/xyz' }).save()
+
+        const res = await Card.filterableTitleIndex.query({ id: 10, title: ['beginsWith', 'prefix/'] })
+        expect(res.records.length).to.eq(3)
+        expect(res.records[0].id).to.eq(10)
+        expect(res.records[1].id).to.eq(10)
+        expect(res.records[2].id).to.eq(10)
+      })
+
+      it('should complain when using unsupported query operators for RANGE', async () => {
+        await Card.filterableTitleIndex.query({ id: 10, title: ['contains', 'prefix/'] }).then(
+          () => {
+            expect(true).to.be.eq('false')
+          },
+          (err) => {
+            expect(err).to.be.instanceOf(QueryError)
+            expect(err.message).to.contain('Cannot use')
+          },
+        )
       })
     })
 

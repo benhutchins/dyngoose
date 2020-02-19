@@ -10,9 +10,11 @@ import { Results as QueryResults } from './results'
 
 export interface MagicSearchInput {
   /**
-   * Tell the magic search to page internally and return all possible search results.
+   * Tell the search to page internally and return all possible search results.
    *
    * Be cautious. This can easily cause timeouts if you're using Lambda functions.
+   * This is also non-ideal for scans, for better performance use a segmented scan
+   * via the Query.PrimaryKey.segmentedScan or Query.GlobalSecondaryIndex.segmentedScan.
    *
    * Defaults to `false`.
    */

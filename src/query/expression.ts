@@ -179,6 +179,15 @@ class FilterExpressionQuery<T extends Table> {
       case 'contains':
       case 'not contains':
       case 'beginsWith':
+        /**
+         * Prevent begins_with with number operators, which is not supported by DynamoDB.
+         *
+         * @see {@link https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#query-property}
+         */
+        if (operator === 'beginsWith' && attr.type.type === 'N') {
+          throw new QueryError('Cannot use beginsWith with number attributes')
+        }
+
         const strValue = attr.toDynamoAssert(filter[1])
         const queryOperator = operator === 'beginsWith' ? 'begins_with' : operator.replace(' ', '_')
         query = `${queryOperator}(${attrNameMappedTo}, ${variableName})`
@@ -248,22 +257,25 @@ class FilterExpressionQuery<T extends Table> {
   }
 
   private push(attribute: Attribute<any>, filter: string, operator: FilterOperator) {
-    if (this.isAttrInIndex(attribute) && _.includes(keyConditionAllowedOperators, operator)) {
-      this.keyConditionsMap.push({ attribute, filter })
+    if (this.isHashKey(attribute)) {
+      if (operator === '=') {
+        this.keyConditionsMap.push({ attribute, filter })
+      } else {
+        throw new QueryError(`Cannot use ${operator} for a HASH key, can only use equals (=) operator`)
+      }
+    } else if (this.isRangeKey(attribute)) {
+      if (_.includes(keyConditionAllowedOperators, operator)) {
+        this.keyConditionsMap.push({ attribute, filter })
+      } else {
+        throw new QueryError(`Cannot use ${operator} for a HASH key, can only use ${keyConditionAllowedOperators.join(', ')} operators`)
+      }
     } else {
       this.filterConditionsMap.push({ attribute, filter })
     }
   }
 
-  private isAttrInIndex(attribute: Attribute<any>): boolean {
-    if (this.indexMetadata) {
-      if (attribute.name === this.indexMetadata.hash.name) {
-        return true
-      }
-      return this.isRangeKey(attribute)
-    } else {
-      return false
-    }
+  private isHashKey(attribute: Attribute<any>): boolean {
+    return this.indexMetadata != null && attribute.name === this.indexMetadata.hash.name
   }
 
   private isRangeKey(attribute: Attribute<any>): boolean {
