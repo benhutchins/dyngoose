@@ -1,3 +1,12 @@
+# [1.9.0](https://github.com/benhutchins/dyngoose/compare/v1.8.0...v1.9.0) (2020-02-19)
+
+
+### Features
+
+* add explicit support for unix and millisecond timestamps ([17dd6ae](https://github.com/benhutchins/dyngoose/commit/17dd6aedf6fde90fb2212e7d61b334489fa57360))
+* support setting a table's billing mode to PAY_PER_REQUEST ([5536e66](https://github.com/benhutchins/dyngoose/commit/5536e66cb846f35c6c153e18d7b276892aa555c9))
+* support storing BigInts as numbers ([ab28bf7](https://github.com/benhutchins/dyngoose/commit/ab28bf721ac74bb705e36e7b5df33e92cab0e37b))
+
 # [1.8.0](https://github.com/benhutchins/dyngoose/compare/v1.7.0...v1.8.0) (2020-02-19)
 
 
