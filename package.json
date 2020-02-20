@@ -1,6 +1,6 @@
 {
   "name": "dyngoose",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "description": "Elegant DynamoDB object modeling for Typescript",
   "keywords": [
     "dynamo",

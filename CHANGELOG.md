@@ -1,3 +1,15 @@
+# [1.11.0](https://github.com/benhutchins/dyngoose/compare/v1.10.0...v1.11.0) (2020-02-20)
+
+
+### Bug Fixes
+
+* bug with migrate utility, typo using the wrong variable ([5a0d612](https://github.com/benhutchins/dyngoose/commit/5a0d612811456597486bc576998af4983dad6f15))
+
+
+### Features
+
+* allow any DynamoDB configuration option to be defined ([67bb421](https://github.com/benhutchins/dyngoose/commit/67bb4219dbd682801bae365997aa0906134b1ef4))
+
 # [1.10.0](https://github.com/benhutchins/dyngoose/compare/v1.9.0...v1.10.0) (2020-02-19)
 
 
