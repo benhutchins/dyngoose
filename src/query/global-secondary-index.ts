@@ -8,7 +8,13 @@ import { Filters as QueryFilters } from './filters'
 import { Results as QueryResults } from './results'
 
 interface GlobalSecondaryIndexQueryInput {
+  /**
+   * Specify the direction to order using your RANGE key
+   *
+   * Defaults to ASC
+   */
   rangeOrder?: 'ASC' | 'DESC'
+
   limit?: number
   exclusiveStartKey?: DynamoDB.Key
 }
