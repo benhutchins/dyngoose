@@ -1,3 +1,11 @@
+## [1.11.1](https://github.com/benhutchins/dyngoose/compare/v1.11.0...v1.11.1) (2020-02-21)
+
+
+### Bug Fixes
+
+* prevent use of INCLUDE without nonKeyAttributes ([9e39ab9](https://github.com/benhutchins/dyngoose/commit/9e39ab9b1ff52cb98da3917132dc13a250bfcbc0))
+* usage of incorrect suffix variable in utils/cloudforamtion ([45c36a3](https://github.com/benhutchins/dyngoose/commit/45c36a3fb14532d91d72e7ffce00e66381ff32cc))
+
 # [1.11.0](https://github.com/benhutchins/dyngoose/compare/v1.10.0...v1.11.0) (2020-02-20)
 
 
