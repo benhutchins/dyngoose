@@ -1,3 +1,10 @@
+## [1.11.4](https://github.com/benhutchins/dyngoose/compare/v1.11.3...v1.11.4) (2020-02-21)
+
+
+### Bug Fixes
+
+* date attributes should honor desired format when output to JSON ([b6fa238](https://github.com/benhutchins/dyngoose/commit/b6fa238747ddb0e110d5d36353056933df8a210c))
+
 ## [1.11.3](https://github.com/benhutchins/dyngoose/compare/v1.11.2...v1.11.3) (2020-02-21)
 
 
