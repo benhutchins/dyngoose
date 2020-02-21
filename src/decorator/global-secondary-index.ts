@@ -1,3 +1,4 @@
+import { SchemaError } from '../errors'
 import { IThroughput } from '../interfaces'
 import * as Metadata from '../metadata'
 import { ITable } from '../table'
@@ -21,6 +22,10 @@ export function GlobalSecondaryIndex(options: GlobalSecondaryIndexOptions) {
       projection: options.projection,
       nonKeyAttributes: options.nonKeyAttributes,
       throughput: options.throughput,
+    }
+
+    if (index.projection === 'INCLUDE' && (!options.nonKeyAttributes || options.nonKeyAttributes.length === 0)) {
+      throw new SchemaError(`If Projection type INCLUDE is specified, some non-key attributes to include in the projection must be specified as well`)
     }
 
     table.schema.globalSecondaryIndexes.push(index)
