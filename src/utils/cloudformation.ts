@@ -8,6 +8,8 @@ export default async function createCloudFormationResources(input: MigrateTables
   const tableFiles = readdirSync(input.tablesDirectory)
   const tables: (typeof Table)[] = []
   const resources: any = {}
+  const log = input.log || console['log']
+  log('Running Dyngoose CloudFormation template generation utility…')
 
   for (const file of tableFiles) {
     if (file.endsWith(input.tableFileSuffix)) {
@@ -23,10 +25,13 @@ export default async function createCloudFormationResources(input: MigrateTables
   }
 
   for (const SomeTable of tables) {
-    // log(`Processing ${colors.cyan(SomeTable.schema.name)}`)
     const properties = SomeTable.schema.createCloudFormationResource()
-    const resourceName = `${SomeTable.schema.name}Table`
+    let resourceName = _.upperFirst(SomeTable.name)
+    if (!resourceName.toLowerCase().endsWith('table')) {
+      resourceName += 'Table'
+    }
     properties.TableName = `${input.tableNamePrefix || ''}${properties.TableName}${input.tableNameSuffix || ''}`
+    log(`Generated ${properties.TableName} into ${resourceName} resource`)
     resources[resourceName] = {
       Type: 'AWS::DynamoDB::Table',
       Properties: properties,
