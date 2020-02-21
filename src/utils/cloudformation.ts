@@ -26,7 +26,7 @@ export default async function createCloudFormationResources(input: MigrateTables
     // log(`Processing ${colors.cyan(SomeTable.schema.name)}`)
     const properties = SomeTable.schema.createCloudFormationResource()
     const resourceName = `${SomeTable.schema.name}Table`
-    properties.TableName = `${input.tableNamePrefix || ''}${properties.TableName}${input.tableFileSuffix || ''}`
+    properties.TableName = `${input.tableNamePrefix || ''}${properties.TableName}${input.tableNameSuffix || ''}`
     resources[resourceName] = {
       Type: 'AWS::DynamoDB::Table',
       Properties: properties,
