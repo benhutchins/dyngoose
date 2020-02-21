@@ -1,3 +1,10 @@
+## [1.11.3](https://github.com/benhutchins/dyngoose/compare/v1.11.2...v1.11.3) (2020-02-21)
+
+
+### Bug Fixes
+
+* do not use official process.env.AWS_* variables by default ([60444d5](https://github.com/benhutchins/dyngoose/commit/60444d53cf09a8b4a0264025e2e9d821b413cadd))
+
 ## [1.11.2](https://github.com/benhutchins/dyngoose/compare/v1.11.1...v1.11.2) (2020-02-21)
 
 
