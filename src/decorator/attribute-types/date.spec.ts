@@ -16,6 +16,7 @@ describe('AttributeType/Date', () => {
       await record.save()
 
       expect(record.createdAt).to.be.a('date')
+      expect(record.toJSON().createdAt).to.be.a('string')
       expect(record.createdAt).to.be.at.least(now)
       expect(record.getAttributeDynamoValue('createdAt')).to.deep.eq({
         S: record.createdAt.toISOString(),
@@ -61,6 +62,7 @@ describe('AttributeType/Date', () => {
       record.unixTimestamp = now
 
       expect(record.unixTimestamp).to.be.a('date')
+      expect(record.toJSON().unixTimestamp).to.be.a('number')
 
       // the unixTimestamp should have ben converted to a unix timestamp, so it should be slightly different from `now`
       expect(record.unixTimestamp.valueOf()).to.not.eq(now.valueOf())
@@ -80,6 +82,7 @@ describe('AttributeType/Date', () => {
       record.msTimestamp = now
 
       expect(record.msTimestamp).to.be.a('date')
+      expect(record.toJSON().msTimestamp).to.be.a('number')
       expect(record.msTimestamp.valueOf()).to.eq(now.valueOf())
       expect(record.getAttributeDynamoValue('msTimestamp')).to.deep.eq({
         N: now.valueOf().toString(),

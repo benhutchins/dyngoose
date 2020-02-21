@@ -49,11 +49,11 @@ export class DateAttributeType extends AttributeType<Value, Metadata> implements
 
     if (this.metadata.unixTimestamp || this.metadata.millisecondTimestamp || this.metadata.timeToLive) {
       return {
-        N: this.toJSON(dt),
+        N: this.toJSON(dt).toString(),
       }
     } else {
       return {
-        S: this.toJSON(dt),
+        S: this.toJSON(dt).toString(),
       }
     }
   }
@@ -83,12 +83,12 @@ export class DateAttributeType extends AttributeType<Value, Metadata> implements
     return moment.utc(dt).toDate()
   }
 
-  toJSON(dt: Value): string {
+  toJSON(dt: Value): string | number {
     const m = moment.utc(dt)
     if (this.metadata.unixTimestamp || this.metadata.timeToLive) {
-      return m.unix().toString()
+      return m.unix()
     } else if (this.metadata.millisecondTimestamp) {
-      return m.valueOf().toString()
+      return m.valueOf()
     } else if (this.metadata.dateOnly) {
       return m.format('YYYY-MM-DD')
     } else if (this.metadata.format) {
