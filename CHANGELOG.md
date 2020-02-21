@@ -1,3 +1,10 @@
+## [1.11.2](https://github.com/benhutchins/dyngoose/compare/v1.11.1...v1.11.2) (2020-02-21)
+
+
+### Bug Fixes
+
+* output log messages from utils/cloudformation ([4284fcb](https://github.com/benhutchins/dyngoose/commit/4284fcb5c22009bbe434b5715efa5932f2bc0689))
+
 ## [1.11.1](https://github.com/benhutchins/dyngoose/compare/v1.11.0...v1.11.1) (2020-02-21)
 
 
