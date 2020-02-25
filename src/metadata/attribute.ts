@@ -2,7 +2,17 @@ import { AttributeValue } from 'aws-sdk/clients/dynamodb'
 import { Attribute } from '../attribute'
 
 export interface AttributeMetadata<Value> {
-  name?: string // when not set, the attribute name defaults to the propertyName
+  /**
+   * Name for this attribute.
+   *
+   * When not set, the attribute name defaults to the property name used on the Table.
+   */
+  name?: string
+
+  /**
+   * Optional extra data, used for your own logic.
+   */
+  extra: any
 
   /**
    * Makes this a required field, attempting to save a record without this value
@@ -30,5 +40,11 @@ export interface AttributeMetadata<Value> {
    */
   manipulateRead?: (value: Value | null, attributeValue: AttributeValue, attribute: Attribute<any>) => Value | null
 
+  /**
+   * Define custom validation logic.
+   *
+   * When the value is invalid, this function should throw an error.
+   * Optionally, it can return false and Dyngoose will throw an `ValidationError`.
+   */
   validate?: (value: Value) => boolean
 }

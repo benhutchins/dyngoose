@@ -10,6 +10,11 @@ export interface TableMetadata {
   name?: string
 
   /**
+   * Optional extra data, used for your own logic.
+   */
+  extra: any
+
+  /**
    * You can optionally specify the connection for a table.
    *
    * @see {@link https://github.com/benhutchins/dyngoose/wiki/Connections}.
