@@ -12,7 +12,7 @@ export interface AttributeMetadata<Value> {
   /**
    * Optional extra data, used for your own logic.
    */
-  extra: any
+  extra?: any
 
   /**
    * Makes this a required field, attempting to save a record without this value

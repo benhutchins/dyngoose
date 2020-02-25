@@ -12,7 +12,7 @@ export interface TableMetadata {
   /**
    * Optional extra data, used for your own logic.
    */
-  extra: any
+  extra?: any
 
   /**
    * You can optionally specify the connection for a table.
