@@ -1,3 +1,15 @@
+# [1.12.0](https://github.com/benhutchins/dyngoose/compare/v1.11.4...v1.12.0) (2020-02-25)
+
+
+### Bug Fixes
+
+* make new 'extra' optional ([23b7814](https://github.com/benhutchins/dyngoose/commit/23b78140374dc7dbd018cf945e1354ae0875a616))
+
+
+### Features
+
+* support "extra" on tables and attributes ([fc076c7](https://github.com/benhutchins/dyngoose/commit/fc076c7fd2b21d38add88482ffb9406317ac6cfe))
+
 ## [1.11.4](https://github.com/benhutchins/dyngoose/compare/v1.11.3...v1.11.4) (2020-02-21)
 
 
