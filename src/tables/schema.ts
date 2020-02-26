@@ -155,7 +155,7 @@ export class Schema {
   }
 
   public getAttributeByPropertyName(propertyName: string): Attribute<any> {
-    for (const [attributeName, attribute] of this.attributes) {
+    for (const attribute of this.attributes.values()) {
       if (attribute.propertyName === propertyName) {
         return attribute
       }
