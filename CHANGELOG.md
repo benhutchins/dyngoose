@@ -1,3 +1,10 @@
+## [1.12.1](https://github.com/benhutchins/dyngoose/compare/v1.12.0...v1.12.1) (2020-02-27)
+
+
+### Bug Fixes
+
+* make aws-sdk a peerDependency to allow users to specify a version ([c15a097](https://github.com/benhutchins/dyngoose/commit/c15a097e0d8e9500a1394765d9851c790f67165d))
+
 # [1.12.0](https://github.com/benhutchins/dyngoose/compare/v1.11.4...v1.12.0) (2020-02-25)
 
 
