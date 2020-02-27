@@ -44,6 +44,7 @@
     "@types/lodash": "4.14.149",
     "@types/mocha": "7.0.1",
     "@types/node": "13.7.6",
+    "aws-sdk": "^2.627.0",
     "chai": "4.2.0",
     "check-engine": "1.8.1",
     "husky": "4.2.3",
@@ -52,9 +53,11 @@
     "tslint": "6.0.0",
     "typescript": "3.8.2"
   },
+  "peerDependencies": {
+    "aws-sdk": "^2.x"
+  },
   "dependencies": {
     "amazon-dax-client": "^1.2.2",
-    "aws-sdk": "^2.614.0",
     "aws-xray-sdk-core": "^2.3.6",
     "lodash": "^4.17.15",
     "moment": "^2.24.0"
