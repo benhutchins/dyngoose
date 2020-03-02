@@ -43,7 +43,7 @@
     "@types/chai": "4.2.9",
     "@types/lodash": "4.14.149",
     "@types/mocha": "7.0.1",
-    "@types/node": "13.7.6",
+    "@types/node": "13.7.7",
     "aws-sdk": "^2.627.0",
     "chai": "4.2.0",
     "check-engine": "1.8.1",
