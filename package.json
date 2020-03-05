@@ -42,7 +42,7 @@
     "@semantic-release/git": "^9.0.0",
     "@types/chai": "4.2.10",
     "@types/lodash": "4.14.149",
-    "@types/mocha": "7.0.1",
+    "@types/mocha": "7.0.2",
     "@types/node": "13.7.7",
     "aws-sdk": "^2.627.0",
     "chai": "4.2.0",
