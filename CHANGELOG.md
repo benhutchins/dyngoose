@@ -1,3 +1,10 @@
+## [1.12.2](https://github.com/benhutchins/dyngoose/compare/v1.12.1...v1.12.2) (2020-03-11)
+
+
+### Bug Fixes
+
+* BigInt support is causing a conflict with number attributes ([fc97e5d](https://github.com/benhutchins/dyngoose/commit/fc97e5de45f1ddf69a0797fa66b40ac078d56e7b)), closes [#33](https://github.com/benhutchins/dyngoose/issues/33)
+
 ## [1.12.1](https://github.com/benhutchins/dyngoose/compare/v1.12.0...v1.12.1) (2020-02-27)
 
 
