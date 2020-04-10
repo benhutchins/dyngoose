@@ -47,7 +47,7 @@
     "aws-sdk": "^2.627.0",
     "chai": "4.2.0",
     "check-engine": "1.8.1",
-    "husky": "4.2.3",
+    "husky": "4.2.5",
     "mocha": "7.1.1",
     "semantic-release": "17.0.4",
     "tslint": "6.1.0",
