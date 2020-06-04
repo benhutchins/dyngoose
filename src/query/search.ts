@@ -185,7 +185,7 @@ export class MagicSearch<T extends Table> {
       return false
     }
 
-    const hashFilter: QueryFilter<any> = get(this.filters, hash.name)
+    const hashFilter: QueryFilter<any> = get(this.filters, hash.name) as any
 
     // if there is an operator, ensure it is allowed as a key expression
     if (isArray(hashFilter)) {
@@ -206,7 +206,7 @@ export class MagicSearch<T extends Table> {
       return false
     }
 
-    const rangeFilter: QueryFilter<any> = get(this.filters, range.name)
+    const rangeFilter: QueryFilter<any> = get(this.filters, range.name) as any
 
     // if there is an operator, ensure it is allowed as a key expression
     if (isArray(rangeFilter)) {

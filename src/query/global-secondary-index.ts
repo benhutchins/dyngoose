@@ -93,7 +93,8 @@ export class GlobalSecondaryIndex<T extends Table> {
   public async query(filters: QueryFilters<T>, input?: GlobalSecondaryIndexQueryInput): Promise<QueryResults<T>> {
     if (!has(filters, this.metadata.hash.propertyName)) {
       throw new QueryError('Cannot perform a query on a GlobalSecondaryIndex without specifying a hash key value')
-    } else if (isArray(get(filters, this.metadata.hash.propertyName)) && get(filters, this.metadata.hash.propertyName)[0] !== '=') {
+    } else if (isArray(get(filters, this.metadata.hash.propertyName)) &&
+      (get(filters, this.metadata.hash.propertyName) as any)[0] !== '=') {
       throw new QueryError('DynamoDB only supports using equal operator for the HASH key')
     }
 

@@ -63,13 +63,13 @@ class FilterExpressionQuery<T extends Table> {
   // public query: string[] = []
   public attrs: DynamoDB.ExpressionAttributeNameMap = {}
   public values: DynamoDB.ExpressionAttributeValueMap = {}
+  public filterConditions: string[] = []
 
-  private filterConditionsMap: FilterCondition[] = []
   private keyConditionsMap: FilterCondition[] = []
 
-  get filterConditions(): string[] {
-    return this.filterConditionsMap.map((condition) => condition.filter)
-  }
+  // get filterConditions(): string[] {
+  //   return this.filterConditionsMap.map((condition) => condition.filter)
+  // }
 
   get keyConditions(): string[] {
     return this.keyConditionsMap.map((condition) => condition.filter)
@@ -84,7 +84,7 @@ class FilterExpressionQuery<T extends Table> {
       const attribute = condition.attribute
 
       if (this.isRangeKey(attribute)) {
-        this.filterConditionsMap.push(condition)
+        this.filterConditions.push(condition.filter)
         this.keyConditionsMap = []
       }
     }
@@ -93,27 +93,71 @@ class FilterExpressionQuery<T extends Table> {
   private parse() {
     let prefix = 0
 
-    _.each(this.filters, (value, attrName: string) => {
-      const attribute = this.schema.getAttributeByName(attrName)
+    let filtersArray = this.filters
 
-      let filter: Filter<any>
+    if (!_.isArray(filtersArray)) {
+      filtersArray = [filtersArray]
+    }
 
-      if (_.isArray(value)) {
-        filter = value as any
+    for (const filters of filtersArray) {
+      if (_.isArray(filters)) {
+        const orGroups: string[] = []
+
+        _.each(filters, (orFilters) => {
+          const conditions: string[] = []
+
+          _.each(orFilters, (value, attrName) => {
+            const attribute = this.schema.getAttributeByName(attrName)
+
+            let filter: Filter<any>
+
+            if (_.isArray(value)) {
+              filter = value as any
+            } else {
+              filter = ['=', value]
+            }
+
+            const queryValue = this.parseFilter(prefix.toString(), attribute, filter, attrName)
+
+            if (queryValue.query) {
+              _.extend(this.attrs, queryValue.attrs)
+              _.extend(this.values, queryValue.values)
+              // this.push(attribute, queryValue.query, filter[0])
+
+              conditions.push(queryValue.query)
+            }
+
+            orGroups.push(conditions.join(' AND '))
+
+            prefix++
+          })
+        })
+
+        this.filterConditions.push(`(${orGroups.join(' OR ')})`)
       } else {
-        filter = ['=', value]
+        _.each(filters, (value, attrName) => {
+          const attribute = this.schema.getAttributeByName(attrName)
+
+          let filter: Filter<any>
+
+          if (_.isArray(value)) {
+            filter = value as any
+          } else {
+            filter = ['=', value]
+          }
+
+          const queryValue = this.parseFilter(prefix.toString(), attribute, filter, attrName)
+
+          if (queryValue.query) {
+            _.extend(this.attrs, queryValue.attrs)
+            _.extend(this.values, queryValue.values)
+            this.push(attribute, queryValue.query, filter[0])
+          }
+
+          prefix++
+        })
       }
-
-      const queryValue = this.parseFilter(prefix.toString(), attribute, filter, attrName)
-
-      if (queryValue.query) {
-        _.extend(this.attrs, queryValue.attrs)
-        _.extend(this.values, queryValue.values)
-        this.push(attribute, queryValue.query, filter[0])
-      }
-
-      prefix++
-    })
+    }
   }
 
   /**
@@ -270,7 +314,7 @@ class FilterExpressionQuery<T extends Table> {
         throw new QueryError(`Cannot use ${operator} for a HASH key, can only use ${keyConditionAllowedOperators.join(', ')} operators`)
       }
     } else {
-      this.filterConditionsMap.push({ attribute, filter })
+      this.filterConditions.push(filter)
     }
   }
 

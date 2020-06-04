@@ -264,29 +264,53 @@ describe('query/expression', () => {
     //   })
     // })
 
-    // it('works with OR operator', () => {
-    //   expect(buildQueryExpression(schema, {
-    //     someNumber: [
-    //       { operator: Query.OPERATOR.GTE, value: 10 },
-    //       { operator: Query.OPERATOR.NEX },
-    //       { operator: Query.OPERATOR.NULL },
-    //     ],
-    //     someBool: true,
-    //   })).to.deep.equal({
-    //     FilterExpression: '(#a00 >= :v00 OR attribute_not_exists(#a01) OR #a02 = :NULL) AND #a1 = :v1',
-    //     ExpressionAttributeNames: {
-    //       '#a00': 'someNumber',
-    //       '#a01': 'someNumber',
-    //       '#a02': 'someNumber',
-    //       '#a1': 'someBool',
-    //     },
-    //     ExpressionAttributeValues: {
-    //       ':NULL': { NULL: true },
-    //       ':v00': { N: '10' },
-    //       ':v1': { BOOL: true },
-    //     },
-    //   })
-    // })
+    it('works with OR operator', () => {
+      expect(buildQueryExpression(schema, [
+        [{ someNumber: 10 }, { someNumber: 11 }],
+      ])).to.deep.equal({
+        FilterExpression: '(#a0 = :v0 OR #a1 = :v1)',
+        ExpressionAttributeNames: {
+          '#a0': 'someNumber',
+          '#a1': 'someNumber',
+        },
+        ExpressionAttributeValues: {
+          ':v0': { N: '10' },
+          ':v1': { N: '11' },
+        },
+      })
+
+      expect(buildQueryExpression(schema, [
+        {
+          id: ['includes', ['opt1', 'opt2']],
+        },
+        [{ someNumber: 10 }, { someNumber: 11 }],
+        [
+          { someString: 'test', someBool: true },
+          { someString: 'other', someBool: false },
+        ],
+      ])).to.deep.equal({
+        FilterExpression: '#a0 IN (:v00, :v01) AND (#a1 = :v1 OR #a2 = :v2) AND (#a3 = :v3 OR #a3 = :v3 AND #a4 = :v4 OR #a5 = :v5 OR #a5 = :v5 AND #a6 = :v6)',
+        ExpressionAttributeNames: {
+          '#a0': 'id',
+          '#a1': 'someNumber',
+          '#a2': 'someNumber',
+          '#a3': 'someString',
+          '#a4': 'someBool',
+          '#a5': 'someString',
+          '#a6': 'someBool',
+        },
+        ExpressionAttributeValues: {
+          ':v00': { S: 'opt1' },
+          ':v01': { S: 'opt2' },
+          ':v1': { N: '10' },
+          ':v2': { N: '11' },
+          ':v3': { S: 'test' },
+          ':v4': { BOOL: true },
+          ':v5': { S: 'other' },
+          ':v6': { BOOL: false },
+        },
+      })
+    })
 
     it('works with attribute_not_exists operator', () => {
       expect(buildQueryExpression(schema, {

@@ -1,6 +1,3 @@
-// import * as moment from 'moment'
-// export type ConditionValueType = string | boolean | number | Date | moment.Moment | null | void
-
 export type Condition<T> = (
   ['=', T]
   | ['<>', T] // not equals
