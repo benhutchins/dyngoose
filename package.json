@@ -48,7 +48,7 @@
     "chai": "4.2.0",
     "check-engine": "1.8.1",
     "husky": "4.2.5",
-    "mocha": "7.2.0",
+    "mocha": "8.0.1",
     "semantic-release": "17.0.8",
     "tslint": "6.1.2",
     "typescript": "3.9.5"
