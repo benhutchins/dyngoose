@@ -17,7 +17,7 @@ export interface TableMetadata {
   /**
    * You can optionally specify the connection for a table.
    *
-   * @see {@link https://github.com/benhutchins/dyngoose/wiki/Connections}.
+   * @see {@link https://github.com/benhutchins/dyngoose/blob/master/docs/Connections.md}.
    */
   readonly connection?: DynamoDB
 
@@ -31,7 +31,7 @@ export interface TableMetadata {
    * If you create the table via Table.createTable it will be created with read and write
    * of 5 units (which is basically a minimum).
    *
-   * Please @see {@link https://github.com/benhutchins/dyngoose/wiki/Deployment} to learn
+   * Please @see {@link https://github.com/benhutchins/dyngoose/blog/master/docs/Deployment.md} to learn
    * about recommendations for deploying your tables to production.
    *
    * You can also set your table's billingMode to `PAY_PER_REQUEST`, which renders this
