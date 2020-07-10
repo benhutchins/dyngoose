@@ -78,7 +78,7 @@ export class Table {
    *   })```
    *
    * Each attribute can optionally define additional validation logic or sanitization
-   * of the user input, @see {@link https://github.com/benhutchins/dyngoose/wiki/Attributes}.
+   * of the user input, @see {@link https://github.com/benhutchins/dyngoose/blob/master/docs/Attributes}.
    */
   public static fromJSON<T extends Table>(this: StaticThis<T>, json: { [attribute: string]: any }): T {
     return new this().fromJSON(json)
@@ -515,7 +515,7 @@ export class Table {
    * a JSON object back into a Table record, use {@link Table.fromJSON}.
    *
    * Each attribute type can define a custom toJSON and fromJSON method,
-   * @see {@link https://github.com/benhutchins/dyngoose/wiki/Attributes#custom-attribute-types}.
+   * @see {@link https://github.com/benhutchins/dyngoose/blog/master/docs/Attributes.md#custom-attribute-types}.
    */
   public toJSON() {
     const json: any = {}
