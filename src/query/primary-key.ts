@@ -18,7 +18,7 @@ type PrimaryKeyBatchInput<HashKeyType extends PrimaryKeyType, RangeKeyType exten
 
 interface PrimaryKeyGetInput<HashKeyType extends PrimaryKeyType, RangeKeyType extends RangePrimaryKeyType> {
   hash: HashKeyType
-  range: RangeKeyType
+  range?: RangeKeyType
   projectionExpression?: DynamoDB.ProjectionExpression
   consistent?: DynamoDB.ConsistentRead
   returnConsumedCapacity?: DynamoDB.ReturnConsumedCapacity
@@ -82,7 +82,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     return getItemInput
   }
 
-  public async get(hash: HashKeyType, range: RangeKeyType): Promise<T | void> {
+  public async get(hash: HashKeyType, range?: RangeKeyType): Promise<T | void> {
     const getItemInput = this.getGetItemInput({ hash, range })
     const dynamoRecord = await this.table.schema.dynamo.getItem(getItemInput).promise()
     if (dynamoRecord.Item) {
