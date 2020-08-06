@@ -1,10 +1,9 @@
-// const log = require('fancy-log')
-// const colors = require('ansi-colors')
 import { readdirSync, readFileSync } from 'fs'
 import * as _ from 'lodash'
 import { join } from 'path'
 import { PrimaryKey } from '../query'
 import { Table } from '../table'
+import { isDyngooseTable } from './is'
 import { MigrateTablesInput } from './migrate'
 
 export interface SeedTablesInput extends MigrateTablesInput {
@@ -13,7 +12,9 @@ export interface SeedTablesInput extends MigrateTablesInput {
 }
 
 export default async function seedTables(input: SeedTablesInput) {
+  const log = input.log || console['log']
   const seedFiles = readdirSync(input.seedsDirectory)
+  const tableFileSuffix = input.tableFileSuffix.substr(0, 1) === '.' ? input.tableFileSuffix : `.${input.tableFileSuffix}`
 
   for (const file of seedFiles) {
     const filePath = join(input.seedsDirectory, file)
@@ -42,15 +43,15 @@ export default async function seedTables(input: SeedTablesInput) {
 
     if (records.length > 0) {
       const modelName = file.replace(/.seed.(json|js)/, '')
-      const modelPath = join(input.tablesDirectory, `${modelName}.${input.tableFileSuffix}`)
+      const modelPath = join(input.tablesDirectory, `${modelName}${tableFileSuffix}`)
 
-      // log(`Seeding ${colors.cyan(modelName)}`)
+      log(`Seeding ${modelName}`)
 
       const tableFileExports = require(modelPath)
       let hasSeeded = false
 
       for (const ExportedProperty of _.values(tableFileExports)) {
-        if (ExportedProperty.prototype instanceof Table) {
+        if (isDyngooseTable(ExportedProperty)) {
           const ExportedTable = ExportedProperty as typeof Table
           ExportedTable.schema.options.name = `${input.tableNamePrefix || ''}${ExportedTable.schema.name}${input.tableNameSuffix || ''}`
 
@@ -67,7 +68,7 @@ export default async function seedTables(input: SeedTablesInput) {
             }
 
             const record = ExportedTable.new(data)
-            await record.save({ log: false })
+            await record.save()
           }
 
           hasSeeded = true
