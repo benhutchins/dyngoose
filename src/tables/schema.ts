@@ -8,6 +8,7 @@ import { ITable, Table } from '../table'
 import { createTableInput } from './create-table-input'
 
 export class Schema {
+  public isDyngoose = true
   public options: Metadata.Table
 
   /**
