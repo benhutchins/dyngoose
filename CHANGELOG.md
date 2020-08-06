@@ -1,3 +1,10 @@
+## [1.12.3](https://github.com/benhutchins/dyngoose/compare/v1.12.2...v1.12.3) (2020-08-06)
+
+
+### Bug Fixes
+
+* seed utility ([#209](https://github.com/benhutchins/dyngoose/issues/209)) ([c1b2f47](https://github.com/benhutchins/dyngoose/commit/c1b2f472f334a5f3b61bca5f5022ed4eed97f819))
+
 ## [1.12.2](https://github.com/benhutchins/dyngoose/compare/v1.12.1...v1.12.2) (2020-03-11)
 
 
