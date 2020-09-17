@@ -102,7 +102,7 @@ export class LocalSecondaryIndex<T extends Table> {
    *
    * Starts a MagicSearch using this LocalSecondaryIndex.
    */
-  public search(filters: QueryFilters<T>, input: MagicSearchInput<T> = {}): MagicSearch<T> {
+  public search(filters?: QueryFilters<T>, input: MagicSearchInput<T> = {}): MagicSearch<T> {
     return new MagicSearch<T>(this.tableClass as any, filters, input).using(this)
   }
 

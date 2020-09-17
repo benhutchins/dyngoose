@@ -98,7 +98,7 @@ export class Table {
    * results (be cautious as that can easily cause timeouts for Lambda), specify `{ all: true }` as an
    * input argument for the second argument.
    */
-  public static search<T extends Table>(this: StaticThis<T>, filters: Filters<T>, input: MagicSearchInput<T> = {}): MagicSearch<T> {
+  public static search<T extends Table>(this: StaticThis<T>, filters?: Filters<T>, input: MagicSearchInput<T> = {}): MagicSearch<T> {
     return new MagicSearch<T>(this as any, filters, input)
   }
 
