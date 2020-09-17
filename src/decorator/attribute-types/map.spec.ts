@@ -94,7 +94,7 @@ describe('AttributeType/Map', () => {
 
     const result = await MapTestTable.search({
       'person.first': 'Sally',
-    } as any)
+    } as any).exec()
 
     expect(result.count).to.eq(1)
     expect(result.records[0].person.first).to.eq('Sally')
