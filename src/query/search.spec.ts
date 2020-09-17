@@ -18,10 +18,8 @@ describe('Query/Search', () => {
 
   it('should search using an available index', async () => {
     const search = new MagicSearch<TestableTable>(TestableTable, { title: 'Table.search 0' })
-    // search.using(TestableTable.titleIndex)
     const input = search.getInput()
     expect(input.IndexName).to.eq('titleIndex')
-    expect((input as any).KeyConditionExpression).to.eq('#a0 = :v0')
     const result = await search.exec()
     expect(result.count).to.eq(1)
     expect(result.records[0].title).to.eq('Table.search 0')
