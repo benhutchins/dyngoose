@@ -266,12 +266,13 @@ describe('query/expression', () => {
 
     it('works with OR operator', () => {
       expect(buildQueryExpression(schema, [
-        [{ someNumber: 10 }, { someNumber: 11 }],
+        { someNumber: 10 },
+        'OR',
+        { someNumber: 11 },
       ])).to.deep.equal({
-        FilterExpression: '(#a0 = :v0 OR #a1 = :v1)',
+        FilterExpression: '#a0 = :v0 OR #a0 = :v1',
         ExpressionAttributeNames: {
           '#a0': 'someNumber',
-          '#a1': 'someNumber',
         },
         ExpressionAttributeValues: {
           ':v0': { N: '10' },
@@ -283,21 +284,19 @@ describe('query/expression', () => {
         {
           id: ['includes', ['opt1', 'opt2']],
         },
-        [{ someNumber: 10 }, { someNumber: 11 }],
+        [{ someNumber: 10 }, 'OR', { someNumber: 11 }],
         [
           { someString: 'test', someBool: true },
+          'OR',
           { someString: 'other', someBool: false },
         ],
       ])).to.deep.equal({
-        FilterExpression: '#a0 IN (:v00, :v01) AND (#a1 = :v1 OR #a2 = :v2) AND (#a3 = :v3 OR #a3 = :v3 AND #a4 = :v4 OR #a5 = :v5 OR #a5 = :v5 AND #a6 = :v6)',
+        FilterExpression: '#a0 IN (:v00, :v01) AND (#a1 = :v1 OR #a1 = :v2) AND ((#a2 = :v3 AND #a3 = :v4) OR (#a2 = :v5 AND #a3 = :v6))',
         ExpressionAttributeNames: {
           '#a0': 'id',
           '#a1': 'someNumber',
-          '#a2': 'someNumber',
-          '#a3': 'someString',
-          '#a4': 'someBool',
-          '#a5': 'someString',
-          '#a6': 'someBool',
+          '#a2': 'someString',
+          '#a3': 'someBool',
         },
         ExpressionAttributeValues: {
           ':v00': { S: 'opt1' },

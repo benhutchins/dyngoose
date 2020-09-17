@@ -3,7 +3,7 @@ import * as _ from 'lodash'
 import { Attribute } from './attribute'
 import { DocumentClient } from './document-client'
 import * as Events from './events'
-import { Filters as QueryFilters, UpdateConditions } from './query/filters'
+import { Filters, UpdateConditions } from './query/filters'
 import { Results as QueryResults } from './query/results'
 import { MagicSearch, MagicSearchInput } from './query/search'
 import { createTable } from './tables/create-table'
@@ -98,10 +98,8 @@ export class Table {
    * results (be cautious as that can easily cause timeouts for Lambda), specify `{ all: true }` as an
    * input argument for the second argument.
    */
-  public static async search<T extends Table>(this: StaticThis<T>, filters: QueryFilters<T>, input: MagicSearchInput = {}):
-    Promise<QueryResults<T>> {
-    const searchHelper = new MagicSearch<T>(this as any, filters, input)
-    return searchHelper.search()
+  public static search<T extends Table>(this: StaticThis<T>, filters: Filters<T>, input: MagicSearchInput<T> = {}): MagicSearch<T> {
+    return new MagicSearch<T>(this as any, filters, input)
   }
 
   /**

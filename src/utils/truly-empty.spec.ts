@@ -32,12 +32,15 @@ describe('utils/empty', () => {
 
     it('objects', () => {
       expect(isTrulyEmpty({})).to.eq(true)
+      expect(isTrulyEmpty({ a: undefined })).to.eq(true)
       expect(isTrulyEmpty({ a: true })).to.eq(false)
     })
 
     it('arrays', () => {
       expect(isTrulyEmpty([])).to.eq(true)
-      expect(isTrulyEmpty([ true ])).to.eq(false)
+      expect(isTrulyEmpty([null])).to.eq(true)
+      expect(isTrulyEmpty([true])).to.eq(false)
+      expect(isTrulyEmpty([false])).to.eq(false)
     })
   })
 })
