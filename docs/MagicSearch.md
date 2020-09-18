@@ -235,6 +235,8 @@ Cat.search().filter('name').eq('Will').sort('ascending').exec()
 Cat.search().filter('name').eq('Will').sort('descending').exec()
 ```
 
+Additionally, `query.ascending()` and `query.descending()` can be used as shorthand.
+
 This function sets the `ScanIndexForward` property on the query request passed to DynamoDB. This ensures sorting is done on the database side to optimize results.
 
 ### `query.all()`

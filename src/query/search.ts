@@ -177,6 +177,14 @@ export class MagicSearch<T extends Table> {
     return this
   }
 
+  ascending(): MagicSearch<T> {
+    return this.sort('ascending')
+  }
+
+  descending(): MagicSearch<T> {
+    return this.sort('descending')
+  }
+
   /**
    * Page internally and return all possible search results.
    *

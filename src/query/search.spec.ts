@@ -115,11 +115,27 @@ describe('Query/Search', () => {
     expect(input.IndexName).to.eq('titleIndex')
   })
 
-  it('.sort sets ScanIndexForward on input', async () => {
-    const search = new MagicSearch<TestableTable>(TestableTable)
-    search.sort('descending')
-    const input = search.getInput()
-    expect((input as any).ScanIndexForward).to.eq(false)
+  describe('.sort', () => {
+    it('.sort sets ScanIndexForward on input', async () => {
+      const search = new MagicSearch<TestableTable>(TestableTable)
+      search.sort('descending')
+      const input = search.getInput()
+      expect((input as any).ScanIndexForward).to.eq(false)
+    })
+
+    it('.ascending sets ScanIndexForward on input', async () => {
+      const search = new MagicSearch<TestableTable>(TestableTable)
+      search.ascending()
+      const input = search.getInput()
+      expect((input as any).ScanIndexForward).to.eq(undefined)
+    })
+
+    it('.descending sets ScanIndexForward on input', async () => {
+      const search = new MagicSearch<TestableTable>(TestableTable)
+      search.descending()
+      const input = search.getInput()
+      expect((input as any).ScanIndexForward).to.eq(false)
+    })
   })
 
   it('.limit sets Limit on input', async () => {
