@@ -1,8 +1,6 @@
 # MagicSearch
 
-Dyngoose supports a call-chaining search and querying method, called `Dyngoose.MagicSearch`, that is available as `.search` on every [Table](Table.md) and [Index](Indexes.md) class.
-
-Dyngoose provides the ability to query a model by using the `Table.search` function. This is also available on every index and is available by using `Table.gsiIndexName.search`. This function acts as a builder to construct your query with the appropriate settings before executing it (`query.exec()`).
+Dyngoose supports a call-chaining search and querying method, called `Dyngoose.MagicSearch`, that is available as `.search` on every [Table](Table.md) and [Index](Indexes.md) class. This function acts as a builder to construct your query with the appropriate settings before executing it (`query.exec()`).
 
 `Dyngoose.MagicSearch` supports advanced filtering, but as DynamoDB is heavily optimized for getting items by indexes, the primary way you should perform operations is by using an index. In most cases, you can perform simpler querying, see [Querying](Querying.md).
 
@@ -45,6 +43,12 @@ await Invoice.search()
   .filter('amountDue').gt(0)
   .and()
   .filter()
+
+// search on the InvoiceUserIndex for unpaid invoices for a specific user
+await Invoice.userIndex.search()
+  .filter('user').eq('user.id')
+  .and()
+  .filter('amountDue').gt(0)
 ```
 
 ## `Dyngoose.MagicSearch` methods
@@ -104,7 +108,7 @@ const results = await Cat.search()
 // status = 'alive' AND (name contains 'Mr' OR name contains 'Mister')
 ```
 
-Additionally `query.group(searchFunction)` is an alias for `query.parenthesis`.
+Additionally `query.group(searchFunction)` is an alias for `query.parenthesis(searchFunction)`.
 
 ### `query.and()`
 
@@ -136,6 +140,21 @@ await User.search()
 // this results in a query like:
 // email = 'test@example.com' AND status = 'enabled' OR role = 'admin'
 
+// to make the query clearer, use query.parenthesis(searchFunction)
+await User.search()
+  .parenthesis(s => s
+    .filter('email').eq('test@example.com')
+    .and()
+    .filter('status').eq('enabled')
+  )
+  .or() // you can use an OR on the same or different attributes
+  .filter('role').eq('admin')
+  .exec()
+
+// this results in a query like:
+// (email = 'test@example.com' AND status = 'enabled') OR role = 'admin'
+
+// another .or() example
 const search = await Cat.search()
   .filter('name').contains('Mr')
   .or()
@@ -147,7 +166,7 @@ const search = await Cat.search()
 // name contains 'Mr' OR name contains 'Mister' OR name contains 'Whiskers'
 ```
 
-### `query.limit(count)`
+### `query.limit(limit)`
 
 This function will limit the number of documents that DynamoDB will query in this request. 
 
@@ -245,14 +264,7 @@ Normally if a query result is more than the AWS query response limit, DynamoDB w
 
 Similar to `query.exec()` this will execute your query and return your results.
 
-<!-- Two parameters can be specified on this setting:
-
-    delay - Number (default: 0) - The number of milliseconds to delay between receiving of the response of one query request and sending of the request for the next query request.
-
-    max - Number (default: 0) - The maximum number of requests that should be made to DynamoDB, regardless of if the lastKey property still exists in the response. In the event this is set to 0, an unlimited number of requests will be made to DynamoDB, so long as the lastKey property still exists. -->
-
 The documents for all of the requests will be aggregated into the `Dyngoose.Results` response.
-<!-- If you set a maximum number of query requests and there is still a lastKey on the response that will be returned to you. -->
 
 ```typescript
 const results = await Cat.search().filter('name').eq('Will').all()
