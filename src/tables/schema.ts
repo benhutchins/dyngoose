@@ -209,7 +209,7 @@ export class Schema {
     const attributeMap: DynamoDB.AttributeMap = {}
 
     for (const [attributeName, attribute] of this.attributes.entries()) {
-      const attributeValue = attribute.toDynamo(record.get(attributeName))
+      const attributeValue = attribute.toDynamo(record.get(attribute.propertyName))
 
       if (attributeValue) {
         attributeMap[attributeName] = attributeValue

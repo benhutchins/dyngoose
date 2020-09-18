@@ -108,6 +108,15 @@ export class Condition<T extends Table, Attr, AttributeValueType> {
     return this.finalize()
   }
 
+  null() {
+    if (this._not) {
+      this.filter = ['not null']
+    } else {
+      this.filter = ['null']
+    }
+    return this.finalize()
+  }
+
   private finalize() {
     const key = this.key as any
     this.search.addFilterGroup([

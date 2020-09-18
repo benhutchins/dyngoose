@@ -128,4 +128,18 @@ describe('Query/Search', () => {
     const input = search.getInput()
     expect(input.Limit).to.eq(5)
   })
+
+  it('.startAt sets ExclusiveStartKey on input', async () => {
+    const search = new MagicSearch<TestableTable>(TestableTable)
+    search.startAt({ id: { S: 'test' } })
+    const input = search.getInput()
+    expect(input.ExclusiveStartKey).to.deep.eq({ id: { S: 'test' }})
+  })
+
+  it('.attributes sets ProjectionExpression on input', async () => {
+    const search = new MagicSearch<TestableTable>(TestableTable)
+    search.attributes('id', 'title', 'testAttributeNaming')
+    const input = search.getInput()
+    expect(input.ProjectionExpression).to.eq('id,title,testAttributeNameNotMatchingPropertyName')
+  })
 })

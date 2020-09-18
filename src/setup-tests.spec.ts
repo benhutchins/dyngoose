@@ -57,6 +57,9 @@ export class TestableTable extends Dyngoose.Table {
 
   @Dyngoose.Attribute.Number()
   public testBigInt: BigInt
+
+  @Dyngoose.Attribute.String({ name: 'testAttributeNameNotMatchingPropertyName' })
+  public testAttributeNaming: string
 }
 
 before(async () => {

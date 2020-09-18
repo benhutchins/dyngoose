@@ -12,17 +12,6 @@ import { LocalSecondaryIndex } from './local-secondary-index'
 import { Results as QueryResults } from './results'
 
 export interface MagicSearchInput<T extends Table> {
-  /**
-   * Tell the search to page internally and return all possible search results.
-   *
-   * Be cautious. This can easily cause timeouts if you're using Lambda functions.
-   * This is also non-ideal for scans, for better performance use a segmented scan
-   * via the Query.PrimaryKey.segmentedScan or Query.GlobalSecondaryIndex.segmentedScan.
-   *
-   * Defaults to `false`.
-   */
-  all?: boolean
-
   limit?: number
   exclusiveStartKey?: DynamoDB.Key
   projectionExpression?: DynamoDB.ProjectionExpression
@@ -80,16 +69,16 @@ export class MagicSearch<T extends Table> {
     return this
   }
 
-  filter<Attr extends AttributeNames<T>>(attr: Attr) {
-    return new Condition<T, Attr, T[Attr]>(this, attr)
+  filter<Attr extends AttributeNames<T>>(attributePropertyName: Attr) {
+    return new Condition<T, Attr, T[Attr]>(this, attributePropertyName)
   }
 
-  where<Attr extends AttributeNames<T>>(attr: Attr) {
-    return new Condition<T, Attr, T[Attr]>(this, attr)
+  where<Attr extends AttributeNames<T>>(attributePropertyName: Attr) {
+    return new Condition<T, Attr, T[Attr]>(this, attributePropertyName)
   }
 
-  attribute<Attr extends AttributeNames<T>>(attr: Attr) {
-    return new Condition<T, Attr, T[Attr]>(this, attr)
+  attribute<Attr extends AttributeNames<T>>(attributePropertyName: Attr) {
+    return new Condition<T, Attr, T[Attr]>(this, attributePropertyName)
   }
 
   or(): MagicSearch<T> {
@@ -100,25 +89,6 @@ export class MagicSearch<T extends Table> {
   and(): MagicSearch<T> {
     return this
   }
-
-  // and(filters: FilterAssociationMap<T>): MagicSearch<T> {
-  //   if (isArray(filters)) {
-  //     this.filters.push(filters)
-  //   } else {
-  //     this.filters.push([filters])
-  //   }
-
-  //   return this
-  // }
-
-  // or(filters: FilterAssociationMap<T>): MagicSearch<T> {
-  //   if (this.filters.length === 0) {
-  //     throw new Error('Cannot perform a .or operation before starting a query')
-  //   }
-
-  //   (this.filters[this.filters.length - 1] as any).push(filters)
-  //   return this
-  // }
 
   /**
    * This function will limit the number of documents that DynamoDB will process in this query request.
@@ -148,13 +118,18 @@ export class MagicSearch<T extends Table> {
    *
    * This can limit the size of the DynamoDB response and helps you only retrieve the data you need.
    * Simply provide an array of strings representing the property names you wish DynamoDB to return.
-   *
-   * @TODO this is not yet implemented
    */
-  // attributes(attributes: string[]): MagicSearch<T> {
-  //   this.input.projectionExpression = attributes.join(', ')
-  //   return this
-  // }
+  attributes<Attr extends AttributeNames<T>>(...attributes: Attr[]): MagicSearch<T> {
+    const attributeNames: string[] = []
+
+    for (const propertyName of attributes) {
+      const attr = this.tableClass.schema.getAttributeByPropertyName(propertyName as string)
+      attributeNames.push(attr.name)
+    }
+
+    this.input.projectionExpression = attributeNames.join(',')
+    return this
+  }
 
   /**
    * Instead of returning the records, this function will cause the query operation to return only the count of possible results.
@@ -202,6 +177,13 @@ export class MagicSearch<T extends Table> {
     return this
   }
 
+  /**
+   * Page internally and return all possible search results.
+   *
+   * Be cautious. This can easily cause timeouts if you're using Lambda functions.
+   * This is also non-ideal for scans, for better performance use a segmented scan
+   * via the Query.PrimaryKey.segmentedScan or Query.GlobalSecondaryIndex.segmentedScan.
+   */
   async all() {
     const input = this.getInput()
 
@@ -277,6 +259,10 @@ export class MagicSearch<T extends Table> {
       ExpressionAttributeNames: query.ExpressionAttributeNames,
       ExpressionAttributeValues: query.ExpressionAttributeValues,
       FilterExpression: query.FilterExpression,
+    }
+
+    if (this.input.projectionExpression) {
+      input.ProjectionExpression = this.input.projectionExpression
     }
 
     if (this.input.rangeOrder === 'DESC') {
