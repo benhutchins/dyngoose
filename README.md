@@ -16,7 +16,7 @@ Let's face it, all good databases need good model casting. DynamoDB is powerful 
 
 1. Cast your tables, attributes, and indexes using TypeScript classes.
 1. Generate your CloudFormation templates based on your code, or perform your table operations on demand; see [Deployment](./docs/deployment.md).
-1. Intelligent and powerful querying syntax, see [Querying](./docs/Querying.md).
+1. Intelligent and powerful querying syntax, see [Querying](./docs/Querying.md) and [MagicSearch](./docs/MagicSearch.md).
 1. Selectively update item attributes, prevents wasteful uploading of unchanged values.
 1. Data serialization, cast any JavaScript value into a DynamoDB attribute value.
 1. DynamoDB Accelerator (DAX) and Amazon X-Ray support, see [Connections](./docs/Connections.md).
@@ -79,6 +79,13 @@ await Card.primaryKey.batchGet([
   [100, 'Title'],
   [200, 'Title2']
 ])
+
+// Searching and Advanced Querying
+// Your values will be strictly typed based on the attribute being filtered
+await Card.search()
+  .filter('id').eq(100)
+  .filter('title').gte('Title')
+  .exec()
 
 // Query
 // Queries are always strongly typed. (['>=', T] | ['=', T] ...)
