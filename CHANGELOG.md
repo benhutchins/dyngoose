@@ -1,3 +1,15 @@
+# [2.0.0](https://github.com/benhutchins/dyngoose/compare/v1.12.3...v2.0.0) (2020-09-29)
+
+
+### Features
+
+* add call-chaining search support for advanced filtering and querying operations ([#133](https://github.com/benhutchins/dyngoose/issues/133)) ([19366dd](https://github.com/benhutchins/dyngoose/commit/19366dd8985f0d81c00edc83efe154d46b7fd01a)), closes [#130](https://github.com/benhutchins/dyngoose/issues/130)
+
+
+### BREAKING CHANGES
+
+* The existing `Table.search()` function has changed and it now requires you to call `.exec()` on the result, like: `Table.search({ id: 'something' }).exec()`.
+
 ## [1.12.3](https://github.com/benhutchins/dyngoose/compare/v1.12.2...v1.12.3) (2020-08-06)
 
 
