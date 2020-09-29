@@ -5,7 +5,7 @@ import { QueryError } from '../errors'
 import * as Metadata from '../metadata'
 import { Table } from '../table'
 import { Schema } from '../tables/schema'
-import { Filter, Filters } from './filters'
+import { ComplexFilters, Filter, Filters } from './filters'
 
 interface Expression {
   ExpressionAttributeNames: DynamoDB.ExpressionAttributeNameMap
@@ -15,7 +15,7 @@ interface Expression {
 }
 
 type ConditionOperator = '=' | '<>' | '<' | '<=' | '>' | '>=' | 'beginsWith' | 'between'
-type FilterOperator = ConditionOperator | 'includes' | 'excludes' | 'or' | 'contains' | 'not contains' | 'null' | 'not null' | 'exists' | 'not exists'
+type FilterOperator = ConditionOperator | 'includes' | 'excludes' | 'contains' | 'not contains' | 'null' | 'not null' | 'exists' | 'not exists'
 
 export const keyConditionAllowedOperators: ConditionOperator[] = [
   '=',
@@ -60,22 +60,19 @@ interface FilterCondition {
 }
 
 class FilterExpressionQuery<T extends Table> {
-  // public query: string[] = []
   public attrs: DynamoDB.ExpressionAttributeNameMap = {}
   public values: DynamoDB.ExpressionAttributeValueMap = {}
+  public filterConditions: string[] = []
 
-  private filterConditionsMap: FilterCondition[] = []
   private keyConditionsMap: FilterCondition[] = []
-
-  get filterConditions(): string[] {
-    return this.filterConditionsMap.map((condition) => condition.filter)
-  }
+  private attributeNamePrefixMap: string[] = []
+  private valuePrefixMap: any[] = []
 
   get keyConditions(): string[] {
     return this.keyConditionsMap.map((condition) => condition.filter)
   }
 
-  constructor(public schema: Schema, public filters: Filters<T>, public indexMetadata?: IndexMetadata) {
+  constructor(public schema: Schema, public filters: Filters<T> | ComplexFilters<T>, public indexMetadata?: IndexMetadata) {
     this.parse()
 
     // double check, we can't filter by the range as a key condition without a value for the HASH
@@ -84,69 +81,117 @@ class FilterExpressionQuery<T extends Table> {
       const attribute = condition.attribute
 
       if (this.isRangeKey(attribute)) {
-        this.filterConditionsMap.push(condition)
+        this.filterConditions.push(condition.filter)
         this.keyConditionsMap = []
       }
     }
   }
 
   private parse() {
-    let prefix = 0
+    if (_.isArray(this.filters) && this.filters.length === 1 && !_.isObjectLike(this.filters[0])) {
+      this.filters = this.filters[0] as Filters<T>
+    }
 
-    _.each(this.filters, (value, attrName: string) => {
-      const attribute = this.schema.getAttributeByName(attrName)
-
-      let filter: Filter<any>
-
-      if (_.isArray(value)) {
-        filter = value as any
-      } else {
-        filter = ['=', value]
-      }
-
-      const queryValue = this.parseFilter(prefix.toString(), attribute, filter, attrName)
-
-      if (queryValue.query) {
-        _.extend(this.attrs, queryValue.attrs)
-        _.extend(this.values, queryValue.values)
-        this.push(attribute, queryValue.query, filter[0])
-      }
-
-      prefix++
-    })
+    if (_.isArray(this.filters)) { // handle ComplexFilters
+      const conditions = this.parseComplexFilters(this.filters, false)
+      this.filterConditions.push(conditions)
+    } else {
+      _.each(this.filters, (value, attrName) => {
+        this.handleFilter(attrName, value)
+      })
+    }
   }
 
-  /**
-   * Convert an array of Query.Condition to use an OR operator,
-   * so any value is a possible match
-   */
-  // private parseArrayOfQueryConditions(prefix: string, attr: Attribute<any>, conditions: Condition<any>[], attrName?: string) {
-  //   const possibilities: string[] = []
+  private handleFilter(attrName: string, value: any, push = true) {
+    const attribute = this.schema.getAttributeByName(attrName)
 
-  //   _.each(conditions, (condition, index: number) => {
-  //     const queryFilter = this.parseValue(prefix + index.toString(), attr, condition, attrName)
+    let filter: Filter<any>
 
-  //     if (queryFilter.query) {
-  //       possibilities.push(queryFilter.query)
-  //       _.extend(this.attrs, queryFilter.attrs)
-  //       _.extend(this.values, queryFilter.values)
-  //     }
-  //   })
+    if (_.isArray(value)) {
+      filter = value as any
+    } else {
+      filter = ['=', value]
+    }
 
-  //   const query = possibilities.join(' OR ')
-  //   this.push(attr, `(${query})`, Query.OPERATOR.IN)
-  // }
+    const queryValue = this.parseFilter(attribute, filter, attrName)
+
+    if (push && queryValue.query) {
+      _.extend(this.attrs, queryValue.attrs)
+      _.extend(this.values, queryValue.values)
+      this.push(attribute, queryValue.query, filter[0])
+    }
+
+    return queryValue
+  }
+
+  private parseComplexFilters(complexFilters: ComplexFilters<T>, child: boolean): string {
+    const orGroups: string[] = []
+    let conditions: string[] = []
+
+    for (const filters of complexFilters) {
+      if (filters === 'OR') {
+        if (conditions.length > 0) {
+          if (conditions.length > 1) {
+            orGroups.push(`(${conditions.join(' AND ')})`)
+          } else {
+            orGroups.push(conditions.join(' AND '))
+          }
+
+          conditions = []
+        }
+      } else if (_.isArray(filters)) {
+        conditions.push(this.parseComplexFilters(filters, true))
+      } else {
+        _.each(filters, (value, attrName) => {
+          const queryValue = this.handleFilter(attrName, value, false)
+
+          if (queryValue.query) {
+            _.extend(this.attrs, queryValue.attrs)
+            _.extend(this.values, queryValue.values)
+            // this.push(attribute, queryValue.query, filter[0])
+            conditions.push(queryValue.query)
+          }
+        })
+      }
+    }
+
+    // we push the last remaining conditions as the last remaining OR group
+    if (conditions.length > 0) {
+      if (conditions.length > 1 && child) {
+        orGroups.push(`(${conditions.join(' AND ')})`)
+      } else {
+        orGroups.push(conditions.join(' AND '))
+      }
+    }
+
+    return child ? `(${orGroups.join(' OR ')})` : orGroups.join(' OR ')
+  }
+
+  private getAttributeNamePrefix(attrName: string): string {
+    if (!this.attributeNamePrefixMap.includes(attrName)) {
+      this.attributeNamePrefixMap.push(attrName)
+    }
+
+    return this.attributeNamePrefixMap.indexOf(attrName).toString()
+  }
+
+  private getValuePrefix(value: any): string {
+    if (!this.valuePrefixMap.includes(value)) {
+      this.valuePrefixMap.push(value)
+    }
+
+    return this.valuePrefixMap.indexOf(value).toString()
+  }
 
   private parseFilter(
-    prefix: string,
     attr: Attribute<any>,
     filter: Filter<any>,
-    attrName?: string,
+    attrName: string,
   ): QueryFilterQuery {
     const attrs: DynamoDB.ExpressionAttributeNameMap = {}
     const values: DynamoDB.ExpressionAttributeValueMap = {}
+    const prefix = this.getAttributeNamePrefix(attrName)
     let query: string | undefined
-
     let attrNameMappedTo: string
 
     if (attrName && attrName.includes('.')) {
@@ -162,7 +207,7 @@ class FilterExpressionQuery<T extends Table> {
     }
 
     const operator: FilterOperator = filter[0]
-    const variableName = ':v' + prefix
+    const variableName = ':v' + this.getValuePrefix(filter[1])
 
     switch (operator) {
       case '=':
@@ -270,7 +315,7 @@ class FilterExpressionQuery<T extends Table> {
         throw new QueryError(`Cannot use ${operator} for a HASH key, can only use ${keyConditionAllowedOperators.join(', ')} operators`)
       }
     } else {
-      this.filterConditionsMap.push({ attribute, filter })
+      this.filterConditions.push(filter)
     }
   }
 

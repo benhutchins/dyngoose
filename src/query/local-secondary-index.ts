@@ -6,6 +6,7 @@ import { ITable, Table } from '../table'
 import { buildQueryExpression } from './expression'
 import { Filters as QueryFilters } from './filters'
 import { Results as QueryResults } from './results'
+import { MagicSearch, MagicSearchInput } from './search'
 
 interface LocalSecondaryIndexQueryInput {
   rangeOrder?: 'ASC' | 'DESC'
@@ -94,6 +95,15 @@ export class LocalSecondaryIndex<T extends Table> {
     }
     const output = await this.tableClass.schema.dynamo.scan(scanInput).promise()
     return this.getQueryResults(output)
+  }
+
+  /**
+   * Query DynamoDB for what you need.
+   *
+   * Starts a MagicSearch using this LocalSecondaryIndex.
+   */
+  public search(filters?: QueryFilters<T>, input: MagicSearchInput<T> = {}): MagicSearch<T> {
+    return new MagicSearch<T>(this.tableClass as any, filters, input).using(this)
   }
 
   protected getQueryResults(output: DynamoDB.ScanOutput | DynamoDB.QueryOutput): QueryResults<T> {

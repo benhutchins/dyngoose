@@ -1,14 +1,25 @@
+# Querying
+
 Dyngoose has simple, yet powerful, querying support. Every query supports performing additional filters, but as DynamoDB is heavily optimized for getting items by indexes, the primary way you should perform operations is by using an index.
 
-[Read more about managing Indexes](Indexes.md).
+[Read more about advanced querying, searching, and filtering](MagicSearch.md).  
+[Read more about managing Indexes](Indexes.md).  
 
 ## Query methods
 
-### `.search(filters)`
+### `.search([filters, input])`
 
-> https://github.com/benhutchins/dyngoose/blob/master/src/table.ts#L78
+> https://github.com/benhutchins/dyngoose/blob/master/src/table.ts#L101
 
-The first place to look at is the `.search` method available on every [Table](Table.md) class. The `.search` method is an all around "find me my data, now!" method. It will automatically use an index when available, but does not force the use of indexes and will fallback to a filtered [scan](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Scan.html) operation if necessary.
+The first place to look at is the `.search` method available on every [Table](Table.md) and [Index](Indexes.md) class. This is the basic entry point to construct a search query.
+
+`.search` returns a [`MagicSearch`](https://github.com/benhutchins/dyngoose/blob/master/src/query/search.ts) instance. You 
+
+If you provide at least the hashKey of the document(s).
+
+This can either be the hashKey of the table, or the hashKey of an index. The filter property is optional and can either be an object or a string representing the key you which to first filter on. In the event you don't pass in any parameters and don't call any other methods on the query object it will query with no filters or options.
+
+The `.search` method is an all around "find me my data, now!" method. It will automatically use an index when available, but does not force the use of indexes and will fallback to a filtered [scan](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Scan.html) operation if necessary.
 
 `.search` accepts a `filters: DynamoDB.Filters` argument, which is dynamically typed based on your table's properties. This means it will only allow you to pass in properties that are defined the table subclass and will enforce type consistency for all values.
 
@@ -51,12 +62,6 @@ Perform a filtered query on a table using a LocalSecondaryIndex. You must specif
 ### `.lsiIndex.scan([filters])`
 
 Perform a [scan](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Scan.html) operation on the table using a LocalSecondaryIndex. Can optionally specify filters to narrow the results, or leave blank to get all the records within the index.
-
-## `Dyngoose.Results`
-
-All query methods in `Dyngoose`, other than `.primaryKey.get(…)` will return an object that matches the `Dyngoose.Results` interface. 
-
-See the [`src/query/results.ts`](https://github.com/benhutchins/dyngoose/blob/master/src/query/results.ts).
 
 ## Filter Conditions
 

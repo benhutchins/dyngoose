@@ -21,10 +21,14 @@ export function isTrulyEmpty(value: any) {
     return false
   }
 
-  if (_.isArrayLike(value) || _.isObjectLike(value)) {
-    return _.isEmpty(value)
+  if (_.isArrayLike(value)) {
+    return _.isEmpty(_.filter(value, (v) => v != null))
   }
 
+  if (_.isObjectLike(value)) {
+    value = _.pickBy(value, _.identity)
+    return _.isEmpty(value)
+  }
 
   return false
 }
