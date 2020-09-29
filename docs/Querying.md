@@ -3,7 +3,7 @@
 Dyngoose has simple, yet powerful, querying support. Every query supports performing additional filters, but as DynamoDB is heavily optimized for getting items by indexes, the primary way you should perform operations is by using an index.
 
 [Read more about advanced querying, searching, and filtering](MagicSearch.md).  
-[Read more about managing Indexes](Indexes.md).  
+[Read more about managing indexes](Indexes.md).  
 
 ## Query methods
 
@@ -13,11 +13,7 @@ Dyngoose has simple, yet powerful, querying support. Every query supports perfor
 
 The first place to look at is the `.search` method available on every [Table](Table.md) and [Index](Indexes.md) class. This is the basic entry point to construct a search query.
 
-`.search` returns a [`MagicSearch`](https://github.com/benhutchins/dyngoose/blob/master/src/query/search.ts) instance. You 
-
-If you provide at least the hashKey of the document(s).
-
-This can either be the hashKey of the table, or the hashKey of an index. The filter property is optional and can either be an object or a string representing the key you which to first filter on. In the event you don't pass in any parameters and don't call any other methods on the query object it will query with no filters or options.
+`.search` returns a [`MagicSearch`](MagicSearch.md) instance.
 
 The `.search` method is an all around "find me my data, now!" method. It will automatically use an index when available, but does not force the use of indexes and will fallback to a filtered [scan](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Scan.html) operation if necessary.
 
@@ -27,11 +23,25 @@ Each individual filter can specify additional conditions. See [Filter Conditions
 
 ```typescript
 // a simple search
-User.search({ email: 'john@example.com' })
+User.search({ email: 'john@example.com' }).exec()
 
 // perform a search for any email containing @example.com
-User.search({ email: ['contains', '@example.com'] })
+User.search({ email: ['contains', '@example.com'] }).exec()
 ```
+
+`.search` returns a [`MagicSearch`](MagicSearch.md) which can be call-chained to build more complex queries:
+
+```typescript
+Invoice.search()
+  .filter('user').eq(user.id)
+  .and()
+  .filter('status', 'unpaid')
+  .or()
+  .filter('status', 'partially-paid')
+  .exec()
+```
+
+For more information on using the call-chaining, see the documentation on [MagicSearch.md](MagicSearch.md)
 
 ### `.primaryKey.get(hash, range)`
 

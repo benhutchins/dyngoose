@@ -43,12 +43,14 @@ await Invoice.search()
   .filter('amountDue').gt(0)
   .and()
   .filter()
+  .exec()
 
 // search on the InvoiceUserIndex for unpaid invoices for a specific user
 await Invoice.userIndex.search()
   .filter('user').eq('user.id')
   .and()
   .filter('amountDue').gt(0)
+  .exec()
 ```
 
 ## `Dyngoose.MagicSearch` methods
