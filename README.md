@@ -15,13 +15,13 @@ Let's face it, all good databases need good model casting. DynamoDB is powerful 
 ## Features
 
 1. Cast your tables, attributes, and indexes using TypeScript classes.
-1. Generate your CloudFormation templates based on your code, or perform your table operations on demand; see [Deployment](./docs/deployment.md).
+1. Generate your CloudFormation templates based on your code, or perform your table operations on demand; see [Deployment](./docs/Deployment.md).
 1. Intelligent and powerful querying syntax, see [Querying](./docs/Querying.md) and [MagicSearch](./docs/MagicSearch.md).
 1. Selectively update item attributes, prevents wasteful uploading of unchanged values.
 1. Data serialization, cast any JavaScript value into a DynamoDB attribute value.
 1. DynamoDB Accelerator (DAX) and Amazon X-Ray support, see [Connections](./docs/Connections.md).
-1. Optimizes connection to DynamoDB HTTP service using Keep-Alive, see [Code](https://github.com/benhutchins/dyngoose/blob/master/src/connections/dynamodb-connection.ts#L32).
-1. Incredibly easy [local development](./docs/development.md), with supporting for seeding a local database.
+1. Optimizes connection to DynamoDB HTTP service using Keep-Alive, see [code segment](https://github.com/benhutchins/dyngoose/blob/master/src/connections/dynamodb-connection.ts#L32).
+1. Incredibly easy [local development](./docs/Development.md), with supporting for seeding a local database.
 1. Supports [conditional writes](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithItems.html#WorkingWithItems.ConditionalUpdate), see [Saving](./docs/Saving.md#saveconditions).
 
 ## Example Usage

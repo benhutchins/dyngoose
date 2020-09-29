@@ -42,7 +42,7 @@ await User.search()
 await Invoice.search()
   .filter('amountDue').gt(0)
   .and()
-  .filter()
+  .filter('dueDate').gt(moment().subtract(45, 'days').toDate())
   .exec()
 
 // search on the InvoiceUserIndex for unpaid invoices for a specific user
