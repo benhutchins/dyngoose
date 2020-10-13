@@ -1,9 +1,9 @@
 import { DynamoDB } from 'aws-sdk'
 import * as _ from 'lodash'
 import { batchWrite } from './query/batch_write'
-import {transactWrite} from './query/transact_write'
 import { buildQueryExpression } from './query/expression'
 import { UpdateConditions } from './query/filters'
+import { transactWrite } from './query/transact_write'
 import { ITable, Table } from './table'
 
 export class DocumentClient<T extends Table> {

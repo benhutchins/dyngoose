@@ -1,6 +1,8 @@
 import { DynamoDB } from 'aws-sdk'
 import * as _ from 'lodash'
 
+// this is limit of dynamoDB
+const MAX_ITEMS = 25
 
 export async function transactWrite(
   documentClient: DynamoDB,
@@ -8,13 +10,13 @@ export async function transactWrite(
 ) {
   try {
     const results = await Promise.all(
-      requests
-        .map(async () => {
+      _.chunk(requests, MAX_ITEMS)
+        .map(async (chunk) => {
           const res =
             await documentClient.transactWriteItems(
                 {
-                    TransactItems:[...requests]
-                }
+                  TransactItems: [...chunk],
+                },
             ).promise()
           return res
         }),
