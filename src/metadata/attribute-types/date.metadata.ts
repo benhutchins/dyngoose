@@ -1,35 +1,24 @@
-import * as moment from 'moment'
 import { AttributeMetadata } from '../attribute'
 
 export interface DateAttributeMetadata extends AttributeMetadata<Date> {
   /**
-   * Specify the format you want Moment to store values in, by default
-   * it will use moment.ISO_8601 format. You can also use some of the
-   * other options to change the format, such as:
-   *
-   * * dateOnly will use YYYY-MM-DD format
-   * * timestamp will store values as Unix timestamps
+   * When true, stores only the date part of the Date value in an
+   * ISO 8601 compliant format of YYYY-MM-DD.
    */
-  format?: string | moment.MomentBuiltinFormat
-
-  /**
-  * When true, stores only the date part of the Date value in an
-  * ISO 8601 compliant format of YYYY-MM-DD.
-  */
   dateOnly?: boolean
 
   /**
-  * When true, stores value as a Unix timestamp values.
-  */
+   * When true, stores value as a Unix timestamp values.
+   */
   unixTimestamp?: boolean
 
   /**
-  * When true, value is stored as a timestamp consistent with JavaScript's Date.now()
-  * style of the number of milliseconds elapsed since 1 January 1970 00:00:00 UTC.
-  *
-  * This is especially useful if you area using the timestamp as part of a RANGE key
-  * on a Table's PrimaryKey and you need to ensure the timestamps are unique.
-  */
+   * When true, value is stored as a timestamp consistent with JavaScript's Date.now()
+   * style of the number of milliseconds elapsed since 1 January 1970 00:00:00 UTC.
+   *
+   * This is especially useful if you area using the timestamp as part of a RANGE key
+   * on a Table's PrimaryKey and you need to ensure the timestamps are unique.
+   */
   millisecondTimestamp?: boolean
 
   /**
@@ -46,7 +35,7 @@ export interface DateAttributeMetadata extends AttributeMetadata<Date> {
   /**
    * When true, the value will be automatically set the current date & time
    * when a new record is created.
-  */
+   */
   nowOnCreate?: boolean
 
   /**

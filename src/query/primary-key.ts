@@ -1,6 +1,5 @@
 import { DynamoDB } from 'aws-sdk'
 import { get, has, isArray } from 'lodash'
-import * as moment from 'moment'
 import { QueryError } from '../errors'
 import * as Metadata from '../metadata'
 import { ITable, Table } from '../table'
@@ -11,7 +10,7 @@ import { buildQueryExpression } from './expression'
 import { Filters as QueryFilters, UpdateConditions } from './filters'
 import { Results as QueryResults } from './results'
 
-type PrimaryKeyType = string | number | Date | moment.Moment
+type PrimaryKeyType = string | number | Date
 type RangePrimaryKeyType = PrimaryKeyType | void
 
 type PrimaryKeyBatchInput<HashKeyType extends PrimaryKeyType, RangeKeyType extends RangePrimaryKeyType> = [HashKeyType, RangeKeyType]

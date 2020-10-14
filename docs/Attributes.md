@@ -81,9 +81,6 @@ The `Date` attribute supports additional settings:
   // store only the date, not the time, in a YYYY-MM-DD format
   dateOnly: true,
 
-  // manually specify a desired format for the value, uses `moment.format` internally
-  format: …,
-
   // sets the expiration time for this record, see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html
   timeToLive: true,
 
