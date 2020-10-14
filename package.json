@@ -27,7 +27,7 @@
     "url": "git+https://github.com/benhutchins/dyngoose.git"
   },
   "engines": {
-    "node": ">=8.10.0"
+    "node": "^12.4.0"
   },
   "author": "Benjamin Hutchins",
   "license": "ISC",
@@ -51,7 +51,7 @@
     "mocha": "8.0.1",
     "semantic-release": "17.2.1",
     "tslint": "6.1.3",
-    "typescript": "3.9.7"
+    "typescript": "4.0.3"
   },
   "peerDependencies": {
     "aws-sdk": "^2.x"

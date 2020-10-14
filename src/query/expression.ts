@@ -9,7 +9,7 @@ import { ComplexFilters, Filter, Filters } from './filters'
 
 interface Expression {
   ExpressionAttributeNames: DynamoDB.ExpressionAttributeNameMap
-  ExpressionAttributeValues: DynamoDB.ExpressionAttributeValueMap
+  ExpressionAttributeValues?: DynamoDB.ExpressionAttributeValueMap
   FilterExpression?: string
   KeyConditionExpression?: string
 }

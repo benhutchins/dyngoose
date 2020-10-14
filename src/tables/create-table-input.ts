@@ -62,9 +62,10 @@ export function createTableInput(schema: Schema, forCloudFormation = false) {
       params.StreamSpecification = schema.options.stream
     }
 
-    // we delete the StreamEnabled because it is not valid within CloudFormation templates
+    // CloudFormation template syntax is slightly different than the input for the CreateTable operation
+    // so we delete the StreamEnabled because it is not valid within CloudFormation templates
     if (forCloudFormation) {
-      delete params.StreamSpecification.StreamEnabled
+      delete (params.StreamSpecification as any).StreamEnabled
     }
   }
 
