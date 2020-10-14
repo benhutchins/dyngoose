@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/benhutchins/dyngoose/compare/v2.1.0...v2.2.0) (2020-10-14)
+
+
+### Features
+
+* remove moment in favor of using native Date functions ([#292](https://github.com/benhutchins/dyngoose/issues/292)) ([4cc0807](https://github.com/benhutchins/dyngoose/commit/4cc08077d5c605b2b8205089e8e9f26661eaf6e9))
+
 # [2.1.0](https://github.com/benhutchins/dyngoose/compare/v2.0.0...v2.1.0) (2020-10-14)
 
 
