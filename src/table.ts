@@ -451,20 +451,32 @@ export class Table {
   }
 
   /**
+   * Determine the best save operation method to use based upon the item's current state
+   */
+  public getSaveOperation(): 'put' | 'update' {
+    let type: 'put' | 'update'
+    if (this.__putRequired) {
+      this.__putRequired = false
+      type = 'put'
+    } else {
+      type = 'update'
+    }
+    return type
+  }
+
+  /**
    * Saves this record without calling beforeSave or considering if there are changed attributes.
    *
    * Most of the time, you should use {@link this.save} instead.
    */
   public async forceSave(conditions?: UpdateConditions<this>, meta?: any): Promise<void> {
+    const type = this.getSaveOperation()
     let output: DynamoDB.PutItemOutput | DynamoDB.UpdateItemOutput
-    let type: 'put' | 'update'
-    if (this.__putRequired) {
+    if (type === 'put') {
       output = await this.table.documentClient.put(this, conditions)
       this.__putRequired = false
-      type = 'put'
     } else {
       output = await this.table.documentClient.update(this, conditions)
-      type = 'update'
     }
 
     // trigger afterSave before clearing values, so the hook can determine what has been changed
@@ -559,12 +571,12 @@ export class Table {
     return
   }
 
-  protected setByAttribute(attribute: Attribute<any>, value: any, force = false) {
+  protected setByAttribute(attribute: Attribute<any>, value: any, force = false): this {
     const attributeValue = attribute.toDynamo(value)
 
     // avoid recording the value if it is unchanged, so we do not send it as an updated value during a save
     if (!force && !_.isUndefined(this.__attributes[attribute.name]) && _.isEqual(this.__attributes[attribute.name], attributeValue)) {
-      return
+      return this
     }
 
     if (attributeValue) {

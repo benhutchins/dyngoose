@@ -1,3 +1,4 @@
+import { BatchWrite } from './batch-write'
 import * as Config from './config'
 import * as Connection from './connections'
 import * as Decorator from './decorator'
@@ -10,6 +11,7 @@ import { ITable, Table } from './table'
 import { AttributeType } from './tables/attribute-type'
 import { createTable } from './tables/create-table'
 import { deleteTable } from './tables/delete-table'
+import { Transaction } from './transaction'
 
 export const TableOperations = {
   createTable: (table: ITable<any>) => createTable(table.schema),
@@ -18,6 +20,7 @@ export const TableOperations = {
 
 export {
   AttributeType,
+  BatchWrite,
   Config,
   Connection,
   Decorator,
@@ -27,6 +30,7 @@ export {
   Metadata,
   Query,
   Table,
+  Transaction,
 }
 
 // export decorators prefixed with $ for convenience

@@ -39,8 +39,6 @@ export async function batchGet(
       return _.filter(_.flatten(chunks)) as DynamoDB.AttributeMap[]
     })
   } catch (e) {
-    // tslint:disable-next-line
-    console.error(`Dyngoose batchGet - ${JSON.stringify(keys, null, 2)}`)
     throw e
   }
 }
