@@ -3,6 +3,7 @@ import * as _ from 'lodash'
 import { batchWrite } from './query/batch_write'
 import { buildQueryExpression } from './query/expression'
 import { UpdateConditions } from './query/filters'
+import { transactWrite } from './query/transact_write'
 import { ITable, Table } from './table'
 
 export class DocumentClient<T extends Table> {
@@ -135,6 +136,21 @@ export class DocumentClient<T extends Table> {
     }
 
     return input
+  }
+
+  public async transactPut(records: T[]) {
+    return await transactWrite(
+      this.tableClass.schema.dynamo,
+      records.map((record) => {
+        const writeRequest: DynamoDB.TransactWriteItem = {
+          Put: {
+            TableName: this.tableClass.schema.name,
+            Item: record.toDynamo(),
+          },
+        }
+        return writeRequest
+      }),
+    )
   }
 
   public async delete(record: T, conditions?: UpdateConditions<T>): Promise<DynamoDB.DeleteItemOutput> {
