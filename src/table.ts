@@ -533,10 +533,12 @@ export class Table {
       const propertyName = attribute.propertyName
       const value = this.getAttribute(attributeName)
 
-      if (_.isFunction(attribute.type.toJSON)) {
-        json[propertyName] = attribute.type.toJSON(value, attribute)
-      } else {
-        json[propertyName] = value
+      if (!isTrulyEmpty(value)) {
+        if (_.isFunction(attribute.type.toJSON)) {
+          json[propertyName] = attribute.type.toJSON(value, attribute)
+        } else {
+          json[propertyName] = value
+        }
       }
     }
 
