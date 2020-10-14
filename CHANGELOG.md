@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/benhutchins/dyngoose/compare/v2.0.0...v2.1.0) (2020-10-14)
+
+
+### Features
+
+* 🐛 Added transact write to dynamoClient ([#290](https://github.com/benhutchins/dyngoose/issues/290)) ([7c7270e](https://github.com/benhutchins/dyngoose/commit/7c7270eb952956ac911bcbaf2b0d6db36aad6021))
+
 # [2.0.0](https://github.com/benhutchins/dyngoose/compare/v1.12.3...v2.0.0) (2020-09-29)
 
 
