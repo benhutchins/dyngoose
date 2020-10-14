@@ -5,10 +5,10 @@ import { QueryError } from '../errors'
 import * as Metadata from '../metadata'
 import { ITable, Table } from '../table'
 import { TableProperties } from '../tables/properties'
-import { batchGet } from './batch_get'
-import { batchWrite } from './batch_write'
+import { batchGet } from './batch-get'
+import { batchWrite } from './batch-write'
 import { buildQueryExpression } from './expression'
-import { Filters as QueryFilters } from './filters'
+import { Filters as QueryFilters, UpdateConditions } from './filters'
 import { Results as QueryResults } from './results'
 
 type PrimaryKeyType = string | number | Date | moment.Moment
@@ -35,6 +35,7 @@ interface PrimaryKeyUpdateItem<T extends Table, HashKeyType extends PrimaryKeyTy
   hash: HashKeyType
   range: RangeKeyType
   changes: TableProperties<T>
+  conditions?: UpdateConditions<T>
 }
 
 export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, RangeKeyType extends RangePrimaryKeyType> {
@@ -125,7 +126,6 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
   public async batchDelete(inputs: PrimaryKeyBatchInput<HashKeyType, RangeKeyType>[]) {
     return await batchWrite(
       this.table.schema.dynamo,
-      this.table.schema.name,
       inputs.map((input) => {
         const deleteRequest: DynamoDB.DeleteRequest = {
           Key: {
@@ -137,11 +137,15 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
           deleteRequest.Key[this.metadata.range.name] = this.metadata.range.toDynamoAssert(input[1])
         }
 
-        const request: DynamoDB.WriteRequest = {
+        const writeRequest: DynamoDB.WriteRequest = {
           DeleteRequest: deleteRequest,
         }
 
-        return request
+        const requestMap: DynamoDB.BatchWriteItemRequestMap = {
+          [this.table.schema.name]: [writeRequest],
+        }
+
+        return requestMap
       }),
     )
   }
@@ -221,20 +225,32 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
   }
 
   /**
+   * Creates an instance of Table based on the key.
+   *
+   * Internally the record will be marked as existing, so when performing a .save() operation
+   * it will use an UpdateItem operation which will only transmit the updated fields.
+   *
+   * This can lead to race conditions if not used properly. Try to use with save conditions.
+   */
+  public fromKey(hash: HashKeyType, range: RangeKeyType): T {
+    const keyMap: DynamoDB.AttributeMap = {
+      [this.metadata.hash.name]: this.metadata.hash.toDynamoAssert(hash),
+    }
+
+    if (this.metadata.range) {
+      keyMap[this.metadata.range.name] = this.metadata.range.toDynamoAssert(range)
+    }
+
+    return this.table.fromDynamo(keyMap)
+  }
+
+  /**
    * This will create a temporary Table instance, then calls record.fromJSON() passing your requested changes.
    * record.fromJSON() handles setting and deleting attributes.
    *
    * It then has the Table.Schema build the DynamoDB.UpdateItemInput with all the requested changes.
    */
   public async update(input: PrimaryKeyUpdateItem<T, HashKeyType, RangeKeyType>): Promise<void> {
-    const keyMap: DynamoDB.AttributeMap = {
-      [this.metadata.hash.name]: this.metadata.hash.toDynamoAssert(input.hash),
-    }
-
-    if (this.metadata.range) {
-      keyMap[this.metadata.range.name] = this.metadata.range.toDynamoAssert(input.range)
-    }
-
-    return this.table.fromDynamo(keyMap).fromJSON(input.changes).save()
+    return this.fromKey(input.hash, input.range).fromJSON(input.changes).save(input.conditions)
   }
 }

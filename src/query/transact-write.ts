@@ -24,8 +24,6 @@ export async function transactWrite(
 
     return results
   } catch (e) {
-    // tslint:disable-next-line
-    console.log(`Dynamo-Types TransactWrite - ${JSON.stringify(requests, null, 2)}`)
     throw e
   }
 }
