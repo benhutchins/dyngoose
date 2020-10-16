@@ -37,7 +37,7 @@ await transaction.commit()
 
 ## BatchWriteItem
 
-DynamoDB supports batch write operations which are not fully atomic via the [`BatchWriteItem`](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_BatchWriteItem.html) operation. To expose this functionality within Dyngoose, there is the `Dyngoose.Transaction` class.
+DynamoDB supports batch write operations which are not fully atomic via the [`BatchWriteItem`](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_BatchWriteItem.html) operation. To expose this functionality within Dyngoose, there is the `Dyngoose.BatchWrite` class.
 
 ## Example
 
