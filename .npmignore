@@ -1,4 +1,5 @@
-dist/**/__test__
+dist/**/*.spec.*
+.eslintrc.js
 .github
 .idea
 .vscode

@@ -6,7 +6,6 @@ import { ITable } from '../table'
 export interface GlobalSecondaryIndexOptions {
   hashKey: string
   rangeKey?: string
-  compositeRangeKey?: string[]
   name?: string
   projection?: Metadata.Index.GlobalSecondaryIndexProjection
   nonKeyAttributes?: string[]

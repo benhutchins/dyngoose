@@ -11,9 +11,6 @@
     "experimentalDecorators": true,
     "strictNullChecks": true
   },
-  // "exclude": [
-  //   "**/*.spec.ts"
-  // ],
   "include": [
     "src/**/*"
   ]
