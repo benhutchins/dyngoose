@@ -404,6 +404,17 @@ export class Table {
   }
 
   /**
+   * Delete the value of an attribute by it's property name.
+   *
+   * - To get a value by an attribute name, use {@link this.deleteAttribute}.
+   * - To delete the entire record, use {@link this.delete}.
+   */
+  public del<P extends TableProperty<this>>(propertyName: P): this {
+    const attribute = this.table.schema.getAttributeByPropertyName(propertyName as string)
+    return this.deleteAttribute(attribute.name)
+  }
+
+  /**
    * Sets several attribute values on this record by property names.
    *
    * - To set an attribute value by property name, use {@link this.set}.
