@@ -1,11 +1,11 @@
 import { DynamoDB } from 'aws-sdk'
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
 import { IAttributeType } from '../../interfaces/attribute-type.interface'
-import { BinaryAttributeMetadata } from '../../metadata/attribute-types/binary.metadata'
+import { AnyAttributeMetadata } from '../../metadata/attribute-types/any.metadata'
 import { AttributeType } from '../../tables/attribute-type'
 
 type Value = any
-type Metadata = BinaryAttributeMetadata
+type Metadata = AnyAttributeMetadata
 
 export class AnyAttributeType extends AttributeType<Value, Metadata> implements IAttributeType<Value> {
   type = DynamoAttributeType.String
@@ -16,11 +16,11 @@ export class AnyAttributeType extends AttributeType<Value, Metadata> implements 
     }
   }
 
-  fromDynamo(attributeValue: DynamoDB.AttributeValue): any {
+  fromDynamo(attributeValue: DynamoDB.AttributeValue): Value | null {
     try {
       return JSON.parse(attributeValue.S as string)
     } catch (ex) {
-      return undefined
+      return null
     }
   }
 }
