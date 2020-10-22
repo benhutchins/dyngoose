@@ -11,7 +11,7 @@ import { Filters as QueryFilters, UpdateConditions } from './filters'
 import { Results as QueryResults } from './results'
 
 type PrimaryKeyType = string | number | Date
-type RangePrimaryKeyType = PrimaryKeyType | void
+type RangePrimaryKeyType = PrimaryKeyType | undefined
 
 type PrimaryKeyBatchInput<HashKeyType extends PrimaryKeyType, RangeKeyType extends RangePrimaryKeyType> = [HashKeyType, RangeKeyType]
 
@@ -43,7 +43,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     readonly metadata: Metadata.Index.PrimaryKey,
   ) {}
 
-  public getDeleteItemInput(hash: HashKeyType, range: RangeKeyType) {
+  public getDeleteItemInput(hash: HashKeyType, range: RangeKeyType): DynamoDB.DeleteItemInput {
     const input: DynamoDB.DeleteItemInput = {
       TableName: this.table.schema.name,
       // ReturnValues: "ALL_OLD",
@@ -52,19 +52,19 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
       },
     }
 
-    if (this.metadata.range) {
+    if (this.metadata.range != null) {
       input.Key[this.metadata.range.name] = this.metadata.range.toDynamoAssert(range)
     }
 
     return input
   }
 
-  public async delete(hash: HashKeyType, range: RangeKeyType) {
+  public async delete(hash: HashKeyType, range: RangeKeyType): Promise<DynamoDB.Types.DeleteItemOutput> {
     const input = this.getDeleteItemInput(hash, range)
     return await this.table.schema.dynamo.deleteItem(input).promise()
   }
 
-  public getGetItemInput(input: PrimaryKeyGetInput<HashKeyType, RangeKeyType>) {
+  public getGetItemInput(input: PrimaryKeyGetInput<HashKeyType, RangeKeyType>): DynamoDB.GetItemInput {
     const getItemInput: DynamoDB.GetItemInput = {
       TableName: this.table.schema.name,
       Key: {
@@ -75,30 +75,30 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
       ReturnConsumedCapacity: input.returnConsumedCapacity,
     }
 
-    if (this.metadata.range && input.range) {
+    if (this.metadata.range != null && input.range != null) {
       getItemInput.Key[this.metadata.range.name] = this.metadata.range.toDynamoAssert(input.range)
     }
 
     return getItemInput
   }
 
-  public async get(hash: HashKeyType, range: RangeKeyType): Promise<T | void> {
+  public async get(hash: HashKeyType, range: RangeKeyType): Promise<T | undefined> {
     const getItemInput = this.getGetItemInput({ hash, range })
     const dynamoRecord = await this.table.schema.dynamo.getItem(getItemInput).promise()
-    if (dynamoRecord.Item) {
+    if (dynamoRecord.Item != null) {
       return this.table.fromDynamo(dynamoRecord.Item)
     }
   }
 
-  public async getItem(input: PrimaryKeyGetInput<HashKeyType, RangeKeyType>): Promise<T | void> {
+  public async getItem(input: PrimaryKeyGetInput<HashKeyType, RangeKeyType>): Promise<T | undefined> {
     const getItemInput = this.getGetItemInput(input)
     const dynamoRecord = await this.table.schema.dynamo.getItem(getItemInput).promise()
-    if (dynamoRecord.Item) {
+    if (dynamoRecord.Item != null) {
       return this.table.fromDynamo(dynamoRecord.Item)
     }
   }
 
-  public async batchGet(inputs: PrimaryKeyBatchInput<HashKeyType, RangeKeyType>[]): Promise<Array<T>> {
+  public async batchGet(inputs: Array<PrimaryKeyBatchInput<HashKeyType, RangeKeyType>>): Promise<T[]> {
     const res = await batchGet(
       this.table.schema.dynamo,
       this.table.schema.name,
@@ -107,7 +107,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
           [this.metadata.hash.name]: this.metadata.hash.toDynamoAssert(input[0]),
         }
 
-        if (this.metadata.range) {
+        if (this.metadata.range != null) {
           key[this.metadata.range.name] = this.metadata.range.toDynamoAssert(input[1])
         }
 
@@ -122,7 +122,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     return records
   }
 
-  public async batchDelete(inputs: PrimaryKeyBatchInput<HashKeyType, RangeKeyType>[]) {
+  public async batchDelete(inputs: Array<PrimaryKeyBatchInput<HashKeyType, RangeKeyType>>): Promise<DynamoDB.BatchWriteItemOutput> {
     return await batchWrite(
       this.table.schema.dynamo,
       inputs.map((input) => {
@@ -132,7 +132,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
           },
         }
 
-        if (this.metadata.range) {
+        if (this.metadata.range != null) {
           deleteRequest.Key[this.metadata.range.name] = this.metadata.range.toDynamoAssert(input[1])
         }
 
@@ -150,7 +150,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
   }
 
   public getQueryInput(input: PrimaryKeyQueryInput = {}): DynamoDB.QueryInput {
-    if (!input.rangeOrder) {
+    if (input.rangeOrder == null) {
       input.rangeOrder = 'ASC'
     }
     const ScanIndexForward = input.rangeOrder === 'ASC'
@@ -181,13 +181,13 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     queryInput.ExpressionAttributeValues = expression.ExpressionAttributeValues
 
     const output = await this.table.schema.dynamo.query(queryInput).promise()
-    const records = (output.Items || []).map((item) => {
+    const records = (output.Items == null ? [] : output.Items).map((item) => {
       return this.table.fromDynamo(item)
     })
 
     return {
       records,
-      count: output.Count || records.length,
+      count: output.Count == null ? records.length : output.Count,
       scannedCount: output.ScannedCount as number,
       lastEvaluatedKey: output.LastEvaluatedKey,
       consumedCapacity: output.ConsumedCapacity as DynamoDB.ConsumedCapacity,
@@ -195,10 +195,10 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
   }
 
   public async scan(options: {
-    limit?: number,
-    totalSegments?: number,
-    segment?: number,
-    exclusiveStartKey?: DynamoDB.DocumentClient.Key,
+    limit?: number
+    totalSegments?: number
+    segment?: number
+    exclusiveStartKey?: DynamoDB.DocumentClient.Key
   } = {}): Promise<QueryResults<T>> {
     const params: DynamoDB.DocumentClient.ScanInput = {
       TableName: this.table.schema.name,
@@ -210,13 +210,17 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     }
 
     const result = await this.table.schema.dynamo.scan(params).promise()
-    const records = (result.Items || []).map((item) => {
-      return this.table.fromDynamo(item)
-    })
+    const records: T[] = []
+
+    if (result.Items != null) {
+      for (const item of result.Items) {
+        records.push(this.table.fromDynamo(item))
+      }
+    }
 
     return {
       records,
-      count: result.Count || records.length,
+      count: result.Count == null ? records.length : result.Count,
       scannedCount: result.ScannedCount as number,
       lastEvaluatedKey: result.LastEvaluatedKey,
       consumedCapacity: result.ConsumedCapacity as DynamoDB.ConsumedCapacity,
@@ -236,7 +240,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
       [this.metadata.hash.name]: this.metadata.hash.toDynamoAssert(hash),
     }
 
-    if (this.metadata.range) {
+    if (this.metadata.range != null) {
       keyMap[this.metadata.range.name] = this.metadata.range.toDynamoAssert(range)
     }
 
@@ -250,6 +254,6 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
    * It then has the Table.Schema build the DynamoDB.UpdateItemInput with all the requested changes.
    */
   public async update(input: PrimaryKeyUpdateItem<T, HashKeyType, RangeKeyType>): Promise<void> {
-    return this.fromKey(input.hash, input.range).fromJSON(input.changes).save(input.conditions)
+    return await this.fromKey(input.hash, input.range).fromJSON(input.changes).save(input.conditions)
   }
 }

@@ -12,12 +12,12 @@ type Metadata = StringAttributeMetadata
 export class StringAttributeType extends AttributeType<Value, Metadata> implements IAttributeType<Value> {
   type = DynamoAttributeType.String
 
-  toDynamo(value: Value) {
+  toDynamo(value: Value): DynamoDB.AttributeValue {
     if (typeof value !== 'string') {
       throw new ValidationError(`Expected ${this.propertyName} to be a string, but was given a ${typeof value}`)
     }
 
-    if (this.metadata.trim) {
+    if (this.metadata?.trim === true) {
       value = trim(value)
 
       if (value === '') {
@@ -27,9 +27,9 @@ export class StringAttributeType extends AttributeType<Value, Metadata> implemen
       }
     }
 
-    if (this.metadata.uppercase) {
+    if (this.metadata?.uppercase === true) {
       value = value.toUpperCase()
-    } else if (this.metadata.lowercase) {
+    } else if (this.metadata?.lowercase === true) {
       value = value.toLowerCase()
     }
 

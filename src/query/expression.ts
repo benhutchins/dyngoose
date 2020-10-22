@@ -64,9 +64,9 @@ class FilterExpressionQuery<T extends Table> {
   public values: DynamoDB.ExpressionAttributeValueMap = {}
   public filterConditions: string[] = []
 
-  private keyConditionsMap: FilterCondition[] = []
-  private attributeNamePrefixMap: string[] = []
-  private valuePrefixMap: any[] = []
+  private readonly keyConditionsMap: FilterCondition[] = []
+  private readonly attributeNamePrefixMap: string[] = []
+  private readonly valuePrefixMap: any[] = []
 
   get keyConditions(): string[] {
     return this.keyConditionsMap.map((condition) => condition.filter)
@@ -87,7 +87,7 @@ class FilterExpressionQuery<T extends Table> {
     }
   }
 
-  private parse() {
+  private parse(): void {
     if (_.isArray(this.filters) && this.filters.length === 1 && !_.isObjectLike(this.filters[0])) {
       this.filters = this.filters[0] as Filters<T>
     }
@@ -102,7 +102,7 @@ class FilterExpressionQuery<T extends Table> {
     }
   }
 
-  private handleFilter(attrName: string, value: any, push = true) {
+  private handleFilter(attrName: string, value: any, push = true): QueryFilterQuery {
     const attribute = this.schema.getAttributeByName(attrName)
 
     let filter: Filter<any>
@@ -115,7 +115,7 @@ class FilterExpressionQuery<T extends Table> {
 
     const queryValue = this.parseFilter(attribute, filter, attrName)
 
-    if (push && queryValue.query) {
+    if (push && queryValue.query != null) {
       _.extend(this.attrs, queryValue.attrs)
       _.extend(this.values, queryValue.values)
       this.push(attribute, queryValue.query, filter[0])
@@ -145,7 +145,7 @@ class FilterExpressionQuery<T extends Table> {
         _.each(filters, (value, attrName) => {
           const queryValue = this.handleFilter(attrName, value, false)
 
-          if (queryValue.query) {
+          if (queryValue.query != null) {
             _.extend(this.attrs, queryValue.attrs)
             _.extend(this.values, queryValue.values)
             // this.push(attribute, queryValue.query, filter[0])
@@ -194,7 +194,7 @@ class FilterExpressionQuery<T extends Table> {
     let query: string | undefined
     let attrNameMappedTo: string
 
-    if (attrName && attrName.includes('.')) {
+    if (attrName?.includes('.')) {
       attrNameMappedTo = attrName
       attrName.split('.').forEach((attrNameSegment, i) => {
         const attrNameSegmentMappedTo = '#a' + prefix + String(i)
@@ -215,15 +215,16 @@ class FilterExpressionQuery<T extends Table> {
       case '<':
       case '<=':
       case '>':
-      case '>=':
+      case '>=': {
         const filterValue = attr.toDynamoAssert(filter[1])
         query = `${attrNameMappedTo} ${operator} ${variableName}`
         values[variableName] = filterValue
         break
+      }
 
       case 'contains':
       case 'not contains':
-      case 'beginsWith':
+      case 'beginsWith': {
         /**
          * Prevent begins_with with number operators, which is not supported by DynamoDB.
          *
@@ -238,15 +239,17 @@ class FilterExpressionQuery<T extends Table> {
         query = `${queryOperator}(${attrNameMappedTo}, ${variableName})`
         values[variableName] = strValue
         break
+      }
 
       case 'exists':
-      case 'not exists':
+      case 'not exists': {
         const existsOperator = operator === 'exists' ? 'attribute_exists' : 'attribute_not_exists'
         query = `${existsOperator}(${attrNameMappedTo})`
         break
+      }
 
       case 'includes':
-      case 'excludes':
+      case 'excludes': {
         const filterValues = filter[1] as any[]
         const possibleVariableNames: string[] = []
 
@@ -273,18 +276,21 @@ class FilterExpressionQuery<T extends Table> {
         //   }
         // }
         break
+      }
 
-      case 'null':
+      case 'null': {
         query = `${attrNameMappedTo} = :NULL`
         values[':NULL'] = { NULL: true }
         break
+      }
 
-      case 'not null':
+      case 'not null': {
         query = `${attrNameMappedTo} = :NOT_NULL`
         values[':NOT_NULL'] = { NULL: false }
         break
+      }
 
-      case 'between':
+      case 'between': {
         if (typeof filter[1] !== 'undefined' && typeof filter[2] !== 'undefined') {
           const lowerVariableName = ':vl' + prefix
           const upperVariableName = ':vu' + prefix
@@ -296,12 +302,13 @@ class FilterExpressionQuery<T extends Table> {
           throw new QueryError('BETWEEN filter missing a lower or upper bound')
         }
         break
+      }
     }
 
     return { values, attrs, query }
   }
 
-  private push(attribute: Attribute<any>, filter: string, operator: FilterOperator) {
+  private push(attribute: Attribute<any>, filter: string, operator: FilterOperator): void {
     if (this.isHashKey(attribute)) {
       if (operator === '=') {
         this.keyConditionsMap.push({ attribute, filter })
@@ -324,7 +331,7 @@ class FilterExpressionQuery<T extends Table> {
   }
 
   private isRangeKey(attribute: Attribute<any>): boolean {
-    if (this.indexMetadata && this.indexMetadata.range) {
+    if (this.indexMetadata?.range != null) {
       return this.indexMetadata.range.name === attribute.name
     } else {
       return false

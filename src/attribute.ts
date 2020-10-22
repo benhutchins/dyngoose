@@ -18,11 +18,11 @@ export class Attribute<Value> {
   // }
 
   constructor(
-    public propertyName: string,
-    public type: IAttributeType<Value>,
-    public metadata: AttributeMetadata<Value>,
+    public readonly propertyName: string,
+    public readonly type: IAttributeType<Value>,
+    public metadata: AttributeMetadata<Value> = {},
   ) {
-    this.name = this.metadata.name || this.propertyName
+    this.name = this.metadata.name == null ? this.propertyName : this.metadata.name
   }
 
   /**
@@ -31,7 +31,7 @@ export class Attribute<Value> {
   getDefaultValue(): Value | null {
     if (typeof this.metadata.default !== 'undefined') {
       return _.isFunction(this.metadata.default) ? this.metadata.default() : this.metadata.default
-    } else if (this.type.getDefault) {
+    } else if (typeof this.type.getDefault === 'function') {
       return this.type.getDefault()
     } else {
       return null
@@ -48,17 +48,17 @@ export class Attribute<Value> {
     }
 
     // if we have no value, allow the manipulateWrite a chance to provide a value
-    if (this.metadata.manipulateWrite && value == null) {
+    if (typeof this.metadata.manipulateWrite === 'function' && value == null) {
       const customAttributeValue = this.metadata.manipulateWrite(null, null, this)
 
-      if (customAttributeValue) {
+      if (customAttributeValue != null) {
         return customAttributeValue
       }
     }
 
     // if there is no value, do not not return an empty DynamoDB.AttributeValue
     if (value == null) {
-      if (this.metadata.required) {
+      if (this.metadata.required === true) {
         throw new ValidationError('Required value missing: ' + this.name)
       }
       return null
@@ -70,7 +70,7 @@ export class Attribute<Value> {
 
     const attributeValue = this.type.toDynamo(value, this)
 
-    if (this.metadata.manipulateWrite) {
+    if (typeof this.metadata.manipulateWrite === 'function') {
       return this.metadata.manipulateWrite(attributeValue, value, this)
     } else {
       return attributeValue
@@ -81,7 +81,7 @@ export class Attribute<Value> {
     const attributeValue = this.toDynamo(value)
 
     if (attributeValue == null) {
-      throw new ValidationError(`Attribute.toDynamoAssert called without a valid value`)
+      throw new ValidationError('Attribute.toDynamoAssert called without a valid value')
     } else {
       return attributeValue
     }
@@ -97,13 +97,13 @@ export class Attribute<Value> {
     }
 
     // all attributes support null
-    if (attributeValue == null || attributeValue.NULL) {
+    if (attributeValue == null || attributeValue.NULL === true) {
       return null
     }
 
-    const value = this.type.fromDynamo(attributeValue, this) || null
+    const value = this.type.fromDynamo(attributeValue, this)
 
-    if (this.metadata.manipulateRead) {
+    if (typeof this.metadata.manipulateRead === 'function') {
       return this.metadata.manipulateRead(value, attributeValue, this)
     } else {
       return value

@@ -15,12 +15,12 @@ export class Schema {
    * The TableName in DynamoDB
    */
   public get name(): string {
-    return this.options.name || ''
+    return this.options?.name == null ? '' : this.options.name
   }
 
   // Default Index, which every table must have
   public primaryKey: Metadata.Index.PrimaryKey
-  public timeToLiveAttribute: Attribute<Date>
+  public timeToLiveAttribute?: Attribute<Date>
 
   // Additional table indexes
   public globalSecondaryIndexes: Metadata.Index.GlobalSecondaryIndex[] = []
@@ -39,12 +39,12 @@ export class Schema {
   // List of attributes this table has
   private readonly attributes: Map<string, Attribute<any>> = new Map()
 
-  constructor(private table: ITable<any>) {}
+  constructor(private readonly table: ITable<any>) {}
 
-  public setMetadata(metadata: Metadata.Table = {}) {
+  public setMetadata(metadata: Metadata.Table = {}): void {
     this.options = metadata
 
-    this.setThroughput(this.options.throughput || {
+    this.setThroughput(this.options.throughput != null ? this.options.throughput : {
       read: 5,
       write: 5,
       autoScaling: {
@@ -55,7 +55,7 @@ export class Schema {
     })
   }
 
-  public defineAttributeProperties() {
+  public defineAttributeProperties(): void {
     // for each attribute, add the get and set property handlers
     for (const attribute of this.attributes.values()) {
       Object.defineProperty(
@@ -75,7 +75,7 @@ export class Schema {
     }
   }
 
-  public defineGlobalSecondaryIndexes() {
+  public defineGlobalSecondaryIndexes(): void {
     for (const indexMetadata of this.globalSecondaryIndexes) {
       Object.defineProperty(
         this.table,
@@ -88,7 +88,7 @@ export class Schema {
     }
   }
 
-  public defineLocalSecondaryIndexes() {
+  public defineLocalSecondaryIndexes(): void {
     for (const indexMetadata of this.localSecondaryIndexes) {
       Object.defineProperty(
         this.table,
@@ -101,7 +101,7 @@ export class Schema {
     }
   }
 
-  public definePrimaryKeyProperty() {
+  public definePrimaryKeyProperty(): void {
     Object.defineProperty(
       this.table,
       this.primaryKey.propertyName,
@@ -112,7 +112,7 @@ export class Schema {
     )
   }
 
-  public setThroughput(throughput: number | IThroughput) {
+  public setThroughput(throughput: number | IThroughput): void {
     if (typeof throughput === 'number') {
       this.throughput = {
         read: throughput,
@@ -130,23 +130,23 @@ export class Schema {
       }
     }
 
-    if (!this.throughput.read || !this.throughput.write) {
+    if (this.throughput.read == null || this.throughput.write == null) {
       throw new SchemaError(`Schema for ${this.name} has invalid throughput ${JSON.stringify(this.throughput)}`)
     }
   }
 
-  public getAttributes() {
+  public getAttributes(): IterableIterator<[string, Attribute<any>]> {
     return this.attributes.entries()
   }
 
   public getAttributeByName(attributeName: string): Attribute<any> {
-    let childSegment: string | void
+    let childSegment: string | undefined
     if (attributeName.includes('.')) {
       [attributeName, childSegment] = attributeName.split('.')
     }
     const attribute = this.attributes.get(attributeName)
-    if (attribute) {
-      if (childSegment) {
+    if (attribute != null) {
+      if (childSegment != null) {
         return (attribute.type as any).attributes[childSegment]
       }
       return attribute
@@ -174,18 +174,18 @@ export class Schema {
     return attribute
   }
 
-  public setPrimaryKey(hashKey: string, rangeKey: string | void, propertyName: string) {
+  public setPrimaryKey(hashKey: string, rangeKey: string | undefined, propertyName: string): void {
     const hash = this.getAttributeByName(hashKey)
-    if (!hash) {
+    if (hash == null) {
       throw new SchemaError(`Specified hashKey ${hashKey} attribute for the PrimaryKey for table ${this.name} does not exist`)
     }
 
     let range: Attribute<any> | undefined
 
-    if (rangeKey) {
+    if (rangeKey != null) {
       range = this.getAttributeByName(rangeKey)
 
-      if (!range) {
+      if (range == null) {
         throw new SchemaError(`Specified rangeKey ${rangeKey} attribute for the PrimaryKey for table ${this.name} does not exist`)
       }
     }
@@ -197,11 +197,11 @@ export class Schema {
     }
   }
 
-  public createTableInput(forCloudFormation = false) {
+  public createTableInput(forCloudFormation = false): DynamoDB.CreateTableInput {
     return createTableInput(this, forCloudFormation)
   }
 
-  public createCloudFormationResource() {
+  public createCloudFormationResource(): any {
     return this.createTableInput(true)
   }
 
@@ -209,9 +209,12 @@ export class Schema {
     const attributeMap: DynamoDB.AttributeMap = {}
 
     for (const [attributeName, attribute] of this.attributes.entries()) {
-      const attributeValue = attribute.toDynamo(record.get(attribute.propertyName))
+      // there is a quirk with the typing of Table.get, where we exclude all the default Table properties and therefore
+      // on the Table class itself, no property name is possible, so we pass 'as never' below to fix a linter warning
+      // but this actually works as expected
+      const attributeValue = attribute.toDynamo(record.get(attribute.propertyName as never))
 
-      if (attributeValue) {
+      if (attributeValue != null) {
         attributeMap[attributeName] = attributeValue
       }
     }

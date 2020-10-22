@@ -1,4 +1,4 @@
-import { expect } from 'chai'
+import { expect, should } from 'chai'
 import { TestableTable } from '../../setup-tests.spec'
 
 describe('AttributeType/Any', () => {
@@ -18,13 +18,22 @@ describe('AttributeType/Any', () => {
       ferrets: 'stinky',
     }
 
-    expect(record.generic).eq(null)
+    expect(record.generic).eq(null, 'starts as null')
     record.generic = value
-    expect(record.generic).to.deep.eq(value)
-    expect(record.getAttributeDynamoValue('generic')).deep.eq({ S: JSON.stringify(value) })
-    await record.save()
+    expect(record.generic).to.deep.eq(value, 'accepts a javascript object')
+    expect(record.getAttributeDynamoValue('generic')).deep.eq({ S: JSON.stringify(value) }, 'stores in json')
+
+    try {
+      await record.save()
+    } catch (ex) {
+      should().not.exist(ex)
+    }
 
     const loaded = await TestableTable.primaryKey.get(30, 'json test')
-    expect(record.generic).to.deep.eq(value, 'after loading record from dynamo')
+    expect(loaded).to.be.instanceof(TestableTable)
+
+    if (loaded != null) {
+      expect(loaded.generic).to.deep.eq(value, 'after loading record from dynamo')
+    }
   })
 })

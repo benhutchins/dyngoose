@@ -1,5 +1,4 @@
 import { DynamoDB } from 'aws-sdk'
-import * as _ from 'lodash'
 import Config from './config'
 import { buildQueryExpression } from './query/expression'
 import { UpdateConditions } from './query/filters'
@@ -9,7 +8,7 @@ import { Table } from './table'
 
 export class Transaction {
   private dynamo: DynamoDB
-  private list: DynamoDB.TransactWriteItemList = []
+  private readonly list: DynamoDB.TransactWriteItemList = []
 
   /**
    * Perform a Transaction operation.
@@ -26,10 +25,10 @@ export class Transaction {
    * @see {@link https://github.com/benhutchins/dyngoose/blob/master/docs/Connections.md}.
    */
   constructor(connection?: DynamoDB) {
-    this.dynamo = connection || Config.defaultConnection.client
+    this.dynamo = connection == null ? Config.defaultConnection.client : connection
   }
 
-  public setConnection(dynamo: DynamoDB) {
+  public setConnection(dynamo: DynamoDB): this {
     this.dynamo = dynamo
     return this
   }
@@ -49,7 +48,7 @@ export class Transaction {
       Item: record.toDynamo(),
     }
 
-    if (conditions) {
+    if (conditions != null) {
       const conditionExpression = buildQueryExpression(tableClass.schema, conditions)
       put.ConditionExpression = conditionExpression.FilterExpression
       put.ExpressionAttributeNames = conditionExpression.ExpressionAttributeNames
@@ -88,7 +87,7 @@ export class Transaction {
       Key: record.getDynamoKey(),
     }
 
-    if (conditions) {
+    if (conditions != null) {
       const conditionExpression = buildQueryExpression(tableClass.schema, conditions)
       del.ConditionExpression = conditionExpression.FilterExpression
       del.ExpressionAttributeNames = conditionExpression.ExpressionAttributeNames
@@ -119,7 +118,7 @@ export class Transaction {
     return this
   }
 
-  public async commit() {
+  public async commit(): Promise<DynamoDB.TransactWriteItemsOutput> {
     return await transactWrite(this.dynamo, this.list)
   }
 }

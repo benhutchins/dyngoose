@@ -8,7 +8,7 @@ export interface IAttributeType<Value> {
   /**
    * Convert this attribute from the AttributeValue's value to the desired Value.
    */
-  fromDynamo: (attributeValue: AttributeValue, attribute: Attribute<Value>) => Value | undefined
+  fromDynamo: (attributeValue: AttributeValue, attribute: Attribute<Value>) => Value | null
 
   /**
    * Convert this attribute from the desired Value into a saveable value DynamoDB will accept.

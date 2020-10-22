@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { DynamoDB } from 'aws-sdk'
 import { Connection } from './connection'
 
 export class DAXConnection implements Connection {
-  private __client: DynamoDB
+  private readonly __client: DynamoDB
 
   constructor(options: {
-    endpoints: string[],
-    requestTimeout?: number,
+    endpoints: string[]
+    requestTimeout?: number
   }) {
     const AmazonDaxClient = require('amazon-dax-client')
     this.__client = new AmazonDaxClient({
@@ -15,7 +16,7 @@ export class DAXConnection implements Connection {
     })
   }
 
-  public get client() {
+  public get client(): DynamoDB {
     return this.__client
   }
 }

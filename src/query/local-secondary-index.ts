@@ -32,7 +32,7 @@ export class LocalSecondaryIndex<T extends Table> {
   ) {}
 
   public getQueryInput(input: LocalSecondaryIndexQueryInput = {}): DynamoDB.QueryInput {
-    if (!input.rangeOrder) {
+    if (input.rangeOrder == null) {
       input.rangeOrder = 'ASC'
     }
     const ScanIndexForward = input.rangeOrder === 'ASC'
@@ -84,9 +84,9 @@ export class LocalSecondaryIndex<T extends Table> {
     return scanInput
   }
 
-  public async scan(filters: QueryFilters<T> | void | null, input: LocalSecondaryIndexScanInput = {}) {
+  public async scan(filters: QueryFilters<T> | undefined | null, input: LocalSecondaryIndexScanInput = {}): Promise<QueryResults<T>> {
     const scanInput = this.getScanInput(input)
-    if (filters && Object.keys(filters).length > 0) {
+    if (filters != null && Object.keys(filters).length > 0) {
       // don't pass the index metadata, avoids KeyConditionExpression
       const expression = buildQueryExpression(this.tableClass.schema, filters)
       scanInput.FilterExpression = expression.FilterExpression
@@ -107,13 +107,17 @@ export class LocalSecondaryIndex<T extends Table> {
   }
 
   protected getQueryResults(output: DynamoDB.ScanOutput | DynamoDB.QueryOutput): QueryResults<T> {
-    const records: T[] = (output.Items || []).map((item) => {
-      return this.tableClass.fromDynamo(item)
-    })
+    const records: T[] = []
+
+    if (output.Items != null) {
+      for (const item of output.Items) {
+        records.push(this.tableClass.fromDynamo(item))
+      }
+    }
 
     return {
       records,
-      count: output.Count || records.length,
+      count: output.Count == null ? records.length : output.Count,
       scannedCount: output.ScannedCount as number,
       lastEvaluatedKey: output.LastEvaluatedKey,
       consumedCapacity: output.ConsumedCapacity as DynamoDB.ConsumedCapacity,

@@ -53,10 +53,10 @@ export class GlobalSecondaryIndex<T extends Table> {
    * first received from DynamoDB. Avoid use whenever you do not have uniqueness for the
    * GlobalSecondaryIndex's HASH + RANGE.
    */
-  public async get(filters: QueryFilters<T>): Promise<T | void> {
+  public async get(filters: QueryFilters<T>): Promise<T | undefined> {
     if (!has(filters, this.metadata.hash.propertyName)) {
       throw new QueryError('Cannot perform a query on a GlobalSecondaryIndex without specifying a hash key value')
-    } else if (this.metadata.range && !has(filters, this.metadata.range.propertyName)) {
+    } else if (this.metadata.range != null && !has(filters, this.metadata.range.propertyName)) {
       throw new QueryError('Cannot perform a query on a GlobalSecondaryIndex with a range key without specifying a range value')
     }
 
@@ -67,8 +67,8 @@ export class GlobalSecondaryIndex<T extends Table> {
     }
   }
 
-  public getQueryInput(input: GlobalSecondaryIndexQueryInput = {}) {
-    if (!input.rangeOrder) {
+  public getQueryInput(input: GlobalSecondaryIndexQueryInput = {}): DynamoDB.QueryInput {
+    if (input.rangeOrder == null) {
       input.rangeOrder = 'ASC'
     }
 
@@ -108,7 +108,7 @@ export class GlobalSecondaryIndex<T extends Table> {
     return this.getQueryResults(output)
   }
 
-  public getScanInput(input: GlobalSecondaryIndexScanInput = {}) {
+  public getScanInput(input: GlobalSecondaryIndexScanInput = {}): DynamoDB.ScanInput {
     const scanInput: DynamoDB.ScanInput = {
       TableName: this.tableClass.schema.name,
       IndexName: this.metadata.name,
@@ -131,9 +131,9 @@ export class GlobalSecondaryIndex<T extends Table> {
    * *WARNING*: In most circumstances this is not a good thing to do.
    * This will return all the items in this index, does not perform well!
    */
-  public async scan(filters: QueryFilters<T> | void | null, input: GlobalSecondaryIndexScanInput = {}): Promise<QueryResults<T>> {
+  public async scan(filters?: QueryFilters<T> | undefined | null, input: GlobalSecondaryIndexScanInput = {}): Promise<QueryResults<T>> {
     const scanInput = this.getScanInput(input)
-    if (filters && Object.keys(filters).length > 0) {
+    if (filters != null && Object.keys(filters).length > 0) {
       // don't pass the index metadata, avoids KeyConditionExpression
       const expression = buildQueryExpression(this.tableClass.schema, filters)
       scanInput.FilterExpression = expression.FilterExpression
@@ -156,7 +156,7 @@ export class GlobalSecondaryIndex<T extends Table> {
    * @see {@link https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Scan.html#Scan.ParallelScan}
    */
   public async segmentedScan(filters: QueryFilters<T> | null, input: GlobalSecondaryIndexSegmentedScanInput): Promise<QueryResults<T>> {
-    const scans: Promise<QueryResults<T>>[] = []
+    const scans: Array<Promise<QueryResults<T>>> = []
     for (let i = 0; i < input.totalSegments; i++) {
       input.segment = i
       scans.push(this.scan(filters, input))
@@ -173,10 +173,18 @@ export class GlobalSecondaryIndex<T extends Table> {
       records = records.concat(result.records)
       scannedCount += result.scannedCount
 
-      if (result.consumedCapacity) {
-        capacityUnits += result.consumedCapacity.CapacityUnits || 0
-        writeCapacityUnits += result.consumedCapacity.WriteCapacityUnits || 0
-        readCapacityUnits += result.consumedCapacity.ReadCapacityUnits || 0
+      if (result.consumedCapacity != null) {
+        if (result.consumedCapacity.CapacityUnits != null) {
+          capacityUnits += result.consumedCapacity.CapacityUnits
+        }
+
+        if (result.consumedCapacity.WriteCapacityUnits != null) {
+          writeCapacityUnits += result.consumedCapacity.WriteCapacityUnits
+        }
+
+        if (result.consumedCapacity.ReadCapacityUnits != null) {
+          readCapacityUnits += result.consumedCapacity.ReadCapacityUnits
+        }
       }
     }
 
@@ -202,13 +210,17 @@ export class GlobalSecondaryIndex<T extends Table> {
   }
 
   protected getQueryResults(output: DynamoDB.ScanOutput | DynamoDB.QueryOutput): QueryResults<T> {
-    const records: T[] = (output.Items || []).map((item) => {
-      return this.tableClass.fromDynamo(item)
-    })
+    const records: T[] = []
+
+    if (output.Items != null) {
+      for (const item of output.Items) {
+        records.push(this.tableClass.fromDynamo(item))
+      }
+    }
 
     return {
       records,
-      count: output.Count || records.length,
+      count: output.Count == null ? records.length : output.Count,
       scannedCount: output.ScannedCount as number,
       lastEvaluatedKey: output.LastEvaluatedKey,
       consumedCapacity: output.ConsumedCapacity as DynamoDB.ConsumedCapacity,

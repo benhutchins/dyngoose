@@ -1,6 +1,6 @@
 import * as _ from 'lodash'
 
-export function isTrulyEmpty(value: any) {
+export function isTrulyEmpty(value: any): boolean {
   if (_.isBoolean(value)) {
     return false
   }

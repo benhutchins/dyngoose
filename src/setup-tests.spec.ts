@@ -55,6 +55,12 @@ export class TestableTable extends Dyngoose.Table {
   @Dyngoose.Attribute.Number()
   public testNumber: number
 
+  @Dyngoose.Attribute.NumberSet()
+  public testNumberSet: Array<BigInt | number>
+
+  @Dyngoose.Attribute.NumberSet({ default: () => [42, 420] })
+  public testNumberSetWithDefaults: number[]
+
   @Dyngoose.Attribute.Number()
   public testBigInt: BigInt
 

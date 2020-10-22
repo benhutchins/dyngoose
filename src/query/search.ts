@@ -38,14 +38,15 @@ export type SearchGroupFunction<T extends Table> = (condition: MagicSearch<T>) =
 export class MagicSearch<T extends Table> {
   private filters: ComplexFilters<T> = []
 
-  constructor(private tableClass: ITable<T>, filters?: Filters<T>, private input: MagicSearchInput<T> = {}) {
-    if (filters) {
+  constructor(private readonly tableClass: ITable<T>, filters?: Filters<T>, private input: MagicSearchInput<T> = {}) {
+    if (filters != null) {
       this.addFilterGroup([filters])
     }
   }
 
-  addFilterGroup(filters: Filters<T>[]) {
+  addFilterGroup(filters: Array<Filters<T>>): this {
     this.filters = this.filters.concat(filters)
+    return this
   }
 
   /**
@@ -55,38 +56,38 @@ export class MagicSearch<T extends Table> {
    */
   async exec(): Promise<QueryResults<T>> {
     const input = this.getInput()
-    return this.page(input)
+    return await this.page(input)
   }
 
-  parenthesis(value: SearchGroupFunction<T>) {
+  parenthesis(value: SearchGroupFunction<T>): this {
     return this.group(value)
   }
 
-  group(value: SearchGroupFunction<T>): MagicSearch<T> {
+  group(value: SearchGroupFunction<T>): this {
     const groupedSearch = new MagicSearch<T>(this.tableClass)
     value(groupedSearch)
     this.filters.push(groupedSearch.filters)
     return this
   }
 
-  filter<Attr extends AttributeNames<T>>(attributePropertyName: Attr) {
+  filter<Attr extends AttributeNames<T>>(attributePropertyName: Attr): Condition<T, Attr, T[Attr]> {
     return new Condition<T, Attr, T[Attr]>(this, attributePropertyName)
   }
 
-  where<Attr extends AttributeNames<T>>(attributePropertyName: Attr) {
+  where<Attr extends AttributeNames<T>>(attributePropertyName: Attr): Condition<T, Attr, T[Attr]> {
     return new Condition<T, Attr, T[Attr]>(this, attributePropertyName)
   }
 
-  attribute<Attr extends AttributeNames<T>>(attributePropertyName: Attr) {
+  attribute<Attr extends AttributeNames<T>>(attributePropertyName: Attr): Condition<T, Attr, T[Attr]> {
     return new Condition<T, Attr, T[Attr]>(this, attributePropertyName)
   }
 
-  or(): MagicSearch<T> {
+  or(): this {
     this.filters.push('OR')
     return this
   }
 
-  and(): MagicSearch<T> {
+  and(): this {
     return this
   }
 
@@ -97,7 +98,7 @@ export class MagicSearch<T extends Table> {
    * Instead DynamoDB will only query a maximum of 5 documents to see if they match and should be returned.
    * The limit parameter passed in should be a number representing how many documents you wish DynamoDB to process.
    */
-  limit(limit: number): MagicSearch<T> {
+  limit(limit: number): this {
     this.input.limit = limit
     return this
   }
@@ -108,7 +109,7 @@ export class MagicSearch<T extends Table> {
    *
    * You can pass that object into this method to get additional results from your table.
    */
-  startAt(exclusiveStartKey?: DynamoDB.Key): MagicSearch<T> {
+  startAt(exclusiveStartKey?: DynamoDB.Key): this {
     this.input.exclusiveStartKey = exclusiveStartKey
     return this
   }
@@ -119,7 +120,7 @@ export class MagicSearch<T extends Table> {
    * This can limit the size of the DynamoDB response and helps you only retrieve the data you need.
    * Simply provide an array of strings representing the property names you wish DynamoDB to return.
    */
-  attributes<Attr extends AttributeNames<T>>(...attributes: Attr[]): MagicSearch<T> {
+  attributes<Attr extends AttributeNames<T>>(...attributes: Attr[]): this {
     const attributeNames: string[] = []
 
     for (const propertyName of attributes) {
@@ -134,7 +135,7 @@ export class MagicSearch<T extends Table> {
   /**
    * Instead of returning the records, this function will cause the query operation to return only the count of possible results.
    */
-  count() {
+  count(): this {
     this.input.returnOnlyCount = true
     return this
   }
@@ -142,7 +143,7 @@ export class MagicSearch<T extends Table> {
   /**
    * This will cause the query to run in a consistent manner as opposed to the default eventually consistent manner.
    */
-  consistent(consistent: DynamoDB.ConsistentRead = true): MagicSearch<T> {
+  consistent(consistent: DynamoDB.ConsistentRead = true): this {
     this.input.consistent = consistent
     return this
   }
@@ -151,7 +152,7 @@ export class MagicSearch<T extends Table> {
    * This causes the query to be run on a specific index as opposed to the default table wide query.
    * The index parameter you pass in should represent the name of the index you wish to query on.
    */
-  using(index: GlobalSecondaryIndex<T> | LocalSecondaryIndex<T> | string | null): MagicSearch<T> {
+  using(index: GlobalSecondaryIndex<T> | LocalSecondaryIndex<T> | string | null): this {
     if (index === null) {
       this.input.index = undefined
       this.input.indexName = undefined
@@ -167,7 +168,7 @@ export class MagicSearch<T extends Table> {
    *
    * The order parameter must be a string either equal to ascending or descending.
   */
-  sort(direction: 'ascending' | 'descending'): MagicSearch<T> {
+  sort(direction: 'ascending' | 'descending'): this {
     if (direction === 'ascending') {
       this.input.rangeOrder = 'ASC'
     } else if (direction === 'descending') {
@@ -177,11 +178,11 @@ export class MagicSearch<T extends Table> {
     return this
   }
 
-  ascending(): MagicSearch<T> {
+  ascending(): this {
     return this.sort('ascending')
   }
 
-  descending(): MagicSearch<T> {
+  descending(): this {
     return this.sort('descending')
   }
 
@@ -192,7 +193,7 @@ export class MagicSearch<T extends Table> {
    * This is also non-ideal for scans, for better performance use a segmented scan
    * via the Query.PrimaryKey.segmentedScan or Query.GlobalSecondaryIndex.segmentedScan.
    */
-  async all() {
+  async all(): Promise<QueryResults<T>> {
     const input = this.getInput()
 
     const result: QueryResults<T> = {
@@ -202,11 +203,11 @@ export class MagicSearch<T extends Table> {
       consumedCapacity: null as any,
     }
 
-    let page: QueryResults<T> | void
+    let page: QueryResults<T> | undefined
 
     // if this is the first page, or if we have not hit the last page, continue loading records…
-    while (!page || page.lastEvaluatedKey) {
-      if (page && page.lastEvaluatedKey) {
+    while (page == null || page.lastEvaluatedKey != null) {
+      if (page?.lastEvaluatedKey != null) {
         input.ExclusiveStartKey = page.lastEvaluatedKey
       }
 
@@ -225,11 +226,11 @@ export class MagicSearch<T extends Table> {
   getInput(): DynamoDB.ScanInput | DynamoDB.QueryInput {
     let indexMetadata: Metadata.Index.GlobalSecondaryIndex | Metadata.Index.PrimaryKey | undefined
 
-    if (this.input.index && typeof this.input.index !== 'string') {
+    if (this.input.index != null && typeof this.input.index !== 'string') {
       this.input.indexName = this.input.index.metadata.name
     }
 
-    if (this.input.indexName) {
+    if (this.input.indexName != null) {
       // if we were given an index, find the metadata object for it
       for (const index of this.tableClass.schema.globalSecondaryIndexes) {
         if (index.name === this.input.indexName) {
@@ -237,7 +238,7 @@ export class MagicSearch<T extends Table> {
         }
       }
 
-      if (!indexMetadata) {
+      if (indexMetadata == null) {
         for (const index of this.tableClass.schema.localSecondaryIndexes) {
           if (index.name === this.input.indexName) {
             indexMetadata = Object.assign({
@@ -247,7 +248,7 @@ export class MagicSearch<T extends Table> {
         }
       }
 
-      if (!indexMetadata) {
+      if (indexMetadata == null) {
         throw new QueryError(`Attempted to perform ${this.tableClass.schema.name}.search using non-existent index ${this.input.indexName}`)
       }
     } else {
@@ -269,7 +270,7 @@ export class MagicSearch<T extends Table> {
       FilterExpression: query.FilterExpression,
     }
 
-    if (this.input.projectionExpression) {
+    if (this.input.projectionExpression != null) {
       input.ProjectionExpression = this.input.projectionExpression
     }
 
@@ -281,7 +282,7 @@ export class MagicSearch<T extends Table> {
       input.Limit = this.input.limit
     }
 
-    if (this.input.exclusiveStartKey) {
+    if (this.input.exclusiveStartKey != null) {
       input.ExclusiveStartKey = this.input.exclusiveStartKey
     }
 
@@ -289,15 +290,15 @@ export class MagicSearch<T extends Table> {
       input.ConsistentRead = this.input.consistent
     }
 
-    if (this.input.indexName) {
+    if (this.input.indexName != null) {
       input.IndexName = this.input.indexName
     }
 
-    if (this.input.returnOnlyCount) {
+    if (this.input.returnOnlyCount === true) {
       input.Select = 'COUNT'
     }
 
-    if (query.KeyConditionExpression) {
+    if (query.KeyConditionExpression != null) {
       (input as DynamoDB.QueryInput).KeyConditionExpression = query.KeyConditionExpression
     }
 
@@ -307,15 +308,15 @@ export class MagicSearch<T extends Table> {
   /**
    * @deprecated Use MagicSearch.prototype.exec()
    */
-  search(): Promise<QueryResults<T>> {
-    return this.exec()
+  async search(): Promise<QueryResults<T>> {
+    return await this.exec()
   }
 
   async page(input: DynamoDB.ScanInput | DynamoDB.QueryInput): Promise<QueryResults<T>> {
     let output: DynamoDB.ScanOutput | DynamoDB.QueryOutput
 
     // if we are filtering based on key conditions, run a query instead of a scan
-    if ((input as DynamoDB.QueryInput).KeyConditionExpression) {
+    if ((input as DynamoDB.QueryInput).KeyConditionExpression != null) {
       output = await this.tableClass.schema.dynamo.query(input).promise()
     } else {
       if ((input as any).ScanIndexForward === false) {
@@ -327,13 +328,17 @@ export class MagicSearch<T extends Table> {
       output = await this.tableClass.schema.dynamo.scan(input).promise()
     }
 
-    const records: T[] = (output.Items || []).map((item) => {
-      return this.tableClass.fromDynamo(item)
-    })
+    const records: T[] = []
+
+    if (output.Items != null) {
+      for (const item of output.Items) {
+        records.push(this.tableClass.fromDynamo(item))
+      }
+    }
 
     const results: QueryResults<T> = {
       records,
-      count: output.Count || records.length,
+      count: output.Count == null ? records.length : output.Count,
       scannedCount: output.ScannedCount as number,
       lastEvaluatedKey: output.LastEvaluatedKey,
       consumedCapacity: output.ConsumedCapacity as DynamoDB.ConsumedCapacity,
@@ -386,7 +391,7 @@ export class MagicSearch<T extends Table> {
         continue
       }
 
-      const hashFilter: Filter<any> = get(filters, hash.name) as any
+      const hashFilter: Filter<any> = get(filters, hash.name)
 
       // if there is an operator, ensure it is allowed as a key expression
       if (isArray(hashFilter)) {
@@ -398,7 +403,7 @@ export class MagicSearch<T extends Table> {
       }
 
       // if it has no range, then we're all done
-      if (!range) {
+      if (range == null) {
         return true
       }
 
@@ -407,7 +412,7 @@ export class MagicSearch<T extends Table> {
         continue
       }
 
-      const rangeFilter: Filter<any> = get(filters, range.name) as any
+      const rangeFilter: Filter<any> = get(filters, range.name)
 
       // if there is an operator, ensure it is allowed as a key expression
       if (isArray(rangeFilter)) {

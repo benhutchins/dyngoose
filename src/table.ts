@@ -9,17 +9,17 @@ import { createTable } from './tables/create-table'
 import { deleteTable } from './tables/delete-table'
 import { describeTable } from './tables/describe-table'
 import { migrateTable } from './tables/migrate-table'
-import { TableProperties } from './tables/properties'
+import { TableProperties, TableProperty } from './tables/properties'
 import { Schema } from './tables/schema'
 import { isTrulyEmpty } from './utils/truly-empty'
 
 type StaticThis<T> = new() => T
 
 export class Table {
-  //#region static
-  //#region static properties
+  // #region static
+  // #region static properties
   public static get schema(): Schema {
-    if (!this.__schema) {
+    if (this.__schema == null) {
       this.__schema = new Schema(this as any)
     }
 
@@ -31,7 +31,7 @@ export class Table {
   }
 
   public static get documentClient(): DocumentClient<Table> {
-    if (!this.__documentClient) {
+    if (this.__documentClient == null) {
       this.__documentClient = new DocumentClient(this)
     }
 
@@ -44,9 +44,9 @@ export class Table {
 
   private static __schema: Schema
   private static __documentClient: DocumentClient<any>
-  //#endregion static properties
+  // #endregion static properties
 
-  //#region static methods
+  // #region static methods
   /**
    * Creates a new record for this table.
    *
@@ -107,7 +107,7 @@ export class Table {
    * You can also use {@link Table.migrateTable} to create and automatically
    * migrate and indexes that need changes.
    */
-  public static async createTable(waitForReady = true) {
+  public static async createTable(waitForReady = true): Promise<DynamoDB.TableDescription> {
     return await createTable(this.schema, waitForReady)
   }
 
@@ -116,7 +116,7 @@ export class Table {
    *
    * This will create new indexes and delete legacy indexes.
    */
-  public static async migrateTable() {
+  public static async migrateTable(): Promise<DynamoDB.TableDescription> {
     return await migrateTable(this.schema)
   }
 
@@ -125,17 +125,17 @@ export class Table {
    *
    * Be a bit careful with this in production.
    */
-  public static async deleteTable() {
+  public static async deleteTable(): Promise<DynamoDB.TableDescription | undefined> {
     return await deleteTable(this.schema)
   }
 
   public static async describeTable(): Promise<DynamoDB.TableDescription> {
     return await describeTable(this.schema)
   }
-  //#endregion static methods
-  //#endregion static
+  // #endregion static methods
+  // #endregion static
 
-  //#region properties
+  // #region properties
   protected get table(): typeof Table {
     return this.constructor as typeof Table
   }
@@ -146,7 +146,7 @@ export class Table {
   private __updatedAttributes: string[] = []
   private __deletedAttributes: string[] = []
   private __putRequired = true // true when this is a new record and a putItem is required, false when updateItem can be used
-  //#endregion properties
+  // #endregion properties
 
   /**
    * Create a new Table record by attribute names, not property names.
@@ -154,14 +154,14 @@ export class Table {
    * To create a strongly-typed record by property names, use {@link Table.new}.
   */
   constructor(values?: { [key: string]: any }) {
-    if (values) {
+    if (values != null) {
       for (const key of _.keys(values)) {
         this.setAttribute(key, values[key])
       }
     }
   }
 
-  //#region public methods
+  // #region public methods
   /**
    * Load values from an a DynamoDB.AttributeMap into this Table record.
    *
@@ -169,7 +169,7 @@ export class Table {
    * setting the attributes it resets the attributes pending update and
    * deletion.
    */
-  public fromDynamo(values: DynamoDB.AttributeMap) {
+  public fromDynamo(values: DynamoDB.AttributeMap): this {
     this.__attributes = values
 
     // this is an existing record in the database, so when we save it, we need to update
@@ -209,7 +209,7 @@ export class Table {
       [this.table.schema.primaryKey.hash.name]: this.table.schema.primaryKey.hash.toDynamoAssert(hash),
     }
 
-    if (this.table.schema.primaryKey.range) {
+    if (this.table.schema.primaryKey.range != null) {
       const range = this.getAttribute(this.table.schema.primaryKey.range.name)
       key[this.table.schema.primaryKey.range.name] = this.table.schema.primaryKey.range.toDynamoAssert(range)
     }
@@ -251,11 +251,11 @@ export class Table {
    *        passing in raw request body objects or dealing with user input.
    *        Defaults to false.
    */
-  public fromJSON(json: { [attribute: string]: any }, ignoreArbitrary = false) {
+  public fromJSON(json: { [attribute: string]: any }, ignoreArbitrary = false): this {
     const blacklist: string[] = this.table.getBlacklist()
 
     _.each(json, (value: any, propertyName: string) => {
-      let attribute: Attribute<any> | void
+      let attribute: Attribute<any> | undefined
 
       try {
         attribute = this.table.schema.getAttributeByPropertyName(propertyName)
@@ -305,7 +305,7 @@ export class Table {
    *
    * Unlike {@link this.get}, this excepts the attribute name, not the property name.
    */
-  public getAttribute(attributeName: string) {
+  public getAttribute(attributeName: string): DynamoDB.AttributeValue {
     const attribute = this.table.schema.getAttributeByName(attributeName)
     return this.getByAttribute(attribute)
   }
@@ -315,7 +315,7 @@ export class Table {
    *
    * To set the value from a JavaScript object, use {@link this.setAttribute}
   */
-  public setAttributeDynamoValue(attributeName: string, attributeValue: DynamoDB.AttributeValue) {
+  public setAttributeDynamoValue(attributeName: string, attributeValue: DynamoDB.AttributeValue): this {
     // save the original value before we update the attributes value
     if (!_.isUndefined(this.__attributes[attributeName]) && _.isUndefined(this.__original[attributeName])) {
       this.__original[attributeName] = this.getAttributeDynamoValue(attributeName)
@@ -334,9 +334,9 @@ export class Table {
    *
    * - To set an attribute value by property name, use {@link this.set}.
    */
-  public setAttribute(attributeName: string, value: any, force = false) {
+  public setAttribute(attributeName: string, value: any, force = false): this {
     const attribute = this.table.schema.getAttributeByName(attributeName)
-    return this.setByAttribute(attribute, value)
+    return this.setByAttribute(attribute, value, force)
   }
 
   /**
@@ -349,7 +349,7 @@ export class Table {
    * @param {object} values An object, where the keys are the attribute names,
    *                        and the values are the values you'd like to set.
   */
-  public setAttributes(values: { [name: string]: any }) {
+  public setAttributes(values: { [name: string]: any }): this {
     _.forEach(values, (value, attributeName) => {
       this.setAttribute(attributeName, value)
     })
@@ -360,7 +360,7 @@ export class Table {
   /**
    * Marks an attribute to be deleted.
    */
-  public deleteAttribute(attributeName: string) {
+  public deleteAttribute(attributeName: string): this {
     // delete the attribute as long as it existed and wasn't already null
     if (!_.isNil(this.__attributes[attributeName])) {
       this.__attributes[attributeName] = { NULL: true }
@@ -373,7 +373,7 @@ export class Table {
   /**
    * Marks several attributes to be deleted.
    */
-  public deleteAttributes(attributes: string[]) {
+  public deleteAttributes(attributes: string[]): this {
     for (const attribute of attributes) {
       this.deleteAttribute(attribute)
     }
@@ -387,8 +387,8 @@ export class Table {
    * - To set an attribute value by an attribute name, use {@link this.setAttribute}.
    * - To set several attribute values by attribute names, use {@link this.setAttributes}.
    */
-  public set(propertyName: string, value: any) {
-    const attribute = this.table.schema.getAttributeByPropertyName(propertyName)
+  public set<P extends TableProperty<this>>(propertyName: P, value: this[P]): this {
+    const attribute = this.table.schema.getAttributeByPropertyName(propertyName as string)
     return this.setByAttribute(attribute, value)
   }
 
@@ -398,8 +398,8 @@ export class Table {
    * - To get a value by an attribute name, use {@link this.getAttribute}.
    * - To get the entire record, use {@link this.toJSON}.
    */
-  public get(propertyName: string) {
-    const attribute = this.table.schema.getAttributeByPropertyName(propertyName)
+  public get<P extends TableProperty<this>>(propertyName: P): this[P] {
+    const attribute = this.table.schema.getAttributeByPropertyName(propertyName as string)
     return this.getByAttribute(attribute)
   }
 
@@ -410,9 +410,9 @@ export class Table {
    * - To set an attribute value by an attribute names, use {@link this.setAttribute}.
    * - To set several attribute values by attribute names, use {@link this.setAttributes}.
    */
-  public setValues(values: TableProperties<this>) {
-    for (const key of _.keys(values)) {
-      this.set(key, _.get(values, key))
+  public setValues(values: TableProperties<this>): this {
+    for (const key in values) {
+      this.set(key as TableProperty<this>, (values as any)[key])
     }
 
     return this
@@ -428,7 +428,7 @@ export class Table {
   /**
    * Return the original values for the record, if it was loaded from DynamoDB.
    */
-  public getOriginalValues() {
+  public getOriginalValues(): DynamoDB.AttributeMap {
     return this.__original
   }
 
@@ -526,7 +526,7 @@ export class Table {
    * Each attribute type can define a custom toJSON and fromJSON method,
    * @see {@link https://github.com/benhutchins/dyngoose/blog/master/docs/Attributes.md#custom-attribute-types}.
    */
-  public toJSON() {
+  public toJSON(): any {
     const json: any = {}
 
     for (const [attributeName, attribute] of this.table.schema.getAttributes()) {
@@ -544,9 +544,9 @@ export class Table {
 
     return json
   }
-  //#endregion public methods
+  // #endregion public methods
 
-  //#region protected methods
+  // #region protected methods
   protected async beforeSave(meta?: any, conditions?: any): Promise<boolean> {
     return true
   }
@@ -555,7 +555,7 @@ export class Table {
    * After a record is deleted, this handler is called.
    */
   protected async afterSave(event: Events.AfterSaveEvent): Promise<void> {
-    return
+    return undefined
   }
 
   /**
@@ -570,7 +570,7 @@ export class Table {
    * After a record is deleted, this handler is called.
    */
   protected async afterDelete(output: DynamoDB.DeleteItemOutput, meta?: any): Promise<void> {
-    return
+    return undefined
   }
 
   protected setByAttribute(attribute: Attribute<any>, value: any, force = false): this {
@@ -581,16 +581,16 @@ export class Table {
       return this
     }
 
-    if (attributeValue) {
-      this.setAttributeDynamoValue(attribute.name, attributeValue)
-    } else {
+    if (attributeValue == null) {
       this.deleteAttribute(attribute.name)
+    } else {
+      this.setAttributeDynamoValue(attribute.name, attributeValue)
     }
 
     return this
   }
 
-  protected getByAttribute(attribute: Attribute<any>) {
+  protected getByAttribute(attribute: Attribute<any>): any {
     const attributeValue = this.getAttributeDynamoValue(attribute.name)
     const value = attribute.fromDynamo(_.cloneDeep(attributeValue))
     return value
@@ -606,12 +606,12 @@ export class Table {
 
     return blacklist
   }
-  //#endregion protected methods
+  // #endregion protected methods
 }
 
 export interface ITable<T extends Table> {
   schema: Schema
   documentClient: DocumentClient<T>
   new(): T
-  fromDynamo(attributes: DynamoDB.AttributeMap): T
+  fromDynamo: (attributes: DynamoDB.AttributeMap) => T
 }

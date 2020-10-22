@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { readdirSync } from 'fs'
 import * as _ from 'lodash'
 import { join } from 'path'
@@ -18,10 +19,12 @@ export interface MigrateTablesInput {
   log?: Function
 }
 
-export default async function migrateTables(input: MigrateTablesInput) {
+export default async function migrateTables(input: MigrateTablesInput): Promise<void> {
   const tableFiles = readdirSync(input.tablesDirectory)
-  const tables: (typeof Table)[] = []
-  const log = input.log || console['log']
+  const tables: Array<typeof Table> = []
+  const log = input.log == null ? console.log : input.log
+  const prefix = input.tableNamePrefix == null ? '' : input.tableNamePrefix
+  const suffix = input.tableNameSuffix == null ? '' : input.tableNameSuffix
   log('Running Dyngoose migration utility…')
 
   for (const file of tableFiles) {
@@ -38,7 +41,7 @@ export default async function migrateTables(input: MigrateTablesInput) {
   }
 
   for (const SomeTable of tables) {
-    SomeTable.schema.options.name = `${input.tableNamePrefix || ''}${SomeTable.schema.name}${input.tableNameSuffix || ''}`
+    SomeTable.schema.options.name = `${prefix}${SomeTable.schema.name}${suffix}`
     log(`Migrating ${SomeTable.schema.name}`)
     await SomeTable.migrateTable()
   }

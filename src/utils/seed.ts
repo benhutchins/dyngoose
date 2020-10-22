@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { readdirSync, readFileSync } from 'fs'
 import * as _ from 'lodash'
 import { join } from 'path'
@@ -11,8 +12,8 @@ export interface SeedTablesInput extends MigrateTablesInput {
   preventDuplication?: boolean
 }
 
-export default async function seedTables(input: SeedTablesInput) {
-  const log = input.log || console['log']
+export default async function seedTables(input: SeedTablesInput): Promise<void> {
+  const log = input.log == null ? console.log : input.log
   const seedFiles = readdirSync(input.seedsDirectory)
   const tableFileSuffix = input.tableFileSuffix.substr(0, 1) === '.' ? input.tableFileSuffix : `.${input.tableFileSuffix}`
 
@@ -44,6 +45,8 @@ export default async function seedTables(input: SeedTablesInput) {
     if (records.length > 0) {
       const modelName = file.replace(/.seed.(json|js)/, '')
       const modelPath = join(input.tablesDirectory, `${modelName}${tableFileSuffix}`)
+      const prefix = input.tableNamePrefix == null ? '' : input.tableNamePrefix
+      const suffix = input.tableNameSuffix == null ? '' : input.tableNameSuffix
 
       log(`Seeding ${modelName}`)
 
@@ -53,16 +56,16 @@ export default async function seedTables(input: SeedTablesInput) {
       for (const ExportedProperty of _.values(tableFileExports)) {
         if (isDyngooseTable(ExportedProperty)) {
           const ExportedTable = ExportedProperty as typeof Table
-          ExportedTable.schema.options.name = `${input.tableNamePrefix || ''}${ExportedTable.schema.name}${input.tableNameSuffix || ''}`
+          ExportedTable.schema.options.name = `${prefix}${ExportedTable.schema.name}${suffix}`
 
           for (const data of records) {
-            if (input.preventDuplication) {
+            if (input.preventDuplication === true) {
               const hashKey = ExportedTable.schema.primaryKey.hash.name
-              const rangeKey = ExportedTable.schema.primaryKey.range ? ExportedTable.schema.primaryKey.range.name : null
-              const primaryKey = (ExportedTable as any)[ExportedTable.schema.primaryKey.propertyName] as PrimaryKey<any, any, any>
-              const existingRecord = await primaryKey.get(data[hashKey], rangeKey ? data[rangeKey] : undefined)
+              const rangeKey = ExportedTable.schema.primaryKey.range == null ? null : ExportedTable.schema.primaryKey.range.name
+              const primaryKey = (ExportedTable as any)[ExportedTable.schema.primaryKey.propertyName] as PrimaryKey<Table, any, any>
+              const existingRecord = await primaryKey.get(data[hashKey], rangeKey == null ? undefined : data[rangeKey])
 
-              if (existingRecord) {
+              if (existingRecord == null) {
                 continue
               }
             }

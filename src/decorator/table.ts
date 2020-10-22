@@ -4,7 +4,7 @@ import { ITable } from '../table'
 
 export function Table(metadata: TableMetadata) {
   return (table: ITable<any>) => {
-    table.schema.dynamo = metadata.connection || Config.defaultConnection.client
+    table.schema.dynamo = metadata.connection != null ? metadata.connection : Config.defaultConnection.client
     table.schema.setMetadata(metadata)
 
     // setup dynamic properties
