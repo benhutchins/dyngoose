@@ -1,12 +1,11 @@
 import { DynamoDB } from 'aws-sdk'
-import * as _ from 'lodash'
 import Config from './config'
 import { batchWrite } from './query/batch-write'
 import { Table } from './table'
 
 export class BatchWrite {
   private dynamo: DynamoDB
-  private list: DynamoDB.BatchWriteItemRequestMap[] = []
+  private readonly list: DynamoDB.BatchWriteItemRequestMap[] = []
 
   /**
    * Perform a Batch operation.
@@ -25,10 +24,10 @@ export class BatchWrite {
    * @see {@link https://github.com/benhutchins/dyngoose/blob/master/docs/Connections.md}.
    */
   constructor(connection?: DynamoDB) {
-    this.dynamo = connection || Config.defaultConnection.client
+    this.dynamo = connection == null ? Config.defaultConnection.client : connection
   }
 
-  public setConnection(dynamo: DynamoDB) {
+  public setConnection(dynamo: DynamoDB): this {
     this.dynamo = dynamo
     return this
   }
@@ -52,7 +51,6 @@ export class BatchWrite {
     return this
   }
 
-
   public delete<T extends Table>(...records: T[]): this {
     for (const record of records) {
       const tableClass = record.constructor as typeof Table
@@ -72,7 +70,7 @@ export class BatchWrite {
     return this
   }
 
-  public async commit() {
+  public async commit(): Promise<DynamoDB.BatchWriteItemOutput> {
     return await batchWrite(this.dynamo, this.list)
   }
 }

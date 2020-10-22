@@ -6,6 +6,11 @@ export function stringToNumber(number: number | string): number {
   }
 }
 
-export function numberToString(number: number | BigInt) {
+export function numberToString(number: number | BigInt): string {
   return number.toString()
+}
+
+export function isNumber(value: any): boolean {
+  const type = typeof value
+  return type === 'number' || type === 'bigint'
 }

@@ -5,7 +5,7 @@ import { createTable } from './create-table'
 import { describeTable } from './describe-table'
 import { Schema } from './schema'
 
-export async function migrateTable(schema: Schema, waitForReady = false) {
+export async function migrateTable(schema: Schema, waitForReady = false): Promise<DynamoDB.TableDescription> {
   let description: DynamoDB.TableDescription
 
   try {
@@ -19,9 +19,25 @@ export async function migrateTable(schema: Schema, waitForReady = false) {
   }
 
   const expectedDescription = schema.createTableInput()
+  const indexes: string[] = []
+  const expectedIndexes: string[] = []
 
-  const indexes = _.map(description.GlobalSecondaryIndexes || [], 'IndexName') as string[]
-  const expectedIndexes = _.map(expectedDescription.GlobalSecondaryIndexes || [], 'IndexName') as string[]
+  if (description.GlobalSecondaryIndexes != null) {
+    description.GlobalSecondaryIndexes.forEach((index) => {
+      if (index.IndexName != null) {
+        indexes.push(index.IndexName)
+      }
+    })
+  }
+
+  if (expectedDescription.GlobalSecondaryIndexes != null) {
+    expectedDescription.GlobalSecondaryIndexes.forEach((index) => {
+      if (index.IndexName != null) {
+        expectedIndexes.push(index.IndexName)
+      }
+    })
+  }
+
   const deletedIndexes: DynamoDB.GlobalSecondaryIndexDescriptionList = []
   let hasChanges = indexes.length < expectedIndexes.length
 
@@ -29,14 +45,15 @@ export async function migrateTable(schema: Schema, waitForReady = false) {
     _.each(description.GlobalSecondaryIndexes, (oldIndex) => {
       const newIndex = _.find(expectedDescription.GlobalSecondaryIndexes, i => i.IndexName === oldIndex.IndexName)
 
-      if (!newIndex) {
+      if (newIndex == null) {
         deletedIndexes.push(oldIndex)
         hasChanges = true
       } else if (!_.isEqual(oldIndex.KeySchema, newIndex.KeySchema) || !_.isEqual(oldIndex.Projection, newIndex.Projection)) {
+        const oldIndexName = oldIndex.IndexName == null ? '' : oldIndex.IndexName
         // you can only updated ProvisionedThroughput, which is useless to do on the DynamoDB development server
         // so really we want to verify we're not attempting to change an index's KeySchema or Projection, if we
-        // are, error and warn developer… they need to rename the index so the old one is deleted
-        throw new SchemaError(`Cannot update KeySchema or Projection for ${oldIndex.IndexName}, you must rename the index to delete the one and create a new one`)
+        // are, error and warn developer… they need to rename the index so the old one is deleted
+        throw new SchemaError(`Cannot update KeySchema or Projection for ${oldIndexName}, you must rename the index to delete the one and create a new one`)
       }
     })
   }
@@ -49,7 +66,7 @@ export async function migrateTable(schema: Schema, waitForReady = false) {
     const indexUpdates: DynamoDB.GlobalSecondaryIndexUpdate[] = []
 
     _.forEach(deletedIndexes, (index) => {
-      if (index.IndexName) {
+      if (index.IndexName != null) {
         indexUpdates.push({ Delete: { IndexName: index.IndexName } })
       }
     })
@@ -76,7 +93,13 @@ export async function migrateTable(schema: Schema, waitForReady = false) {
 
     // TTL
     const ttl = await schema.dynamo.describeTimeToLive({ TableName: schema.name }).promise()
-    if (!ttl.TimeToLiveDescription || ttl.TimeToLiveDescription.AttributeName !== schema.timeToLiveAttribute.name) {
+    if (
+      // if there currently is no TTL attribute but we want one
+      (ttl.TimeToLiveDescription == null && schema.timeToLiveAttribute != null) ||
+      // or if the TTL attribute has changed
+      (ttl.TimeToLiveDescription != null && schema.timeToLiveAttribute != null && ttl.TimeToLiveDescription.AttributeName !== schema.timeToLiveAttribute.name)
+      // TODO: if there is a TTL attribute but we no longer want one, we should delete it
+    ) {
       await schema.dynamo.updateTimeToLive({
         TableName: schema.name,
         TimeToLiveSpecification: {

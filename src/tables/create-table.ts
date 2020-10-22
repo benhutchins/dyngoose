@@ -1,13 +1,14 @@
+import { DynamoDB } from 'aws-sdk'
 import { Schema } from './schema'
 
-export async function createTable(schema: Schema, waitForReady = true) {
+export async function createTable(schema: Schema, waitForReady = true): Promise<DynamoDB.TableDescription> {
   const res = await schema.dynamo.createTable(schema.createTableInput()).promise()
 
   if (waitForReady) {
     await schema.dynamo.waitFor('tableExists', { TableName: schema.name }).promise()
 
     // TTL
-    if (schema.timeToLiveAttribute) {
+    if (schema.timeToLiveAttribute != null) {
       await schema.dynamo.updateTimeToLive({
         TableName: schema.name,
         TimeToLiveSpecification: {
@@ -18,5 +19,5 @@ export async function createTable(schema: Schema, waitForReady = true) {
     }
   }
 
-  return res.TableDescription
+  return res.TableDescription as DynamoDB.TableDescription
 }

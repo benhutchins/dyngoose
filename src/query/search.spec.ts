@@ -76,8 +76,8 @@ describe('Query/Search', () => {
     const search = new MagicSearch<TestableTable>(TestableTable)
       .filter('title').contains('Table.search')
       .and()
-      .parenthesis((s) => {
-        s .filter('lowercaseString').eq('search')
+      .parenthesis((ps) => {
+        ps.filter('lowercaseString').eq('search')
           .or()
           .filter('lowercaseString').eq('magic')
       })
@@ -149,7 +149,7 @@ describe('Query/Search', () => {
     const search = new MagicSearch<TestableTable>(TestableTable)
     search.startAt({ id: { S: 'test' } })
     const input = search.getInput()
-    expect(input.ExclusiveStartKey).to.deep.eq({ id: { S: 'test' }})
+    expect(input.ExclusiveStartKey).to.deep.eq({ id: { S: 'test' } })
   })
 
   it('.attributes sets ProjectionExpression on input', async () => {

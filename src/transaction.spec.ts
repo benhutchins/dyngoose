@@ -81,7 +81,7 @@ describe('Transaction', () => {
     // add a condition
     transaction.conditionCheck(Card.primaryKey.fromKey(11, 'd'), { count: 3 }) // note: 3 is not the right number
 
-    let error: Error | void
+    let error: Error | undefined
 
     try {
       await transaction.commit()

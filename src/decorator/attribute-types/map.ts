@@ -13,19 +13,19 @@ export class MapAttributeType<Value> extends AttributeType<Value, MapAttributeMe
   type = DynamoAttributeType.String
   attributes: { [key: string]: Attribute<any> }
 
-  constructor(record: Table, propertyName: string, metadata: MapAttributeMetadata<Value>) {
+  constructor(record: Table, propertyName: string, protected metadata: MapAttributeMetadata<Value>) {
     super(record, propertyName, metadata)
     this.attributes = {}
 
     // convert attributes from ChildAttributeMetadata types to
     for (const childAttributePropertyName of Object.keys(this.metadata.attributes)) {
-      const childAttributeDef = this.metadata.attributes[childAttributePropertyName]
+      const childAttributeDef = this.metadata?.attributes[childAttributePropertyName]
       const childAttribute = childAttributeDef.getAttribute(record, childAttributePropertyName)
       this.attributes[childAttribute.name] = childAttribute
     }
   }
 
-  getDefault() {
+  getDefault(): Value {
     const map: any = {}
 
     for (const childAttribute of Object.values(this.attributes)) {
@@ -35,7 +35,7 @@ export class MapAttributeType<Value> extends AttributeType<Value, MapAttributeMe
     return map as Value
   }
 
-  toDynamo(mapValue: Value) {
+  toDynamo(mapValue: Value): DynamoDB.AttributeValue {
     if (!_.isObject(mapValue)) {
       throw new ValidationError(`Map attributes require values to be an Object, but was given a ${typeof mapValue}`)
     }
@@ -46,7 +46,7 @@ export class MapAttributeType<Value> extends AttributeType<Value, MapAttributeMe
       const attribute = _.find(this.attributes, (attr) => attr.propertyName === propertyName)
       const value = _.get(mapValue, propertyName)
 
-      if (attribute) {
+      if (attribute != null) {
         const attributeValue = attribute.toDynamo(value)
         if (attributeValue != null) {
           map[attribute.propertyName] = attributeValue
@@ -67,7 +67,7 @@ export class MapAttributeType<Value> extends AttributeType<Value, MapAttributeMe
       const value = mapValue[attributeName]
       const attribute = this.attributes[attributeName]
 
-      if (attribute) {
+      if (attribute != null) {
         map[attribute.propertyName] = attribute.fromDynamo(value)
       } else {
         throw new ValidationError(`Unknown attribute seen on Map, ${attributeName}`)

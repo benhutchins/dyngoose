@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import * as AWS from 'aws-sdk'
 import { Agent as HTTPAgent } from 'http'
 import { Agent as HTTPSAgent } from 'https'
@@ -8,14 +9,14 @@ interface DyngooseDynamoDBConnectionOptions extends AWS.DynamoDB.ClientConfigura
 }
 
 export class DynamoDBConnection implements Connection {
-  private __client: AWS.DynamoDB
+  private readonly __client: AWS.DynamoDB
 
   constructor(options: DyngooseDynamoDBConnectionOptions) {
     options.httpOptions = {
       agent: this.httpAgent(options.endpoint),
     }
 
-    if (options.enableAWSXray) {
+    if (options.enableAWSXray === true) {
       // Since "require" itself does something for this lib, such as logging
       // importing this only when it's needed
       const AWSXRay = require('aws-xray-sdk-core')
@@ -26,8 +27,8 @@ export class DynamoDBConnection implements Connection {
     }
   }
 
-  private httpAgent(endpoint: string | undefined) {
-    if (endpoint && endpoint.startsWith('http://')) {
+  private httpAgent(endpoint: string | undefined): HTTPAgent {
+    if (endpoint?.startsWith('http://') === true) {
       return new HTTPAgent({
         keepAlive: true,
       })
@@ -39,7 +40,7 @@ export class DynamoDBConnection implements Connection {
     }
   }
 
-  public get client() {
+  public get client(): AWS.DynamoDB {
     return this.__client
   }
 }

@@ -35,7 +35,7 @@ describe('Query/PrimaryKey', () => {
     await Card.deleteTable()
   })
 
-  describe('#delete', async () => {
+  describe('#delete', () => {
     it('should delete item if exist', async () => {
       await Card.new({ id: 10, title: 'abc' }).save()
 
@@ -45,7 +45,7 @@ describe('Query/PrimaryKey', () => {
     })
   })
 
-  describe('#get', async () => {
+  describe('#get', () => {
     it('should find item', async () => {
       const item = await primaryKey.get(10, 'abc')
       expect(item).to.eq(undefined)
@@ -55,14 +55,14 @@ describe('Query/PrimaryKey', () => {
       await Card.new({ id: 10, title: 'abc' }).save()
       const item = await primaryKey.get(10, 'abc')
       expect(item).to.be.instanceof(Card)
-      if (item) {
+      if (item != null) {
         expect(item.id).to.eq(10)
         expect(item.title).to.eq('abc')
       }
     })
   })
 
-  describe('#batchGet', async () => {
+  describe('#batchGet', () => {
     it('should find items', async () => {
       await Card.new({ id: 10, title: 'abc' }).save()
       await Card.new({ id: 11, title: 'abc' }).save()
@@ -146,7 +146,7 @@ describe('Query/PrimaryKey', () => {
 
       let card = await primaryKey.get(10, 'abc')
       expect(card).to.be.instanceOf(Card)
-      if (card) {
+      if (card != null) {
         expect(card.count).to.eq(1)
       }
 
@@ -160,7 +160,7 @@ describe('Query/PrimaryKey', () => {
 
       card = await primaryKey.get(10, 'abc')
       expect(card).to.be.instanceOf(Card)
-      if (card) {
+      if (card != null) {
         expect(card.count).to.eq(2)
       }
     })

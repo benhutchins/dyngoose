@@ -3,21 +3,21 @@ import { Filter } from './filters'
 import { MagicSearch } from './search'
 
 export class Condition<T extends Table, Attr, AttributeValueType> {
-  private key: Attr | string
-  private _not?: boolean
+  private readonly key: Attr | string
+  private _not = false
   private filter: Filter<AttributeValueType>
 
-  constructor(private search: MagicSearch<T>, attributeName: Attr) {
+  constructor(private readonly search: MagicSearch<T>, attributeName: Attr) {
     this.key = attributeName
     return this
   }
 
-  not() {
+  not(): this {
     this._not = !this._not
     return this
   }
 
-  eq(value: AttributeValueType) {
+  eq(value: AttributeValueType): MagicSearch<T> {
     if (this._not) {
       this.filter = ['<>', value]
     } else {
@@ -26,7 +26,7 @@ export class Condition<T extends Table, Attr, AttributeValueType> {
     return this.finalize()
   }
 
-  lt(value: AttributeValueType) {
+  lt(value: AttributeValueType): MagicSearch<T> {
     if (this._not) {
       this.filter = ['>=', value]
     } else {
@@ -35,7 +35,7 @@ export class Condition<T extends Table, Attr, AttributeValueType> {
     return this.finalize()
   }
 
-  lte(value: AttributeValueType) {
+  lte(value: AttributeValueType): MagicSearch<T> {
     if (this._not) {
       this.filter = ['>', value]
     } else {
@@ -44,7 +44,7 @@ export class Condition<T extends Table, Attr, AttributeValueType> {
     return this.finalize()
   }
 
-  gt(value: AttributeValueType) {
+  gt(value: AttributeValueType): MagicSearch<T> {
     if (this._not) {
       this.filter = ['<=', value]
     } else {
@@ -53,7 +53,7 @@ export class Condition<T extends Table, Attr, AttributeValueType> {
     return this.finalize()
   }
 
-  gte(value: AttributeValueType) {
+  gte(value: AttributeValueType): MagicSearch<T> {
     if (this._not) {
       this.filter = ['<', value]
     } else {
@@ -62,12 +62,12 @@ export class Condition<T extends Table, Attr, AttributeValueType> {
     return this.finalize()
   }
 
-  beginsWith(value: Exclude<AttributeValueType, number>) {
+  beginsWith(value: Exclude<AttributeValueType, number>): MagicSearch<T> {
     this.filter = ['beginsWith', value]
     return this.finalize()
   }
 
-  contains(value: AttributeValueType) {
+  contains(value: AttributeValueType): MagicSearch<T> {
     if (this._not) {
       this.filter = ['not contains', value]
     } else {
@@ -76,7 +76,7 @@ export class Condition<T extends Table, Attr, AttributeValueType> {
     return this.finalize()
   }
 
-  exists() {
+  exists(): MagicSearch<T> {
     if (this._not) {
       this.filter = ['not exists']
     } else {
@@ -85,7 +85,7 @@ export class Condition<T extends Table, Attr, AttributeValueType> {
     return this.finalize()
   }
 
-  includes(...values: AttributeValueType[]) {
+  includes(...values: AttributeValueType[]): MagicSearch<T> {
     if (this._not) {
       this.filter = ['excludes', values]
     } else {
@@ -94,7 +94,7 @@ export class Condition<T extends Table, Attr, AttributeValueType> {
     return this.finalize()
   }
 
-  excludes(...values: AttributeValueType[]) {
+  excludes(...values: AttributeValueType[]): MagicSearch<T> {
     if (this._not) {
       this.filter = ['includes', values]
     } else {
@@ -103,12 +103,12 @@ export class Condition<T extends Table, Attr, AttributeValueType> {
     return this.finalize()
   }
 
-  between(start: AttributeValueType, end: AttributeValueType) {
+  between(start: AttributeValueType, end: AttributeValueType): MagicSearch<T> {
     this.filter = ['between', start, end]
     return this.finalize()
   }
 
-  null() {
+  null(): MagicSearch<T> {
     if (this._not) {
       this.filter = ['not null']
     } else {
@@ -117,7 +117,7 @@ export class Condition<T extends Table, Attr, AttributeValueType> {
     return this.finalize()
   }
 
-  private finalize() {
+  private finalize(): MagicSearch<T> {
     const key = this.key as any
     this.search.addFilterGroup([
       {

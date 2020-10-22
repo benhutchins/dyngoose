@@ -10,17 +10,17 @@ type Metadata = BinaryAttributeMetadata
 export class AnyAttributeType extends AttributeType<Value, Metadata> implements IAttributeType<Value> {
   type = DynamoAttributeType.String
 
-  toDynamo(value: any) {
+  toDynamo(value: any): any {
     return {
       S: JSON.stringify(value),
     }
   }
 
-  fromDynamo(attributeValue: DynamoDB.AttributeValue) {
+  fromDynamo(attributeValue: DynamoDB.AttributeValue): any {
     try {
       return JSON.parse(attributeValue.S as string)
     } catch (ex) {
-      return
+      return undefined
     }
   }
 }

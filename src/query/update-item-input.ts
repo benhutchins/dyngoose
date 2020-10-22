@@ -29,9 +29,9 @@ export function getUpdateItemInput<T extends Table>(record: T, conditions?: Upda
   _.each(_.uniq(record.getUpdatedAttributes()), (attributeName, i) => {
     const attribute = tableClass.schema.getAttributeByName(attributeName)
     const value = attribute.toDynamo(record.getAttribute(attributeName))
-    const slug = '#UA' + valueCounter
+    const slug = `#UA${valueCounter}`
 
-    if (value) {
+    if (value != null) {
       attributeNameMap[slug] = attributeName
       attributeValueMap[`:u${valueCounter}`] = value
       sets.push(`${slug} = :u${valueCounter}`)
@@ -40,7 +40,7 @@ export function getUpdateItemInput<T extends Table>(record: T, conditions?: Upda
   })
 
   _.each(_.uniq(record.getDeletedAttributes()), (attrName, i) => {
-    const slug = '#DA' + valueCounter
+    const slug = `#DA${valueCounter}`
     attributeNameMap[slug] = attrName
     removes.push(slug)
     valueCounter++
@@ -60,7 +60,7 @@ export function getUpdateItemInput<T extends Table>(record: T, conditions?: Upda
     updateExpression += 'REMOVE ' + removes.join(', ')
   }
 
-  if (conditions) {
+  if (conditions != null) {
     const conditionExpression = buildQueryExpression(tableClass.schema, conditions)
     input.ConditionExpression = conditionExpression.FilterExpression
     Object.assign(attributeNameMap, conditionExpression.ExpressionAttributeNames)

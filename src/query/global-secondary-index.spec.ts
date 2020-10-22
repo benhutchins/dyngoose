@@ -27,7 +27,7 @@ class Card extends Table {
   @Decorator.Attribute.String()
   public count: number
 
-  customMethod() {
+  customMethod(): number {
     return 1
   }
 }
@@ -103,7 +103,7 @@ describe('Query/GlobalSecondaryIndex', () => {
       })
     })
 
-    describe('#scan', async () => {
+    describe('#scan', () => {
       const cardIds = [111, 222, 333, 444, 555]
 
       beforeEach(async () => {
@@ -153,7 +153,7 @@ describe('Query/GlobalSecondaryIndex', () => {
       })
     })
 
-    describe('#scan', async () => {
+    describe('#scan', () => {
       const cardIds = [111, 222, 333, 444, 555]
 
       beforeEach(async () => {

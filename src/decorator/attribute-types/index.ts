@@ -22,7 +22,7 @@ interface AttributeTypeMap {
   StringSet: StringSetAttributeType
 }
 
-interface AttributeOptionsMap {
+interface AttributeMetadataMap {
   Any: Metadata.AttributeType.Any
   Binary: Metadata.AttributeType.Binary
   BinarySet: Metadata.AttributeType.BinarySet
@@ -51,16 +51,16 @@ export interface AttributeDefinition {
   getAttribute: (record: Table, propertyName: string) => any
 }
 
-export function Attribute<T extends keyof AttributeTypeMap>(type: T, options?: AttributeOptionsMap[T]): AttributeDefinition {
-  const define = function (record: Table, propertyName: string) {
-    const attributeType = AttributeTypes[type]
-    const decorator = new attributeType(record, propertyName, (options || {}) as any)
+export function Attribute<T extends keyof AttributeTypeMap>(type: T, metadata?: AttributeMetadataMap[T]): AttributeDefinition {
+  const define = function (record: Table, propertyName: string): void {
+    const AttributeTypeClass: any = AttributeTypes[type]
+    const decorator = new AttributeTypeClass(record, propertyName, metadata)
     decorator.decorate()
   }
 
-  define.getAttribute = function (record: Table, propertyName: string) {
-    const attributeType = AttributeTypes[type]
-    const decorator = new attributeType(record, propertyName, (options || {}) as any)
+  define.getAttribute = function (record: Table, propertyName: string): any {
+    const AttributeTypeClass: any = AttributeTypes[type]
+    const decorator = new AttributeTypeClass(record, propertyName, metadata)
     return decorator.attribute
   }
 

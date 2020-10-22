@@ -28,6 +28,7 @@ describe('AttributeType/Number', () => {
   })
 
   it('rejects non-number values', () => {
+    expect(record.testNumber).eq(null)
     expect(record.testString).eq(null)
     // we do this primarily to ensure typing is enforced for queries
     expect(() => { record.testNumber = 'test' as any as number }).to.throw()

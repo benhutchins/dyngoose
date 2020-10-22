@@ -1,12 +1,6 @@
 import { Attribute } from '../attribute'
 import { IThroughput } from '../interfaces'
 
-// export interface Metadata {
-//   readonly name: string; // Name of index
-//   readonly hashAttribute: Attribute
-//   readonly rangeAttribute?: Attribute
-// }
-
 export interface PrimaryKey {
   readonly propertyName: string
   readonly hash: Attribute<any>

@@ -1,14 +1,17 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { readdirSync } from 'fs'
 import * as _ from 'lodash'
 import { join } from 'path'
 import { Table } from '../table'
 import { MigrateTablesInput } from './migrate'
 
-export default async function createCloudFormationResources(input: MigrateTablesInput) {
+export default async function createCloudFormationResources(input: MigrateTablesInput): Promise<any> {
   const tableFiles = readdirSync(input.tablesDirectory)
-  const tables: (typeof Table)[] = []
+  const tables: Array<typeof Table> = []
   const resources: any = {}
-  const log = input.log || console['log']
+  const log = input.log == null ? console.log : input.log
+  const prefix = input.tableNamePrefix == null ? '' : input.tableNamePrefix
+  const suffix = input.tableNameSuffix == null ? '' : input.tableNameSuffix
   log('Running Dyngoose CloudFormation template generation utility…')
 
   for (const file of tableFiles) {
@@ -26,12 +29,13 @@ export default async function createCloudFormationResources(input: MigrateTables
 
   for (const SomeTable of tables) {
     const properties = SomeTable.schema.createCloudFormationResource()
+    const tableName = properties.TableName as string
     let resourceName = _.upperFirst(SomeTable.name)
     if (!resourceName.toLowerCase().endsWith('table')) {
       resourceName += 'Table'
     }
-    properties.TableName = `${input.tableNamePrefix || ''}${properties.TableName}${input.tableNameSuffix || ''}`
-    log(`Generated ${properties.TableName} into ${resourceName} resource`)
+    properties.TableName = `${prefix}${tableName}${suffix}`
+    log(`Generated ${tableName} into ${resourceName} resource`)
     resources[resourceName] = {
       Type: 'AWS::DynamoDB::Table',
       Properties: properties,

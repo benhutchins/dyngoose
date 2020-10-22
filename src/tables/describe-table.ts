@@ -1,7 +1,7 @@
 import { DynamoDB } from 'aws-sdk'
 import { Schema } from './schema'
 
-export async function describeTable(schema: Schema) {
+export async function describeTable(schema: Schema): Promise<DynamoDB.TableDescription> {
   const params: DynamoDB.DescribeTableInput = {
     TableName: schema.name,
   }

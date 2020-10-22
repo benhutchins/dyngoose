@@ -1,20 +1,20 @@
 {
-    "compilerOptions": {
-        "module": "commonjs",
-        "target": "es2019",
-        "noImplicitAny": true,
-        "sourceMap": true,
-        "declaration": true,
-        "rootDir": "src",
-        "outDir": "dist",
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "strictNullChecks": true
-    },
-    "exclude": [
-        "**/*.spec.ts"
-    ],
-    "include": [
-        "src/**/*"
-    ]
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2019",
+    "noImplicitAny": true,
+    "sourceMap": true,
+    "declaration": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "strictNullChecks": true
+  },
+  // "exclude": [
+  //   "**/*.spec.ts"
+  // ],
+  "include": [
+    "src/**/*"
+  ]
 }

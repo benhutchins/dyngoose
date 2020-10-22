@@ -1,5 +1,4 @@
 import { DynamoDB } from 'aws-sdk'
-import * as _ from 'lodash'
 import { batchWrite } from './query/batch-write'
 import { buildQueryExpression } from './query/expression'
 import { UpdateConditions } from './query/filters'
@@ -8,7 +7,7 @@ import { getUpdateItemInput } from './query/update-item-input'
 import { ITable, Table } from './table'
 
 export class DocumentClient<T extends Table> {
-  constructor(private tableClass: ITable<T>) {
+  constructor(private readonly tableClass: ITable<T>) {
   }
 
   public getPutInput(record: T, conditions?: UpdateConditions<T>): DynamoDB.PutItemInput {
@@ -17,7 +16,7 @@ export class DocumentClient<T extends Table> {
       Item: record.toDynamo(),
     }
 
-    if (conditions) {
+    if (conditions != null) {
       const conditionExpression = buildQueryExpression(this.tableClass.schema, conditions)
       input.ConditionExpression = conditionExpression.FilterExpression
       input.ExpressionAttributeNames = conditionExpression.ExpressionAttributeNames
@@ -30,7 +29,7 @@ export class DocumentClient<T extends Table> {
   public async put(record: T, conditions?: UpdateConditions<T>): Promise<DynamoDB.PutItemOutput> {
     const input = this.getPutInput(record, conditions)
     const output = this.tableClass.schema.dynamo.putItem(input).promise()
-    return output
+    return await output
   }
 
   public getUpdateInput(record: T, conditions?: UpdateConditions<T>): DynamoDB.UpdateItemInput {
@@ -40,10 +39,10 @@ export class DocumentClient<T extends Table> {
   public async update(record: T, conditions?: UpdateConditions<T>): Promise<DynamoDB.UpdateItemOutput> {
     const input = this.getUpdateInput(record, conditions)
     const output = this.tableClass.schema.dynamo.updateItem(input).promise()
-    return output
+    return await output
   }
 
-  public async batchPut(records: T[]) {
+  public async batchPut(records: T[]): Promise<DynamoDB.BatchWriteItemOutput> {
     return await batchWrite(
       this.tableClass.schema.dynamo,
       records.map((record) => {
@@ -68,7 +67,7 @@ export class DocumentClient<T extends Table> {
       Key: record.getDynamoKey(),
     }
 
-    if (conditions) {
+    if (conditions != null) {
       const conditionExpression = buildQueryExpression(this.tableClass.schema, conditions)
       input.ConditionExpression = conditionExpression.FilterExpression
       input.ExpressionAttributeNames = conditionExpression.ExpressionAttributeNames
@@ -78,7 +77,7 @@ export class DocumentClient<T extends Table> {
     return input
   }
 
-  public async transactPut(records: T[]) {
+  public async transactPut(records: T[]): Promise<DynamoDB.TransactWriteItemsOutput> {
     return await transactWrite(
       this.tableClass.schema.dynamo,
       records.map((record) => {
@@ -94,10 +93,10 @@ export class DocumentClient<T extends Table> {
   }
 
   public async delete(record: T, conditions?: UpdateConditions<T>): Promise<DynamoDB.DeleteItemOutput> {
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       const input = this.getDeleteInput(record, conditions)
       this.tableClass.schema.dynamo.deleteItem(input, (err, output) => {
-        if (err) {
+        if (err != null) {
           reject(err)
         } else {
           resolve(output)
@@ -106,4 +105,3 @@ export class DocumentClient<T extends Table> {
     })
   }
 }
-

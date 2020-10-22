@@ -14,8 +14,8 @@ import { deleteTable } from './tables/delete-table'
 import { Transaction } from './transaction'
 
 export const TableOperations = {
-  createTable: (table: ITable<any>) => createTable(table.schema),
-  deleteTable: (table: ITable<any>) => deleteTable(table.schema),
+  createTable: async (table: ITable<any>) => await createTable(table.schema),
+  deleteTable: async (table: ITable<any>) => await deleteTable(table.schema),
 }
 
 export {

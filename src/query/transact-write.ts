@@ -7,23 +7,17 @@ const MAX_ITEMS = 25
 export async function transactWrite(
   documentClient: DynamoDB,
   requests: DynamoDB.TransactWriteItem[],
-) {
-  try {
-    const results = await Promise.all(
-      _.chunk(requests, MAX_ITEMS)
-        .map(async (chunk) => {
-          const res =
-            await documentClient.transactWriteItems(
-                {
-                  TransactItems: [...chunk],
-                },
-            ).promise()
-          return res
-        }),
-    )
+): Promise<DynamoDB.TransactWriteItemsOutput> {
+  await Promise.all(
+    _.chunk(requests, MAX_ITEMS).map(async (chunk) => {
+      const res: DynamoDB.TransactWriteItemsOutput = await documentClient.transactWriteItems({
+        TransactItems: [...chunk],
+      }).promise()
+      return res
+    }),
+  )
 
-    return results
-  } catch (e) {
-    throw e
-  }
+  // there is nothing to merge because we do not ask for ConsumedCapacity or ItemCollectionMetrics
+  const output: DynamoDB.TransactWriteItemsOutput = {}
+  return output
 }

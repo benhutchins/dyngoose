@@ -16,8 +16,10 @@ describe('Table', () => {
 
     const reloadedCard = await TestableTable.primaryKey.get(10, '100')
     expect(reloadedCard).to.be.instanceof(TestableTable)
-    if (reloadedCard) {
+
+    if (reloadedCard != null) {
       expect(reloadedCard.id).to.eq(10)
+      expect(reloadedCard.get('id')).to.eq(10)
       expect(reloadedCard.title).to.eq('100')
     }
   })
@@ -36,7 +38,8 @@ describe('Table', () => {
 
     const reloadedCard = await TestableTable.primaryKey.get(10, '100')
     expect(reloadedCard).to.be.instanceof(TestableTable)
-    if (reloadedCard) {
+
+    if (reloadedCard != null) {
       expect(reloadedCard.testString).to.eq(null, 'reloaded testString value compared')
     }
   })
@@ -61,7 +64,7 @@ describe('Table', () => {
         const record = TestableTable.new({ id: 22, title: 'something new' })
         await record.save()
 
-        let error: Error | void
+        let error: Error | undefined
 
         try {
           record.title = 'something blue'
@@ -97,7 +100,7 @@ describe('Table', () => {
         const record = TestableTable.new({ id: 23, title: 'something new' })
         await record.save()
 
-        let error: Error | void
+        let error: Error | undefined
 
         try {
           await record.delete({ id: 24 })

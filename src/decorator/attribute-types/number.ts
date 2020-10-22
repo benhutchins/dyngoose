@@ -4,7 +4,7 @@ import { ValidationError } from '../../errors'
 import { IAttributeType } from '../../interfaces/attribute-type.interface'
 import { NumberAttributeMetadata } from '../../metadata/attribute-types/number.metadata'
 import { AttributeType } from '../../tables/attribute-type'
-import { numberToString, stringToNumber } from './utils'
+import { isNumber, numberToString, stringToNumber } from './utils'
 
 type Value = number | BigInt
 type Metadata = NumberAttributeMetadata
@@ -12,10 +12,9 @@ type Metadata = NumberAttributeMetadata
 export class NumberAttributeType extends AttributeType<Value, Metadata> implements IAttributeType<Value> {
   type = DynamoAttributeType.Number
 
-  toDynamo(value: Value) {
-    const type = typeof value
-    if (type !== 'number' && type !== 'bigint') {
-      throw new ValidationError(`Expected ${this.propertyName} to be a number, but was given a ${type}`)
+  toDynamo(value: Value): DynamoDB.AttributeValue {
+    if (!isNumber(value)) {
+      throw new ValidationError(`Expected ${this.propertyName} to be a number`)
     }
 
     return {
@@ -23,7 +22,11 @@ export class NumberAttributeType extends AttributeType<Value, Metadata> implemen
     }
   }
 
-  fromDynamo(value: DynamoDB.AttributeValue) {
-    return stringToNumber(value.N as string)
+  fromDynamo(value: DynamoDB.AttributeValue): Value | null {
+    if (value.N == null) {
+      return null
+    } else {
+      return stringToNumber(value.N)
+    }
   }
 }
