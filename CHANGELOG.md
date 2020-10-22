@@ -1,3 +1,18 @@
+# [2.3.0](https://github.com/benhutchins/dyngoose/compare/v2.2.0...v2.3.0) (2020-10-22)
+
+
+### Bug Fixes
+
+* any attribute using binary's metadata ([8c4d077](https://github.com/benhutchins/dyngoose/commit/8c4d0774428bb64a56c8d25ac95e04a4e7e3e3e9))
+* ensure specs are excluded from npm package ([37252b7](https://github.com/benhutchins/dyngoose/commit/37252b770ed52d7bc426426588632da681fade65))
+* npm run test command referencing removing tsconfig ([d85d898](https://github.com/benhutchins/dyngoose/commit/d85d8986a64251dcfbffc0e4f5b9f5f7e292de4d))
+
+
+### Features
+
+* add del to table to delete by property name ([c9a0647](https://github.com/benhutchins/dyngoose/commit/c9a06471885746a30cb2f50b34813ef59a116733))
+* upgrade to eslint, add bigint support to NS, type set/get on table ([9aec8c3](https://github.com/benhutchins/dyngoose/commit/9aec8c3d1ca3dbc1616d4501abd76641fdc938b2))
+
 # [2.2.0](https://github.com/benhutchins/dyngoose/compare/v2.1.0...v2.2.0) (2020-10-14)
 
 
