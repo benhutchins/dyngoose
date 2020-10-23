@@ -1,3 +1,10 @@
+## [2.3.1](https://github.com/benhutchins/dyngoose/compare/v2.3.0...v2.3.1) (2020-10-23)
+
+
+### Bug Fixes
+
+* allow any property name, but maintain the intelligent autocomplete ([fd31498](https://github.com/benhutchins/dyngoose/commit/fd31498f2977c35ddcaf61b8baf8063fe523435e))
+
 # [2.3.0](https://github.com/benhutchins/dyngoose/compare/v2.2.0...v2.3.0) (2020-10-22)
 
 
