@@ -1,3 +1,10 @@
+## [2.3.2](https://github.com/benhutchins/dyngoose/compare/v2.3.1...v2.3.2) (2020-10-23)
+
+
+### Bug Fixes
+
+* allow void to be used as the range key type for primary keys ([2a181bc](https://github.com/benhutchins/dyngoose/commit/2a181bcb9d1e9701a807df5e4967910489058ba4))
+
 ## [2.3.1](https://github.com/benhutchins/dyngoose/compare/v2.3.0...v2.3.1) (2020-10-23)
 
 
