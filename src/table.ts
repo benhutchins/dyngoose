@@ -387,7 +387,7 @@ export class Table {
    * - To set an attribute value by an attribute name, use {@link this.setAttribute}.
    * - To set several attribute values by attribute names, use {@link this.setAttributes}.
    */
-  public set<P extends TableProperty<this>>(propertyName: P, value: this[P]): this {
+  public set<P extends TableProperty<this>>(propertyName: P | string, value: this[P]): this {
     const attribute = this.table.schema.getAttributeByPropertyName(propertyName as string)
     return this.setByAttribute(attribute, value)
   }
@@ -398,7 +398,7 @@ export class Table {
    * - To get a value by an attribute name, use {@link this.getAttribute}.
    * - To get the entire record, use {@link this.toJSON}.
    */
-  public get<P extends TableProperty<this>>(propertyName: P): this[P] {
+  public get<P extends TableProperty<this>>(propertyName: P | string): this[P] {
     const attribute = this.table.schema.getAttributeByPropertyName(propertyName as string)
     return this.getByAttribute(attribute)
   }
@@ -409,7 +409,7 @@ export class Table {
    * - To get a value by an attribute name, use {@link this.deleteAttribute}.
    * - To delete the entire record, use {@link this.delete}.
    */
-  public del<P extends TableProperty<this>>(propertyName: P): this {
+  public del<P extends TableProperty<this>>(propertyName: P | string): this {
     const attribute = this.table.schema.getAttributeByPropertyName(propertyName as string)
     return this.deleteAttribute(attribute.name)
   }
