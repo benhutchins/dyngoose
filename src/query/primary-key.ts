@@ -11,7 +11,8 @@ import { Filters as QueryFilters, UpdateConditions } from './filters'
 import { Results as QueryResults } from './results'
 
 type PrimaryKeyType = string | number | Date
-type RangePrimaryKeyType = PrimaryKeyType | undefined
+// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+type RangePrimaryKeyType = PrimaryKeyType | void
 
 type PrimaryKeyBatchInput<HashKeyType extends PrimaryKeyType, RangeKeyType extends RangePrimaryKeyType> = [HashKeyType, RangeKeyType]
 

@@ -14,7 +14,7 @@ interface ITestMap {
 })
 export class MapTestTable extends Dyngoose.Table {
   @Dyngoose.$PrimaryKey('id')
-  public static readonly primaryKey: Dyngoose.Query.PrimaryKey<MapTestTable, number, undefined>
+  public static readonly primaryKey: Dyngoose.Query.PrimaryKey<MapTestTable, number, void>
 
   @Dyngoose.$DocumentClient()
   public static readonly documentClient: Dyngoose.DocumentClient<MapTestTable>
