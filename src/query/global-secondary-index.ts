@@ -49,18 +49,26 @@ export class GlobalSecondaryIndex<T extends Table> {
    * or requirements. This means that querying for a record by the HASH and RANGE on a
    * GlobalSecondaryIndex it is always possible there are multiple matching records.
    *
-   * So use this with caution. It will still load all the results, and then only returns the
-   * first received from DynamoDB. Avoid use whenever you do not have uniqueness for the
-   * GlobalSecondaryIndex's HASH + RANGE.
+   * So use this with caution. It sets the DynamoDB Limit parameter to 1, which means this will
+   * not work for additional filtering. If you want to provide additional filtering, use the
+   * .query() method and pass your filters, then handle if the query has more than one result.
+   *
+   * Avoid use whenever you do not have uniqueness for the GlobalSecondaryIndex's HASH + RANGE.
    */
   public async get(filters: QueryFilters<T>): Promise<T | undefined> {
     if (!has(filters, this.metadata.hash.propertyName)) {
-      throw new QueryError('Cannot perform a query on a GlobalSecondaryIndex without specifying a hash key value')
+      throw new QueryError('Cannot perform .get() on a GlobalSecondaryIndex without specifying a hash key value')
     } else if (this.metadata.range != null && !has(filters, this.metadata.range.propertyName)) {
-      throw new QueryError('Cannot perform a query on a GlobalSecondaryIndex with a range key without specifying a range value')
+      throw new QueryError('Cannot perform .get() on a GlobalSecondaryIndex with a range key without specifying a range value')
+    } else if (Object.keys(filters).length > 2) {
+      throw new QueryError('Cannot perform a .get() on a GlobalSecondaryIndex with additional filters, use .query() instead')
     }
 
-    const results = await this.query(filters)
+    // because you are specifying the hashKey and rangeKey, we can apply a limit to this search
+    // DynamoDB will start the search at the first match and limit means it will only process
+    // that document and return it, however, you cannot use any additional filters on this .get
+    // method; for that, you need to use .query()
+    const results = await this.query(filters, { limit: 1 })
 
     if (results.records.length > 0) {
       return results.records[0]
