@@ -49,6 +49,35 @@ describe('Query/GlobalSecondaryIndex', () => {
   })
 
   describe('hash only index', () => {
+    describe('#get', () => {
+      it('should throw error when no range key is specified', async () => {
+        let exception
+        try {
+          await Card.filterableTitleIndex.get({ id: 10 })
+        } catch (ex) {
+          exception = ex
+        }
+
+        should().exist(exception)
+      })
+
+      it('should find item', async () => {
+        await Card.new({ id: 10, title: 'abc', count: 1 }).save()
+
+        // this .get() will perform a query with a limit of 1,
+        // so it will get the first matching record
+        const card = await Card.filterableTitleIndex.get({ id: 10, title: 'abc' })
+
+        should().exist(card)
+
+        if (card != null) {
+          expect(card.id).to.eq(10)
+          expect(card.title).to.eq('abc')
+          expect(card.count).to.eq(1)
+        }
+      })
+    })
+
     describe('#query', () => {
       it('should find items', async () => {
         await Card.new({ id: 10, title: 'abc' }).save()
