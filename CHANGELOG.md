@@ -1,3 +1,10 @@
+# [2.5.0](https://github.com/benhutchins/dyngoose/compare/v2.4.0...v2.5.0) (2020-10-29)
+
+
+### Features
+
+* add .minimum(min) execution utility to MagicSearch ([fa987a4](https://github.com/benhutchins/dyngoose/commit/fa987a44c5963d8942e3fc7a2511e4baa48548e0))
+
 # [2.4.0](https://github.com/benhutchins/dyngoose/compare/v2.3.2...v2.4.0) (2020-10-29)
 
 
