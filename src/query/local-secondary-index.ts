@@ -5,7 +5,7 @@ import * as Metadata from '../metadata'
 import { ITable, Table } from '../table'
 import { buildQueryExpression } from './expression'
 import { Filters as QueryFilters } from './filters'
-import { Results as QueryResults } from './results'
+import { QueryOutput } from './output'
 import { MagicSearch, MagicSearchInput } from './search'
 
 interface LocalSecondaryIndexQueryInput {
@@ -49,7 +49,7 @@ export class LocalSecondaryIndex<T extends Table> {
     return queryInput
   }
 
-  public async query(filters: QueryFilters<T>, input: LocalSecondaryIndexQueryInput = {}): Promise<QueryResults<T>> {
+  public async query(filters: QueryFilters<T>, input: LocalSecondaryIndexQueryInput = {}): Promise<QueryOutput<T>> {
     if (!has(filters, this.tableClass.schema.primaryKey.hash.propertyName)) {
       throw new QueryError('Cannot perform a query on a LocalSecondaryIndex without specifying a hash key value')
     }
@@ -67,7 +67,7 @@ export class LocalSecondaryIndex<T extends Table> {
     queryInput.ExpressionAttributeNames = expression.ExpressionAttributeNames
     queryInput.ExpressionAttributeValues = expression.ExpressionAttributeValues
     const output = await this.tableClass.schema.dynamo.query(queryInput).promise()
-    return this.getQueryResults(output)
+    return QueryOutput.fromDynamoOutput(this.tableClass, output)
   }
 
   public getScanInput(input: LocalSecondaryIndexScanInput = {}): DynamoDB.ScanInput {
@@ -84,7 +84,7 @@ export class LocalSecondaryIndex<T extends Table> {
     return scanInput
   }
 
-  public async scan(filters: QueryFilters<T> | undefined | null, input: LocalSecondaryIndexScanInput = {}): Promise<QueryResults<T>> {
+  public async scan(filters: QueryFilters<T> | undefined | null, input: LocalSecondaryIndexScanInput = {}): Promise<QueryOutput<T>> {
     const scanInput = this.getScanInput(input)
     if (filters != null && Object.keys(filters).length > 0) {
       // don't pass the index metadata, avoids KeyConditionExpression
@@ -94,7 +94,7 @@ export class LocalSecondaryIndex<T extends Table> {
       scanInput.ExpressionAttributeValues = expression.ExpressionAttributeValues
     }
     const output = await this.tableClass.schema.dynamo.scan(scanInput).promise()
-    return this.getQueryResults(output)
+    return QueryOutput.fromDynamoOutput(this.tableClass, output)
   }
 
   /**
@@ -104,23 +104,5 @@ export class LocalSecondaryIndex<T extends Table> {
    */
   public search(filters?: QueryFilters<T>, input: MagicSearchInput<T> = {}): MagicSearch<T> {
     return new MagicSearch<T>(this.tableClass as any, filters, input).using(this)
-  }
-
-  protected getQueryResults(output: DynamoDB.ScanOutput | DynamoDB.QueryOutput): QueryResults<T> {
-    const records: T[] = []
-
-    if (output.Items != null) {
-      for (const item of output.Items) {
-        records.push(this.tableClass.fromDynamo(item))
-      }
-    }
-
-    return {
-      records,
-      count: output.Count == null ? records.length : output.Count,
-      scannedCount: output.ScannedCount as number,
-      lastEvaluatedKey: output.LastEvaluatedKey,
-      consumedCapacity: output.ConsumedCapacity as DynamoDB.ConsumedCapacity,
-    }
   }
 }

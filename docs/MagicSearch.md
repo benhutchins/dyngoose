@@ -84,23 +84,23 @@ The available methods on `Dyngoose.Condition` are:
 
 ### `query.exec()`
 
-This will execute the query you constructed. A promise will be returned that will resolve with [Results](Results.md) the results array upon completion.
+This will execute the query you constructed. A promise will be returned that will resolve with a [Dyngoose.QueryOutput](Output.md) object upon completion.
 
 ```typescript
-const results = await Cat.search().filter('name').eq('Will').exec()
+const output = await Cat.search().filter('name').eq('Will').exec()
 ```
 
-The `results` you receive back is a standard [Dyngoose.Results](Results.md).
+The `output` you receive back is a standard [Dyngoose.QueryOutput](Output.md).
 
 ### `query.parenthesis(searchFunction)`
 
 This function takes in a search function instance as a parameter and uses that as a group. This lets you specify the priority of the conditional.
 
 ```typescript
-const results = await Cat.search()
+const output = await Cat.search()
   .filter('status').eq('alive')
   .and()
-  .parenthesis(search => search
+  .parenthesis((subquery) => subquery
     .filter('name').contains('Mr')
     .or()
     .filter('name').contains('Mister')
@@ -144,7 +144,7 @@ await User.search()
 
 // to make the query clearer, use query.parenthesis(searchFunction)
 await User.search()
-  .parenthesis(s => s
+  .parenthesis((subquery) => subquery
     .filter('email').eq('test@example.com')
     .and()
     .filter('status').eq('enabled')
@@ -183,7 +183,7 @@ const results = await Cat.search().filter('name').eq('Will').limit(5).exec()
 
 ### `query.startAt(key)`
 
-In the event there are more documents to query in a previous response, Dyngoose will return a `.lastEvaluatedKey` property on the `Dyngoose.Results` response. You can pass that object into this method to further query documents in your table.
+In the event there are more documents to query in a previous response, Dyngoose will return a `.lastEvaluatedKey` property on the `Dyngoose.Output` response. You can pass that object into this method to further query documents in your table.
 
 ```typescript
 const search = await Cat.search()
@@ -191,8 +191,8 @@ const search = await Cat.search()
   .or()
   .filter('name').contains('Mister')
 
-const results = search.exec()
-const moreDocuments = search.startAt(results.lastEvaluatedKey).exec()
+const output = search.exec()
+const moreDocuments = search.startAt(output.lastEvaluatedKey).exec()
 // you do not have to reuse the MagicSearch instance, but you can
 ```
 
@@ -201,7 +201,7 @@ const moreDocuments = search.startAt(results.lastEvaluatedKey).exec()
 This function will limit which attributes DynamoDB returns for each item in the table. This can limit the size of the DynamoDB response and helps you only retrieve the data you need. The `attributes` property passed into this function should be an array of property names from your `Table` class representing the attributes names you wish DynamoDB to return.
 
 ```typescript
-const results = await Cat.search()
+const output = await Cat.search()
   .filter('name').eq('Will')
   .attributes('id', 'name')
   .exec()
@@ -213,10 +213,10 @@ This function uses the `ProjectionExpression` DynamoDB property to save bandwidt
 
 ### `query.count()`
 
-Instead of returning an array of documents this function will cause the query operation to return only a count of all documents that match your query's filters. The response will still be an `Dyngoose.Results` (see [Results](Results.md)) but `results.records` will be an empty array.
+Instead of returning an array of documents this function will cause the query operation to return only a count of all documents that match your query's filters. The response will still be a `Dyngoose.QueryOutput` (see [Output](Output.md)) but `output.items` will be an empty array.
 
 ```typescript
-const results = await Cat.search().filter('name').eq('Will').count().exec()
+const output = await Cat.search().filter('name').eq('Will').count().exec()
 ```
 
 Using this option will save bandwidth by setting the DynamoDB `Select` option to `COUNT`.
@@ -228,7 +228,7 @@ For more information, see [Count and ScannedCount](https://docs.aws.amazon.com/a
 This will cause the query to run in a consistent manner as opposed to the default eventually consistent manner.
 
 ```typescript
-const results = await Cat.search().filter('name').eq('Will').consistent().exec()
+const output = await Cat.search().filter('name').eq('Will').consistent().exec()
 ```
 
 For more information, see [Read Consistency](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html) in the Amazon DynamoDB Developer Guide.
@@ -239,10 +239,10 @@ This causes the query to be run on a specific index as opposed to the default ta
 
 ```typescript
 // you can specify the index as a reference to the index class on your Table
-const results = await Cat.search().filter('name').eq('Will').using(Cat.nameIndex)
+const output = await Cat.search().filter('name').eq('Will').using(Cat.nameIndex)
 
 // or you can specify the index as a name
-const results = await Cat.search().filter('name').eq('Will').using('name-index')
+const output = await Cat.search().filter('name').eq('Will').using('name-index')
 ```
 
 ### `query.sort(direction)`
@@ -266,8 +266,10 @@ Normally if a query result is more than the AWS query response limit, DynamoDB w
 
 Similar to `query.exec()` this will execute your query and return your results.
 
-The documents for all of the requests will be aggregated into the `Dyngoose.Results` response.
+The documents for all of the requests will be aggregated into the `Dyngoose.QueryOutput` response.
+
+**This should be avoided under normal circumstances, paging is recommended.**
 
 ```typescript
-const results = await Cat.search().filter('name').eq('Will').all()
+const output = await Cat.search().filter('name').eq('Will').all()
 ```

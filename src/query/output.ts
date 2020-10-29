@@ -2,12 +2,11 @@ import { DynamoDB } from 'aws-sdk'
 import { Table } from '..'
 import { ITable } from '../table'
 
-export class QueryOutput<T extends Table> {
+export class QueryOutput<T extends Table> extends Array<T> {
   public static fromDynamoOutput<T extends Table>(
     tableClass: ITable<T>,
     output: DynamoDB.ScanOutput | DynamoDB.QueryOutput,
   ): QueryOutput<T> {
-    const queryOutput = new QueryOutput(tableClass)
     const items: T[] = []
 
     if (output.Items != null) {
@@ -16,7 +15,7 @@ export class QueryOutput<T extends Table> {
       }
     }
 
-    queryOutput.items = items
+    const queryOutput = new QueryOutput(items, tableClass)
     queryOutput.count = output.Count == null ? items.length : output.Count
     queryOutput.scannedCount = output.ScannedCount as number
     queryOutput.lastEvaluatedKey = output.LastEvaluatedKey
@@ -29,23 +28,21 @@ export class QueryOutput<T extends Table> {
     tableClass: ITable<T>,
     outputs: Array<QueryOutput<T>>,
   ): QueryOutput<T> {
-    const queryOutput = new QueryOutput(tableClass)
     let count = 0
+    let scannedCount = 0
     let capacityUnits = 0
     let writeCapacityUnits = 0
     let readCapacityUnits = 0
-    queryOutput.items = []
+    let items: T[] = []
 
     // if this is the first page, or if we have not hit the last page, continue loading records…
     for (const output of outputs) {
       // append the query results
-      queryOutput.items = queryOutput.items.concat(output.items)
+      items = items.concat(output)
       count += output.count
 
-      if (queryOutput.scannedCount == null) {
-        queryOutput.scannedCount = output.count
-      } else {
-        queryOutput.scannedCount += output.count
+      if (output.scannedCount != null) {
+        scannedCount += output.scannedCount
       }
 
       if (output.consumedCapacity != null) {
@@ -63,7 +60,9 @@ export class QueryOutput<T extends Table> {
       }
     }
 
+    const queryOutput = new QueryOutput(items, tableClass)
     queryOutput.count = count
+    queryOutput.scannedCount = scannedCount
     queryOutput.consumedCapacity = {
       CapacityUnits: capacityUnits,
       WriteCapacityUnits: writeCapacityUnits,
@@ -73,7 +72,6 @@ export class QueryOutput<T extends Table> {
     return queryOutput
   }
 
-  items: T[]
   count: number
   scannedCount: number
   lastEvaluatedKey?: DynamoDB.Key
@@ -82,13 +80,20 @@ export class QueryOutput<T extends Table> {
   /**
    * The items returned from DynamoDB
    *
-   * @deprecated, use .items
+   * @deprecated
    */
   get records(): T[] {
-    return this.items
+    return this
   }
 
   protected constructor(
+    records: T[],
     protected readonly tableClass: ITable<T>,
-  ) { }
+  ) {
+    super(records.length)
+
+    for (let i = 0; i < records.length; i++) {
+      this[i] = records[i]
+    }
+  }
 }

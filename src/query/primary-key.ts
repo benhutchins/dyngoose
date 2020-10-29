@@ -8,7 +8,7 @@ import { batchGet } from './batch-get'
 import { batchWrite } from './batch-write'
 import { buildQueryExpression } from './expression'
 import { Filters as QueryFilters, UpdateConditions } from './filters'
-import { Results as QueryResults } from './results'
+import { QueryOutput } from './output'
 
 type PrimaryKeyType = string | number | Date
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
@@ -167,7 +167,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     return queryInput
   }
 
-  public async query(filters: QueryFilters<T>, input?: PrimaryKeyQueryInput): Promise<QueryResults<T>> {
+  public async query(filters: QueryFilters<T>, input?: PrimaryKeyQueryInput): Promise<QueryOutput<T>> {
     if (!has(filters, this.metadata.hash.propertyName)) {
       throw new QueryError('Cannot perform a query on the PrimaryKey index without specifying a hash key value')
     } else if (isArray(get(filters, this.metadata.hash.propertyName)) && get(filters, this.metadata.hash.propertyName)[0] !== '=') {
@@ -182,17 +182,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     queryInput.ExpressionAttributeValues = expression.ExpressionAttributeValues
 
     const output = await this.table.schema.dynamo.query(queryInput).promise()
-    const records = (output.Items == null ? [] : output.Items).map((item) => {
-      return this.table.fromDynamo(item)
-    })
-
-    return {
-      records,
-      count: output.Count == null ? records.length : output.Count,
-      scannedCount: output.ScannedCount as number,
-      lastEvaluatedKey: output.LastEvaluatedKey,
-      consumedCapacity: output.ConsumedCapacity as DynamoDB.ConsumedCapacity,
-    }
+    return QueryOutput.fromDynamoOutput(this.table, output)
   }
 
   public async scan(options: {
@@ -200,7 +190,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     totalSegments?: number
     segment?: number
     exclusiveStartKey?: DynamoDB.DocumentClient.Key
-  } = {}): Promise<QueryResults<T>> {
+  } = {}): Promise<QueryOutput<T>> {
     const params: DynamoDB.DocumentClient.ScanInput = {
       TableName: this.table.schema.name,
       Limit: options.limit,
@@ -210,22 +200,8 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
       Segment: options.segment,
     }
 
-    const result = await this.table.schema.dynamo.scan(params).promise()
-    const records: T[] = []
-
-    if (result.Items != null) {
-      for (const item of result.Items) {
-        records.push(this.table.fromDynamo(item))
-      }
-    }
-
-    return {
-      records,
-      count: result.Count == null ? records.length : result.Count,
-      scannedCount: result.ScannedCount as number,
-      lastEvaluatedKey: result.LastEvaluatedKey,
-      consumedCapacity: result.ConsumedCapacity as DynamoDB.ConsumedCapacity,
-    }
+    const output = await this.table.schema.dynamo.scan(params).promise()
+    return QueryOutput.fromDynamoOutput(this.table, output)
   }
 
   /**

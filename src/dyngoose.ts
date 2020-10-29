@@ -12,6 +12,7 @@ import { AttributeType } from './tables/attribute-type'
 import { createTable } from './tables/create-table'
 import { deleteTable } from './tables/delete-table'
 import { Transaction } from './transaction'
+import { QueryOutput } from './query/output'
 
 export const TableOperations = {
   createTable: async (table: ITable<any>) => await createTable(table.schema),
@@ -29,6 +30,7 @@ export {
   Events,
   Metadata,
   Query,
+  QueryOutput,
   Table,
   Transaction,
 }
