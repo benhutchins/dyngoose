@@ -4,5 +4,4 @@ dist/**/*.spec.*
 .idea
 .vscode
 .travis.yml
-src/
 docs/
