@@ -266,9 +266,17 @@ Normally if a query result is more than the AWS query response limit, DynamoDB w
 
 Similar to `query.exec()` this will execute your query and return your results.
 
-The documents for all of the requests will be aggregated into the `Dyngoose.QueryOutput` response.
+The documents for all of the requests will be aggregated into a single `Dyngoose.QueryOutput` response.
 
 **This should be avoided under normal circumstances, paging is recommended.**
+
+### `query.minimum(min)`
+
+Similar to `query.all`, `query.minimum` will page internally for you, however, unlike `query.all`, `query.minimum` will automatically stop once the minimum number of desires records is loaded. This can be useful for paging, infinite scrolling, or performing analytical operations.
+
+Similar to `query.exec()` and `query.all()` this will execute your query and return your results.
+
+The documents for all of the requests will be aggregated into a single `Dyngoose.QueryOutput` response.
 
 ```typescript
 const output = await Cat.search().filter('name').eq('Will').all()

@@ -49,16 +49,6 @@ export class MagicSearch<T extends Table> {
     return this
   }
 
-  /**
-   * This will execute the query you constructed.
-   *
-   * A promise will be returned that will resolve to the results array upon completion.
-   */
-  async exec(): Promise<QueryOutput<T>> {
-    const input = this.getInput()
-    return await this.page(input)
-  }
-
   parenthesis(value: SearchGroupFunction<T>): this {
     return this.group(value)
   }
@@ -187,6 +177,53 @@ export class MagicSearch<T extends Table> {
   }
 
   /**
+   * This will execute the query you constructed and return one page of results.
+   *
+   * A promise will be returned that will resolve to the results array upon completion.
+   */
+  async exec(): Promise<QueryOutput<T>> {
+    const input = this.getInput()
+    return await this.page(input)
+  }
+
+  /**
+   * This will execute the query you constructed and page, if necessary, until the
+   * minimum number of requested documents is loaded.
+   *
+   * This can be useful if you are doing advanced queries without good indexing,
+   * which should be avoided but can happen for infrequent operations such as analytics.
+   *
+   * Unlike `.all()` which pages until all results are loaded, `.minimum(min)` will
+   * page only until the specified number of records is loaded and then halts.
+   *
+   * It is recommended you apply a `.limit(minOrMore)` before calling `.minimum` to ensure
+   * you do not load too many results as well.
+  */
+  async minimum(minimum: number): Promise<QueryOutput<T>> {
+    const input = this.getInput()
+    const outputs: Array<QueryOutput<T>> = []
+    let page: QueryOutput<T> | undefined
+    let count = 0
+
+    while (page == null || page.lastEvaluatedKey != null) {
+      if (page?.lastEvaluatedKey != null) {
+        input.ExclusiveStartKey = page.lastEvaluatedKey
+      }
+
+      page = await this.page(input)
+      count += page.count
+      outputs.push(page)
+
+      // if we've loaded enough, stop loading more…
+      if (count >= minimum || page.lastEvaluatedKey == null) {
+        break
+      }
+    }
+
+    return QueryOutput.fromSeveralOutputs(this.tableClass, outputs)
+  }
+
+  /**
    * Page internally and return all possible search results.
    *
    * Be cautious. This can easily cause timeouts if you're using Lambda functions.
@@ -263,7 +300,7 @@ export class MagicSearch<T extends Table> {
     }
 
     if (this.input.rangeOrder === 'DESC') {
-      (input as any).ScanIndexForward = false
+      (input as DynamoDB.QueryInput).ScanIndexForward = false
     }
 
     if (this.input.limit != null) {
@@ -307,10 +344,10 @@ export class MagicSearch<T extends Table> {
     if ((input as DynamoDB.QueryInput).KeyConditionExpression != null) {
       output = await this.tableClass.schema.dynamo.query(input).promise()
     } else {
-      if ((input as any).ScanIndexForward === false) {
+      if ((input as DynamoDB.QueryInput).ScanIndexForward === false) {
         throw new Error('Cannot use specify a sort direction, range order, or use ScanIndexForward on a scan operation. Try specifying the index being used.')
       } else {
-        delete (input as any).ScanIndexForward
+        delete (input as DynamoDB.QueryInput).ScanIndexForward
       }
 
       output = await this.tableClass.schema.dynamo.scan(input).promise()

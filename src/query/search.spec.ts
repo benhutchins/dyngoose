@@ -158,4 +158,46 @@ describe('Query/Search', () => {
     const input = search.getInput()
     expect(input.ProjectionExpression).to.eq('id,title,testAttributeNameNotMatchingPropertyName')
   })
+
+  describe('#exec', () => {
+    it('should execute the search query', async () => {
+      const search = new MagicSearch<TestableTable>(TestableTable)
+        .filter('title').contains('Table.search')
+      const output = await search.exec()
+      expect(output.length).to.eq(8)
+    })
+
+    it('honor a limited search', async () => {
+      const search = new MagicSearch<TestableTable>(TestableTable)
+        .filter('title').contains('Table.search')
+        .limit(2)
+      const output = await search.exec()
+      expect(output.length).to.eq(2)
+    })
+  })
+
+  describe('#all', () => {
+    it('should execute the search query', async () => {
+      const search = new MagicSearch<TestableTable>(TestableTable)
+        .filter('title').contains('Table.search')
+        .limit(2)
+
+      // we set a limit and then called .all(), so it should page automatically until all results are found
+      // this is stupid and slow, it would be faster to remove the limit, but we are testing the paging logic of .all
+      const output = await search.all()
+      expect(output.length).to.eq(8)
+    })
+  })
+
+  describe('#minimum', () => {
+    it('should execute the search query', async () => {
+      const search = new MagicSearch<TestableTable>(TestableTable)
+        .filter('title').contains('Table.search')
+        .limit(2)
+
+      // we set a limit and then called .all(), so it should page automatically until all results are found
+      const output = await search.minimum(5)
+      expect(output.length).to.be.at.least(5)
+    })
+  })
 })
