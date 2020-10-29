@@ -1,3 +1,14 @@
+# [2.4.0](https://github.com/benhutchins/dyngoose/compare/v2.3.2...v2.4.0) (2020-10-29)
+
+
+### Features
+
+* allow throughput to be specified as a number on GSIs ([e5cbbae](https://github.com/benhutchins/dyngoose/commit/e5cbbaee46915fbf1b95cd8e06d9f4b47f3ce8eb))
+* check the nonKeyAttributes specified to a GSI ([8d0962e](https://github.com/benhutchins/dyngoose/commit/8d0962e896f7d6dfe67c480237abb7ffabad57bb))
+* include the src files, which are referenced by the js maps ([11e3f77](https://github.com/benhutchins/dyngoose/commit/11e3f779d91e0bf643fd245e629c3aa930d668f9))
+* query output as an native array ([ac8111c](https://github.com/benhutchins/dyngoose/commit/ac8111c1d41f5dff55460abe30f6a2584f06d2f9))
+* set limit of 1 when performing a gsi.get query ([a519758](https://github.com/benhutchins/dyngoose/commit/a519758a61fc3d24490c5892bd63014c97dfaeed))
+
 ## [2.3.2](https://github.com/benhutchins/dyngoose/compare/v2.3.1...v2.3.2) (2020-10-23)
 
 
