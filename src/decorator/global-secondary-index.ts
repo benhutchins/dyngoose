@@ -9,11 +9,22 @@ export interface GlobalSecondaryIndexOptions {
   name?: string
   projection?: Metadata.Index.GlobalSecondaryIndexProjection
   nonKeyAttributes?: string[]
-  throughput?: IThroughput
+  throughput?: IThroughput | number
 }
 
 export function GlobalSecondaryIndex(options: GlobalSecondaryIndexOptions) {
   return (table: ITable<any>, propertyName: string) => {
+    let throughput: IThroughput | undefined
+
+    if (typeof options.throughput === 'number') {
+      throughput = {
+        read: options.throughput,
+        write: options.throughput,
+      }
+    } else if (options.throughput != null) {
+      throughput = options.throughput
+    }
+
     const index: Metadata.Index.GlobalSecondaryIndex = {
       propertyName,
       name: options.name == null ? propertyName : options.name,
@@ -21,7 +32,7 @@ export function GlobalSecondaryIndex(options: GlobalSecondaryIndexOptions) {
       range: options.rangeKey == null ? undefined : table.schema.getAttributeByName(options.rangeKey),
       projection: options.projection,
       nonKeyAttributes: options.nonKeyAttributes,
-      throughput: options.throughput,
+      throughput,
     }
 
     if (index.projection === 'INCLUDE' && (options.nonKeyAttributes?.length === 0)) {
