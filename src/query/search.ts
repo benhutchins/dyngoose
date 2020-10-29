@@ -9,7 +9,7 @@ import { buildQueryExpression, keyConditionAllowedOperators } from './expression
 import { AttributeNames, ComplexFilters, Filter, Filters } from './filters'
 import { GlobalSecondaryIndex } from './global-secondary-index'
 import { LocalSecondaryIndex } from './local-secondary-index'
-import { Results as QueryResults } from './results'
+import { QueryOutput } from './output'
 
 export interface MagicSearchInput<T extends Table> {
   limit?: number
@@ -54,7 +54,7 @@ export class MagicSearch<T extends Table> {
    *
    * A promise will be returned that will resolve to the results array upon completion.
    */
-  async exec(): Promise<QueryResults<T>> {
+  async exec(): Promise<QueryOutput<T>> {
     const input = this.getInput()
     return await this.page(input)
   }
@@ -193,17 +193,10 @@ export class MagicSearch<T extends Table> {
    * This is also non-ideal for scans, for better performance use a segmented scan
    * via the Query.PrimaryKey.segmentedScan or Query.GlobalSecondaryIndex.segmentedScan.
    */
-  async all(): Promise<QueryResults<T>> {
+  async all(): Promise<QueryOutput<T>> {
     const input = this.getInput()
-
-    const result: QueryResults<T> = {
-      records: [],
-      count: 0,
-      scannedCount: 0,
-      consumedCapacity: null as any,
-    }
-
-    let page: QueryResults<T> | undefined
+    const outputs: Array<QueryOutput<T>> = []
+    let page: QueryOutput<T> | undefined
 
     // if this is the first page, or if we have not hit the last page, continue loading records…
     while (page == null || page.lastEvaluatedKey != null) {
@@ -212,15 +205,10 @@ export class MagicSearch<T extends Table> {
       }
 
       page = await this.page(input)
-
-      // append the query results
-      result.records = result.records.concat(page.records)
-      result.count = result.count + page.count
-      result.scannedCount = result.count + page.scannedCount
-      // page.consumedCapacity TODO
+      outputs.push(page)
     }
 
-    return result
+    return QueryOutput.fromSeveralOutputs(this.tableClass, outputs)
   }
 
   getInput(): DynamoDB.ScanInput | DynamoDB.QueryInput {
@@ -308,11 +296,11 @@ export class MagicSearch<T extends Table> {
   /**
    * @deprecated Use MagicSearch.prototype.exec()
    */
-  async search(): Promise<QueryResults<T>> {
+  async search(): Promise<QueryOutput<T>> {
     return await this.exec()
   }
 
-  async page(input: DynamoDB.ScanInput | DynamoDB.QueryInput): Promise<QueryResults<T>> {
+  async page(input: DynamoDB.ScanInput | DynamoDB.QueryInput): Promise<QueryOutput<T>> {
     let output: DynamoDB.ScanOutput | DynamoDB.QueryOutput
 
     // if we are filtering based on key conditions, run a query instead of a scan
@@ -328,23 +316,7 @@ export class MagicSearch<T extends Table> {
       output = await this.tableClass.schema.dynamo.scan(input).promise()
     }
 
-    const records: T[] = []
-
-    if (output.Items != null) {
-      for (const item of output.Items) {
-        records.push(this.tableClass.fromDynamo(item))
-      }
-    }
-
-    const results: QueryResults<T> = {
-      records,
-      count: output.Count == null ? records.length : output.Count,
-      scannedCount: output.ScannedCount as number,
-      lastEvaluatedKey: output.LastEvaluatedKey,
-      consumedCapacity: output.ConsumedCapacity as DynamoDB.ConsumedCapacity,
-    }
-
-    return results
+    return QueryOutput.fromDynamoOutput(this.tableClass, output)
   }
 
   private findAvailableIndex(): Metadata.Index.GlobalSecondaryIndex | Metadata.Index.PrimaryKey | undefined {

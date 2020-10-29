@@ -5,7 +5,7 @@ import * as Metadata from '../metadata'
 import { ITable, Table } from '../table'
 import { buildQueryExpression } from './expression'
 import { Filters as QueryFilters } from './filters'
-import { Results as QueryResults } from './results'
+import { QueryOutput } from './output'
 import { MagicSearch, MagicSearchInput } from './search'
 
 interface GlobalSecondaryIndexQueryInput {
@@ -70,8 +70,8 @@ export class GlobalSecondaryIndex<T extends Table> {
     // method; for that, you need to use .query()
     const results = await this.query(filters, { limit: 1 })
 
-    if (results.records.length > 0) {
-      return results.records[0]
+    if (results.count > 0) {
+      return results[0]
     }
   }
 
@@ -99,7 +99,7 @@ export class GlobalSecondaryIndex<T extends Table> {
     return queryInput
   }
 
-  public async query(filters: QueryFilters<T>, input?: GlobalSecondaryIndexQueryInput): Promise<QueryResults<T>> {
+  public async query(filters: QueryFilters<T>, input?: GlobalSecondaryIndexQueryInput): Promise<QueryOutput<T>> {
     if (!has(filters, this.metadata.hash.propertyName)) {
       throw new QueryError('Cannot perform a query on a GlobalSecondaryIndex without specifying a hash key value')
     } else if (isArray(get(filters, this.metadata.hash.propertyName)) && get(filters, this.metadata.hash.propertyName)[0] !== '=') {
@@ -113,7 +113,7 @@ export class GlobalSecondaryIndex<T extends Table> {
     queryInput.ExpressionAttributeNames = expression.ExpressionAttributeNames
     queryInput.ExpressionAttributeValues = expression.ExpressionAttributeValues
     const output = await this.tableClass.schema.dynamo.query(queryInput).promise()
-    return this.getQueryResults(output)
+    return QueryOutput.fromDynamoOutput<T>(this.tableClass, output)
   }
 
   public getScanInput(input: GlobalSecondaryIndexScanInput = {}): DynamoDB.ScanInput {
@@ -139,7 +139,7 @@ export class GlobalSecondaryIndex<T extends Table> {
    * *WARNING*: In most circumstances this is not a good thing to do.
    * This will return all the items in this index, does not perform well!
    */
-  public async scan(filters?: QueryFilters<T> | undefined | null, input: GlobalSecondaryIndexScanInput = {}): Promise<QueryResults<T>> {
+  public async scan(filters?: QueryFilters<T> | undefined | null, input: GlobalSecondaryIndexScanInput = {}): Promise<QueryOutput<T>> {
     const scanInput = this.getScanInput(input)
     if (filters != null && Object.keys(filters).length > 0) {
       // don't pass the index metadata, avoids KeyConditionExpression
@@ -149,7 +149,7 @@ export class GlobalSecondaryIndex<T extends Table> {
       scanInput.ExpressionAttributeValues = expression.ExpressionAttributeValues
     }
     const output = await this.tableClass.schema.dynamo.scan(scanInput).promise()
-    return this.getQueryResults(output)
+    return QueryOutput.fromDynamoOutput<T>(this.tableClass, output)
   }
 
   /**
@@ -163,49 +163,16 @@ export class GlobalSecondaryIndex<T extends Table> {
    *
    * @see {@link https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Scan.html#Scan.ParallelScan}
    */
-  public async segmentedScan(filters: QueryFilters<T> | null, input: GlobalSecondaryIndexSegmentedScanInput): Promise<QueryResults<T>> {
-    const scans: Array<Promise<QueryResults<T>>> = []
+  public async segmentedScan(filters: QueryFilters<T> | null, input: GlobalSecondaryIndexSegmentedScanInput): Promise<QueryOutput<T>> {
+    const scans: Array<Promise<QueryOutput<T>>> = []
     for (let i = 0; i < input.totalSegments; i++) {
       input.segment = i
       scans.push(this.scan(filters, input))
     }
 
-    const results = await Promise.all(scans)
-    let records: T[] = []
-    let scannedCount = 0
-    let capacityUnits = 0
-    let writeCapacityUnits = 0
-    let readCapacityUnits = 0
-
-    for (const result of results) {
-      records = records.concat(result.records)
-      scannedCount += result.scannedCount
-
-      if (result.consumedCapacity != null) {
-        if (result.consumedCapacity.CapacityUnits != null) {
-          capacityUnits += result.consumedCapacity.CapacityUnits
-        }
-
-        if (result.consumedCapacity.WriteCapacityUnits != null) {
-          writeCapacityUnits += result.consumedCapacity.WriteCapacityUnits
-        }
-
-        if (result.consumedCapacity.ReadCapacityUnits != null) {
-          readCapacityUnits += result.consumedCapacity.ReadCapacityUnits
-        }
-      }
-    }
-
-    return {
-      records,
-      count: records.length,
-      scannedCount: scannedCount,
-      consumedCapacity: {
-        CapacityUnits: capacityUnits,
-        WriteCapacityUnits: writeCapacityUnits,
-        ReadCapacityUnits: readCapacityUnits,
-      },
-    }
+    const scanOutputs = await Promise.all(scans)
+    const output = QueryOutput.fromSeveralOutputs(this.tableClass, scanOutputs)
+    return output
   }
 
   /**
@@ -215,23 +182,5 @@ export class GlobalSecondaryIndex<T extends Table> {
    */
   public search(filters?: QueryFilters<T>, input: MagicSearchInput<T> = {}): MagicSearch<T> {
     return new MagicSearch<T>(this.tableClass as any, filters, input).using(this)
-  }
-
-  protected getQueryResults(output: DynamoDB.ScanOutput | DynamoDB.QueryOutput): QueryResults<T> {
-    const records: T[] = []
-
-    if (output.Items != null) {
-      for (const item of output.Items) {
-        records.push(this.tableClass.fromDynamo(item))
-      }
-    }
-
-    return {
-      records,
-      count: output.Count == null ? records.length : output.Count,
-      scannedCount: output.ScannedCount as number,
-      lastEvaluatedKey: output.LastEvaluatedKey,
-      consumedCapacity: output.ConsumedCapacity as DynamoDB.ConsumedCapacity,
-    }
   }
 }

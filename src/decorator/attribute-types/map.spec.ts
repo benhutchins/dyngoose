@@ -97,6 +97,12 @@ describe('AttributeType/Map', () => {
     } as any).exec()
 
     expect(result.count).to.eq(1)
+    expect(result[0].person.first).to.eq('Sally')
     expect(result.records[0].person.first).to.eq('Sally')
+
+    // ensure you can look through the result as an array
+    for (const doc of result) {
+      expect(doc.person.first).to.eq('Sally')
+    }
   })
 })

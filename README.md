@@ -87,15 +87,23 @@ await Card.search()
   .filter('title').gte('Title')
   .exec()
 
+// Easily delete record
+await card.delete()
+
 // Query
 // Queries are always strongly typed. (['>=', T] | ['=', T] ...)
-await Card.primaryKey.query({
+const cards = await Card.primaryKey.query({
   id: 100,
   title: ['>=', 'Title']
 })
 
-// Delete record
-await card.delete()
+// you can loop through outputs, which is a native JavaScript array
+for (const card of cards) {
+  console.log(card.id, card.title)
+}
+
+// the output contains additional properties
+console.log(`Your query returned ${cards.count} and scanned ${cards.scannedCount} documents`)
 ```
 
 ### TS Compiler Setting

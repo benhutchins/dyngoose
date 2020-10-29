@@ -61,7 +61,7 @@ describe('BatchWrite', () => {
 
     // now verify the results
     const results = await Card.primaryKey.scan()
-    const records = sortBy(results.records, 'id')
+    const records = sortBy(results, 'id')
 
     expect(results.count).eq(2)
     expect(records[0].id).eq(10)
