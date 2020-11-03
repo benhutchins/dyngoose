@@ -1,3 +1,10 @@
+# [2.7.0](https://github.com/benhutchins/dyngoose/compare/v2.6.0...v2.7.0) (2020-11-03)
+
+
+### Features
+
+* build projection expressions to support reserved word attributes ([c005758](https://github.com/benhutchins/dyngoose/commit/c005758f2c2bf47942e4df2fc7aad4feaccc194e))
+
 # [2.6.0](https://github.com/benhutchins/dyngoose/compare/v2.5.0...v2.6.0) (2020-11-03)
 
 
