@@ -1,3 +1,10 @@
+# [2.6.0](https://github.com/benhutchins/dyngoose/compare/v2.5.0...v2.6.0) (2020-11-03)
+
+
+### Features
+
+* add batch get utility class ([75fa6c9](https://github.com/benhutchins/dyngoose/commit/75fa6c96184cfeb2e3eabcdf4164abfa84dfd738))
+
 # [2.5.0](https://github.com/benhutchins/dyngoose/compare/v2.4.0...v2.5.0) (2020-10-29)
 
 
