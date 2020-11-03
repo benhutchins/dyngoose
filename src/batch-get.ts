@@ -2,12 +2,13 @@ import { flatten, filter, isEqual, chunk } from 'lodash'
 import { DynamoDB } from 'aws-sdk'
 import Config from './config'
 import { Table } from './table'
+import { buildProjectionExpression } from './query/projection-expression'
 
-export class BatchGet {
+export class BatchGet<T extends Table> {
   public static readonly MAX_ITEMS = 100
 
   private dynamo: DynamoDB
-  private readonly items: Table[] = []
+  private readonly items: T[] = []
   private readonly projectionMap: Map<typeof Table, string[]> = new Map()
 
   /**
@@ -36,7 +37,7 @@ export class BatchGet {
     return this
   }
 
-  public get<T extends Table>(...records: T[]): this {
+  public get(...records: T[]): this {
     this.items.push(...records)
     return this
   }
@@ -54,7 +55,7 @@ export class BatchGet {
     return this
   }
 
-  public async retrieve(): Promise<Table[]> {
+  public async retrieve(): Promise<T[]> {
     return await Promise.all(
       chunk(this.items, BatchGet.MAX_ITEMS).map(async (chunkedItems) => {
         const requestMap: DynamoDB.BatchGetRequestMap = {}
@@ -70,7 +71,9 @@ export class BatchGet {
             if (this.projectionMap.has(tableClass)) {
               const attributes = this.projectionMap.get(tableClass)
               if (attributes != null) {
-                requestMap[tableClass.schema.name].ProjectionExpression = attributes.join(',')
+                const expression = buildProjectionExpression(tableClass, attributes)
+                requestMap[tableClass.schema.name].ProjectionExpression = expression.ProjectionExpression
+                requestMap[tableClass.schema.name].ExpressionAttributeNames = expression.ExpressionAttributeNames
               }
             }
           }
@@ -81,8 +84,6 @@ export class BatchGet {
         const res = await this.dynamo.batchGetItem({
           RequestItems: requestMap,
         }).promise()
-
-        // const records = res.Responses == null ? [] : res.Responses[tableName]
 
         if (res.Responses == null) {
           return []
@@ -113,9 +114,9 @@ export class BatchGet {
     })
   }
 
-  public async retrieveMapped(): Promise<Map<typeof Table, Table[]>> {
+  public async retrieveMapped(): Promise<Map<typeof Table, T[]>> {
     const items = await this.retrieve()
-    const map: Map<typeof Table, Table[]> = new Map()
+    const map: Map<typeof Table, T[]> = new Map()
 
     for (const item of items) {
       const tableClass = item.constructor as typeof Table

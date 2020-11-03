@@ -20,7 +20,7 @@ describe('BatchGet', () => {
     public id: number
 
     @AttributeDecorator.String()
-    public title: string
+    public status: string
   }
 
   @TableDecorator({ name: 'BatchGetTestCardTable2' })
@@ -32,7 +32,7 @@ describe('BatchGet', () => {
     public id: number
 
     @AttributeDecorator.String()
-    public title: string
+    public status: string
   }
 
   before(async () => {
@@ -47,22 +47,22 @@ describe('BatchGet', () => {
 
   beforeEach(async () => {
     await TestTable1.documentClient.batchPut([
-      TestTable1.new({ id: 1, title: 'a' }),
-      TestTable1.new({ id: 2, title: 'b' }),
-      TestTable1.new({ id: 3, title: 'c' }),
-      TestTable1.new({ id: 4, title: 'd' }),
+      TestTable1.new({ id: 1, status: 'a' }),
+      TestTable1.new({ id: 2, status: 'b' }),
+      TestTable1.new({ id: 3, status: 'c' }),
+      TestTable1.new({ id: 4, status: 'd' }),
     ])
 
     await TestTable2.documentClient.batchPut([
-      TestTable2.new({ id: 1, title: 'a' }),
-      TestTable2.new({ id: 2, title: 'b' }),
-      TestTable2.new({ id: 3, title: 'c' }),
-      TestTable2.new({ id: 4, title: 'd' }),
+      TestTable2.new({ id: 1, status: 'a' }),
+      TestTable2.new({ id: 2, status: 'b' }),
+      TestTable2.new({ id: 3, status: 'c' }),
+      TestTable2.new({ id: 4, status: 'd' }),
     ])
   })
 
   it('should operate a successful batch operation', async () => {
-    const batch = new BatchGet()
+    const batch = new BatchGet<TestTable1 | TestTable2>()
     const item = TestTable1.primaryKey.fromKey(1)
 
     batch.get(item)
@@ -70,10 +70,10 @@ describe('BatchGet', () => {
     batch.get(TestTable2.primaryKey.fromKey(3))
     batch.get(TestTable2.primaryKey.fromKey(4))
 
-    expect(item.title).to.eq(null)
+    expect(item.status).to.eq(null)
 
-    // commit the transaction
-    const results = await batch.retrieve() as Array<TestTable1 | TestTable2>
+    // execute the retrieval
+    const results = await batch.retrieve()
 
     // now verify the results
     const records = sortBy(results, 'id')
@@ -89,6 +89,20 @@ describe('BatchGet', () => {
     expect(records[3]).to.be.instanceOf(TestTable2)
 
     // verify the original items are mutated
-    expect(item.title).to.eq('a')
+    expect(item.status).to.eq('a')
+  })
+
+  it('should accept projection expressions', async () => {
+    const batch = new BatchGet<TestTable1 | TestTable2>()
+    const item = TestTable1.primaryKey.fromKey(1)
+    batch.getSpecificAttributes(TestTable1, 'id', 'status')
+    batch.get(item)
+
+    // execute the retrieval
+    const results = await batch.retrieve()
+
+    expect(results.length).eq(1)
+    expect(results[0].status).eq('a')
+    expect(item.status).to.eq('a')
   })
 })
