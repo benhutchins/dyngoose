@@ -1,3 +1,4 @@
+import { BatchGet } from './batch-get'
 import { BatchWrite } from './batch-write'
 import * as Config from './config'
 import * as Connection from './connections'
@@ -21,6 +22,7 @@ export const TableOperations = {
 
 export {
   AttributeType,
+  BatchGet,
   BatchWrite,
   Config,
   Connection,

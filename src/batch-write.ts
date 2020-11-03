@@ -8,7 +8,7 @@ export class BatchWrite {
   private readonly list: DynamoDB.BatchWriteItemRequestMap[] = []
 
   /**
-   * Perform a Batch operation.
+   * Perform a BatchWrite operation.
    *
    * @see {@link https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_BatchWriteItem.html}
    *

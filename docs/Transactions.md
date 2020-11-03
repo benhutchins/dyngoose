@@ -8,7 +8,7 @@ It is important to understand the difference between these two types of operatio
 
 DynamoDB supports atomic transactions via the [`TransactWriteItems`](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_TransactWriteItems.html) operation. To expose this functionality within Dyngoose, there is the `Dyngoose.Transaction` class.
 
-## Example
+### Example
 
 ```typescript
 const transaction = new Dyngoose.Transaction()
@@ -37,9 +37,9 @@ await transaction.commit()
 
 ## BatchWriteItem
 
-DynamoDB supports batch write operations which are not fully atomic via the [`BatchWriteItem`](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_BatchWriteItem.html) operation. To expose this functionality within Dyngoose, there is the `Dyngoose.BatchWrite` class.
+DynamoDB supports batch write operations which are not fully atomic via the [`BatchWriteItem`](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_BatchWriteItem.html) method. To expose this functionality within Dyngoose, there is the `Dyngoose.BatchWrite` class.
 
-## Example
+### Example
 
 ```typescript
 const batch = new Dyngoose.BatchWrite()
@@ -59,4 +59,36 @@ batch.delete(User.primaryKey.fromKey(…))
 
 // commit the batch write operation
 await batch.commit()
+```
+
+## BatchGetItem
+
+DynamoDB supports batch get operations via the [`BatchWriteItem`](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_BatchGetItem.html) method. This operation allows you to retrieve records from one or more tables. To expose this functionality within Dyngoose, there is the `Dyngoose.BatchGet` class.
+
+### Example
+
+```typescript
+const batch = new Dyngoose.BatchGet()
+
+const user = User.primaryKey.fromKey(…)
+const product = Product.primaryKey.fromKey(…)
+const order = Order.primaryKey.fromKey(…)
+
+// save new items
+batch.get(
+  user,
+  product,
+  order,
+)
+
+// retrieve all the records
+const items = await batch.retrieve()
+
+// items is an array, which will be in order:
+console.log(items[0] instanceof User) // true
+console.log(items[1] instanceof Product) // true
+console.log(items[1] instanceof Order) // true
+
+// the batch get operation also mutates the original object
+console.log(user.toJSON()) // will contain data
 ```
