@@ -1,3 +1,10 @@
+## [2.7.1](https://github.com/benhutchins/dyngoose/compare/v2.7.0...v2.7.1) (2020-11-04)
+
+
+### Bug Fixes
+
+* projections were failing when no reserved words were used ([20cbe7b](https://github.com/benhutchins/dyngoose/commit/20cbe7b0576decb59fbe50e1ee05c6672ab6ad28))
+
 # [2.7.0](https://github.com/benhutchins/dyngoose/compare/v2.6.0...v2.7.0) (2020-11-03)
 
 
