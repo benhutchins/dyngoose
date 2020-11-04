@@ -3,7 +3,7 @@ import { ITable, Table } from '../table'
 
 interface IProjectionExpression {
   ProjectionExpression: DynamoDB.ProjectionExpression
-  ExpressionAttributeNames: DynamoDB.ExpressionAttributeNameMap
+  ExpressionAttributeNames?: DynamoDB.ExpressionAttributeNameMap
 }
 
 /**
@@ -605,6 +605,6 @@ export function buildProjectionExpression(tableClass: typeof Table | ITable<any>
 
   return {
     ProjectionExpression: projection.join(','),
-    ExpressionAttributeNames: map,
+    ExpressionAttributeNames: Object.keys(map).length > 0 ? map : undefined,
   }
 }

@@ -95,6 +95,20 @@ describe('BatchGet', () => {
   it('should accept projection expressions', async () => {
     const batch = new BatchGet<TestTable1 | TestTable2>()
     const item = TestTable1.primaryKey.fromKey(1)
+    batch.getSpecificAttributes(TestTable1, 'id')
+    batch.get(item)
+
+    // execute the retrieval
+    const results = await batch.retrieve()
+
+    expect(results.length).eq(1)
+    expect(results[0].status).eq(null)
+    expect(item.status).to.eq(null)
+  })
+
+  it('should accept projection expressions with reserved keywords', async () => {
+    const batch = new BatchGet<TestTable1 | TestTable2>()
+    const item = TestTable1.primaryKey.fromKey(1)
     batch.getSpecificAttributes(TestTable1, 'id', 'status')
     batch.get(item)
 
