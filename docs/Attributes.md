@@ -26,7 +26,7 @@ The standard format is recommended for constituency, as providing an interface t
 
 #### Set Attributes
 
-There are several types of Set attributes, `StringSet`, `NumberSet`, and `BinarySet`. These allow you to store arrays in an optimized format within DynamoDB, allowing you to person `includes` and `excludes` [query conditions](Querying.md#query-conditions).
+There are several types of Set attributes, `StringSet`, `NumberSet`, and `BinarySet`. These allow you to store arrays in an optimized format within DynamoDB, allowing you to utilize `includes`, `excludes`, `contains`, `not contains`, [query conditions](Querying.md#query-conditions).
 
 ### Dyngoose Attribute Types
 

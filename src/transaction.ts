@@ -20,7 +20,11 @@ export class Transaction {
    * target the same item.
    *
    * To perform a non-atomic operation, use `Dyngoose.Batch`.
-
+   *
+   * **WARNING** Dyngoose will internally chunk your requested write items if you attempt to write more than
+   *   the DynamoDB limit of 25 items per transactions, however, when doing so Dyngoose cannot guarantee this
+   *   operation will be entirely atomic and you should avoid specifying more than 25 items.
+   *
    * @param {DynamoDB} connection You can optionally specify the DynamoDB connection to utilize.
    * @see {@link https://github.com/benhutchins/dyngoose/blob/master/docs/Connections.md}.
    */
@@ -33,6 +37,13 @@ export class Transaction {
     return this
   }
 
+  /**
+   * Add a record to be saved to this transaction.
+   *
+   * If the record already exists, Dyngoose will automatically use `.update()` to only
+   * transmit the updated values of the record. It is highly recommended you specify
+   * update conditions when updating existing items.
+  */
   public save<T extends Table>(record: T, conditions?: UpdateConditions<T>): this {
     if (record.getSaveOperation() === 'put') {
       return this.put(record, conditions)

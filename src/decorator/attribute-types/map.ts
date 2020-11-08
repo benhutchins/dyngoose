@@ -10,7 +10,7 @@ import { AttributeType } from '../../tables/attribute-type'
 
 export class MapAttributeType<Value> extends AttributeType<Value, MapAttributeMetadata<Value>>
   implements IAttributeType<Value> {
-  type = DynamoAttributeType.String
+  type = DynamoAttributeType.Map
   attributes: { [key: string]: Attribute<any> }
 
   constructor(record: Table, propertyName: string, protected metadata: MapAttributeMetadata<Value>) {
@@ -60,7 +60,7 @@ export class MapAttributeType<Value> extends AttributeType<Value, MapAttributeMe
   }
 
   fromDynamo(attributeValue: DynamoDB.AttributeValue): Value {
-    const mapValue = attributeValue.M as DynamoDB.MapAttributeValue
+    const mapValue: DynamoDB.MapAttributeValue = attributeValue.M == null ? {} : attributeValue.M
     const map: any = mapValue
 
     for (const attributeName of Object.keys(mapValue)) {

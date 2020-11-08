@@ -26,14 +26,17 @@ await User.documentClient.batchPut([
 
 If you want to perform an `UpdateItem` operation without having to load the existing record first (extremely useful when operating large or batch operations).
 
-### Table.fromKey
+### Table.primaryKey.fromKey(…)
 
-The `Table.fromKey` lets you create an instance of a `Table` without loading the record. For example:
+The `Table.primaryKey.fromKey` method lets you create an instance of a `Table` without loading the record.
+There can be many situations where this can be helpful. It allows you to perform partial updates of records
+or delete a record easily without loading it. For example:
 
 ```typescript
 @Dyngoose.$Table()
 class User extends Dyngoose.Table {
-  primaryKey: Dyngoose.Query.PrimaryKey<User>
+  @Dyngoose.$PrimaryKey('id')
+  primaryKey: Dyngoose.Query.PrimaryKey<User, string, void>
 
   @Dyngoose.Attribute.Number()
   id: number
@@ -42,14 +45,19 @@ class User extends Dyngoose.Table {
   name: string
 }
 
-const user = User.fromKey({ id: 1 })
-user.name = 'test'
-await user.save()
+// fromKey accepts filters, which must contain the hash key property and range key property (if the table has a range key)
+const user1 = User.primaryKey.fromKey({ id: 1 })
+user1.name = 'test'
+await user1.save()
+
+// you can also pass the hash key value and the range key value as arguments directly to fromKey
+const user2 = User.primaryKey.fromKey(1)
+await user2.delete()
 ```
 
 ### Dyngoose.Query.PrimaryKey.update
 
-The `.primaryKey.update` method also works, although it internally uses the `Table.fromKey()` method and then calls a `record.fromJSON(…)` passing in your `changes`. The `changes` object is strongly typed.
+The `.primaryKey.update` method also works, although it internally uses the `Table.primaryKey.fromKey()` method and then calls a `record.fromJSON(…)` passing in your `changes`. The `changes` object is strongly typed.
 
 ```
 await User.primaryKey.update({

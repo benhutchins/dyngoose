@@ -1,5 +1,10 @@
 import { Table } from '../table'
 
-export function isDyngooseTable(obj: any): boolean {
-  return obj.prototype instanceof Table || (obj?.schema?.isDyngoose)
+export function isDyngooseTableInstance(obj: any): obj is Table {
+  return obj instanceof Table || isDyngooseTableClass(obj.constructor)
+}
+
+export function isDyngooseTableClass(obj: any): obj is typeof Table {
+  const comp: boolean = obj.prototype instanceof Table || (obj?.schema?.isDyngoose)
+  return comp
 }

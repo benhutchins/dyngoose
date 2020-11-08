@@ -3,7 +3,7 @@ import { readdirSync } from 'fs'
 import * as _ from 'lodash'
 import { join } from 'path'
 import { Table } from '../table'
-import { isDyngooseTable } from './is'
+import { isDyngooseTableClass } from './is'
 
 export interface MigrateTablesInput {
   tablesDirectory: string
@@ -33,7 +33,7 @@ export default async function migrateTables(input: MigrateTablesInput): Promise<
       const tableFileExports = require(tableFile)
 
       for (const exportedProperty of _.values(tableFileExports)) {
-        if (isDyngooseTable(exportedProperty)) {
+        if (isDyngooseTableClass(exportedProperty)) {
           tables.push(exportedProperty)
         }
       }

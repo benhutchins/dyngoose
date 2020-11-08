@@ -63,7 +63,7 @@ await batch.commit()
 
 ## BatchGetItem
 
-DynamoDB supports batch get operations via the [`BatchWriteItem`](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_BatchGetItem.html) method. This operation allows you to retrieve records from one or more tables. To expose this functionality within Dyngoose, there is the `Dyngoose.BatchGet` class.
+DynamoDB supports batch get operations via the [`BatchGetItem`](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_BatchGetItem.html) method. This operation allows you to retrieve records from one or more tables. To expose this functionality within Dyngoose, there is the `Dyngoose.BatchGet` class.
 
 ### Example
 

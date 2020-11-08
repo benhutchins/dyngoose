@@ -8,15 +8,6 @@ import { isTrulyEmpty } from './utils/truly-empty'
 export class Attribute<Value> {
   public name: string
 
-  // private get isSet(): boolean {
-  //   return _.intersection(this.dynamoTypes, [
-  //     AttributeType.BooleanSet,
-  //     AttributeType.NumberSet,
-  //     AttributeType.StringSet,
-  //     AttributeType.List,
-  //   ]).length > 0
-  // }
-
   constructor(
     public readonly propertyName: string,
     public readonly type: IAttributeType<Value>,

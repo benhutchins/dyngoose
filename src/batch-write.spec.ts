@@ -1,5 +1,4 @@
 import { expect } from 'chai'
-import { sortBy } from 'lodash'
 import { BatchWrite } from './batch-write'
 import { PrimaryKey } from './query/primary-key'
 import { Table } from './table'
@@ -9,6 +8,7 @@ import {
   PrimaryKey as PrimaryKeyDecorator,
   Table as TableDecorator,
 } from './decorator'
+import { BatchError } from './errors'
 
 describe('BatchWrite', () => {
   @TableDecorator({ name: 'BatchWriteTestCardTable' })
@@ -46,8 +46,10 @@ describe('BatchWrite', () => {
   it('should operate a successful batch operation', async () => {
     const batch = new BatchWrite()
 
-    // add a new record
-    batch.put(Card.new({ id: 42, title: 'new record', count: 1 }))
+    // add a bunch of records, above the limit for DynamoDB
+    for (let i = 0; i < 250; i++) {
+      batch.put(Card.new({ id: 42, title: `new record ${i}`, count: i }))
+    }
 
     // delete a few records
     batch.delete(Card.primaryKey.fromKey(10, 'b'))
@@ -60,11 +62,31 @@ describe('BatchWrite', () => {
     await batch.commit()
 
     // now verify the results
-    const results = await Card.primaryKey.scan()
-    const records = sortBy(results, 'id')
+    const results1 = await Card.primaryKey.query({ id: 42 }, { select: 'COUNT' })
+    expect(results1.count).eq(250)
 
-    expect(results.count).eq(2)
-    expect(records[0].id).eq(10)
-    expect(records[1].id).eq(42)
+    const results2 = await Card.primaryKey.query({ id: 10 })
+    expect(results2.count).eq(1)
+    expect(results2[0].id).eq(10)
+    expect(results2[0].title).eq('a')
+  })
+
+  it('should fail with a BatchError', async () => {
+    const batch = new BatchWrite()
+
+    // this will fail because we're using the same hash and range key value, which must be unique in DynamoDB
+    // however, one of the documents will be written because BatchWrite is not atomic
+    batch.put(Card.new({ id: 1, title: 'same', count: 1 }))
+    batch.put(Card.new({ id: 1, title: 'same', count: 2 }))
+
+    let exception: BatchError | undefined
+
+    try {
+      await batch.commit()
+    } catch (ex) {
+      exception = ex
+    }
+
+    expect(exception).to.be.instanceOf(BatchError)
   })
 })

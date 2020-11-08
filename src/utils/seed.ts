@@ -4,7 +4,7 @@ import * as _ from 'lodash'
 import { join } from 'path'
 import { PrimaryKey } from '../query'
 import { Table } from '../table'
-import { isDyngooseTable } from './is'
+import { isDyngooseTableClass } from './is'
 import { MigrateTablesInput } from './migrate'
 
 export interface SeedTablesInput extends MigrateTablesInput {
@@ -54,8 +54,8 @@ export default async function seedTables(input: SeedTablesInput): Promise<void> 
       let hasSeeded = false
 
       for (const ExportedProperty of _.values(tableFileExports)) {
-        if (isDyngooseTable(ExportedProperty)) {
-          const ExportedTable = ExportedProperty as typeof Table
+        if (isDyngooseTableClass(ExportedProperty)) {
+          const ExportedTable = ExportedProperty
           ExportedTable.schema.options.name = `${prefix}${ExportedTable.schema.name}${suffix}`
 
           for (const data of records) {
