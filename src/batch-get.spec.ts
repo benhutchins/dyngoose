@@ -92,11 +92,55 @@ describe('BatchGet', () => {
     expect(item.status).to.eq('a')
   })
 
+  it('should operate a successful atomic batch operation', async () => {
+    const batch = new BatchGet<TestTable1 | TestTable2>().atomic()
+    const item = TestTable1.primaryKey.fromKey(1)
+
+    batch.get(item)
+    batch.get(TestTable1.primaryKey.fromKey(2))
+    batch.get(TestTable2.primaryKey.fromKey(3))
+    batch.get(TestTable2.primaryKey.fromKey(4))
+
+    expect(item.status).to.eq(null)
+
+    // execute the retrieval
+    const results = await batch.retrieve()
+
+    // now verify the results
+    const records = sortBy(results, 'id')
+
+    expect(results.length).eq(4)
+    expect(records[0].id).eq(1)
+    expect(records[0]).to.be.instanceOf(TestTable1)
+    expect(records[1].id).eq(2)
+    expect(records[1]).to.be.instanceOf(TestTable1)
+    expect(records[2].id).eq(3)
+    expect(records[2]).to.be.instanceOf(TestTable2)
+    expect(records[3].id).eq(4)
+    expect(records[3]).to.be.instanceOf(TestTable2)
+
+    // verify the original items are mutated
+    expect(item.status).to.eq('a')
+  })
+
   it('should return an empty array when nothing matches', async () => {
     const batch = new BatchGet<TestTable1 | TestTable2>()
     batch.get(TestTable1.primaryKey.fromKey(420))
     const results = await batch.retrieve()
     expect(results.length).eq(0)
+  })
+
+  it('should not return records that were missing', async () => {
+    const batch = new BatchGet<TestTable1>()
+    batch.get(TestTable1.primaryKey.fromKey(1))
+    batch.get(TestTable1.primaryKey.fromKey(42))
+
+    // execute the retrieval
+    const results = await batch.retrieve()
+
+    // now verify the results
+    expect(results.length).eq(1)
+    expect(results[0].id).eq(1)
   })
 
   it('should accept projection expressions', async () => {

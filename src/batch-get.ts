@@ -1,15 +1,17 @@
-import { flatten, filter, isEqual, chunk } from 'lodash'
+import { flatten, filter, isArray, isEqual, chunk } from 'lodash'
 import { DynamoDB } from 'aws-sdk'
 import Config from './config'
 import { Table } from './table'
 import { buildProjectionExpression } from './query/projection-expression'
 
 export class BatchGet<T extends Table> {
-  public static readonly MAX_ITEMS = 100
+  public static readonly MAX_BATCH_ITEMS = 100
+  public static readonly MAX_TRANSACT_ITEMS = 25
 
   private dynamo: DynamoDB
   private readonly items: T[] = []
   private readonly projectionMap: Map<typeof Table, string[]> = new Map()
+  private atomicity = false
 
   /**
    * Perform a BatchGet operation.
@@ -37,6 +39,16 @@ export class BatchGet<T extends Table> {
     return this
   }
 
+  public atomic(): this {
+    this.atomicity = true
+    return this
+  }
+
+  public nonAtomic(): this {
+    this.atomicity = false
+    return this
+  }
+
   public get(...records: T[]): this {
     this.items.push(...records)
     return this
@@ -56,51 +68,97 @@ export class BatchGet<T extends Table> {
   }
 
   public async retrieve(): Promise<T[]> {
+    const chunkSize = this.atomicity ? BatchGet.MAX_TRANSACT_ITEMS : BatchGet.MAX_BATCH_ITEMS
     return await Promise.all(
-      chunk(this.items, BatchGet.MAX_ITEMS).map(async (chunkedItems) => {
+      chunk(this.items, chunkSize).map(async (chunkedItems) => {
         const requestMap: DynamoDB.BatchGetRequestMap = {}
+        const transactItems: DynamoDB.TransactGetItemList = []
 
         for (const item of chunkedItems) {
           const tableClass = item.constructor as typeof Table
+          const attributes = this.projectionMap.get(tableClass)
+          const expression = attributes == null ? null : buildProjectionExpression(tableClass, attributes)
 
-          if (requestMap[tableClass.schema.name] == null) {
-            requestMap[tableClass.schema.name] = {
-              Keys: [],
+          if (this.atomicity) {
+            const transactItem: DynamoDB.Get = {
+              Key: item.getDynamoKey(),
+              TableName: tableClass.schema.name,
             }
 
-            if (this.projectionMap.has(tableClass)) {
-              const attributes = this.projectionMap.get(tableClass)
-              if (attributes != null) {
-                const expression = buildProjectionExpression(tableClass, attributes)
-                requestMap[tableClass.schema.name].ProjectionExpression = expression.ProjectionExpression
-                requestMap[tableClass.schema.name].ExpressionAttributeNames = expression.ExpressionAttributeNames
+            if (expression != null) {
+              transactItem.ProjectionExpression = expression.ProjectionExpression
+              transactItem.ExpressionAttributeNames = expression.ExpressionAttributeNames
+            }
+
+            transactItems.push({
+              Get: transactItem,
+            })
+          } else {
+            if (requestMap[tableClass.schema.name] == null) {
+              requestMap[tableClass.schema.name] = {
+                Keys: [],
               }
             }
-          }
 
-          requestMap[tableClass.schema.name].Keys.push(item.getDynamoKey())
+            requestMap[tableClass.schema.name].Keys.push(item.getDynamoKey())
+
+            if (expression != null) {
+              requestMap[tableClass.schema.name].ProjectionExpression = expression.ProjectionExpression
+              requestMap[tableClass.schema.name].ExpressionAttributeNames = expression.ExpressionAttributeNames
+            }
+          }
         }
 
-        const res = await this.dynamo.batchGetItem({
-          RequestItems: requestMap,
-        }).promise()
+        let output: DynamoDB.TransactGetItemsOutput | DynamoDB.BatchGetItemOutput
 
-        if (res.Responses == null) {
+        if (this.atomicity) {
+          output = await this.dynamo.transactGetItems({
+            TransactItems: transactItems,
+          }).promise()
+        } else {
+          output = await this.dynamo.batchGetItem({
+            RequestItems: requestMap,
+          }).promise()
+        }
+
+        const responses = output.Responses == null ? [] : output.Responses
+
+        if (responses.length === 0) {
           return []
         }
 
-        return chunkedItems.map((item) => {
+        const items = chunkedItems.map((item) => {
           const tableClass = item.constructor as typeof Table
-          const records = res.Responses == null ? [] : res.Responses[tableClass.schema.name]
           const key = item.getDynamoKey()
-          const attributeMap = records.find((record) => {
-            for (const keyName of Object.keys(key)) {
-              if (!isEqual(record[keyName], key[keyName])) {
+          let attributeMap: DynamoDB.AttributeMap | undefined
+          if (isArray(responses)) {
+            const itemResponse = responses.find((record) => {
+              if (record.Item == null) {
                 return false
               }
+
+              for (const keyName of Object.keys(key)) {
+                if (!isEqual(record.Item[keyName], key[keyName])) {
+                  return false
+                }
+              }
+              return true
+            })
+
+            if (itemResponse?.Item != null) {
+              attributeMap = itemResponse?.Item
             }
-            return true
-          })
+          } else {
+            const records = responses[tableClass.schema.name]
+            attributeMap = records.find((record) => {
+              for (const keyName of Object.keys(key)) {
+                if (!isEqual(record[keyName], key[keyName])) {
+                  return false
+                }
+              }
+              return true
+            })
+          }
 
           if (attributeMap == null) {
             return null
@@ -109,6 +167,8 @@ export class BatchGet<T extends Table> {
             return item
           }
         })
+
+        return filter(items) as T[]
       }),
     ).then((chunks) => {
       return filter(flatten(chunks))

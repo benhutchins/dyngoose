@@ -1,10 +1,10 @@
 import { DynamoDB } from 'aws-sdk'
 import { get, has, isArray, isObject } from 'lodash'
+import { BatchGet } from '../batch-get'
 import { QueryError } from '../errors'
 import * as Metadata from '../metadata'
 import { ITable, Table } from '../table'
 import { TableProperties } from '../tables/properties'
-import { batchGet } from './batch-get'
 import { isDyngooseTableInstance } from '../utils/is'
 import { batchWrite } from './batch-write'
 import { buildQueryExpression } from './expression'
@@ -106,28 +106,22 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     }
   }
 
+  /**
+   * Get a batch of items from this table
+   *
+   * This has been replaced with `Dyngoose.BatchGet` and should no longer be used.
+   * `Dyngoose.BatchGet` has more functionality, supports projects and optionally atomic operations.
+   *
+   * @deprecated
+   */
   public async batchGet(inputs: Array<PrimaryKeyBatchInput<HashKeyType, RangeKeyType>>): Promise<T[]> {
-    const res = await batchGet(
-      this.table.schema.dynamo,
-      this.table.schema.name,
-      inputs.map((input) => {
-        const key: DynamoDB.Key = {
-          [this.metadata.hash.name]: this.metadata.hash.toDynamoAssert(input[0]),
-        }
+    const batch = new BatchGet<T>()
 
-        if (this.metadata.range != null) {
-          key[this.metadata.range.name] = this.metadata.range.toDynamoAssert(input[1])
-        }
+    for (const input of inputs) {
+      batch.get(this.fromKey(input[0], input[1]))
+    }
 
-        return key
-      }),
-    )
-
-    const records = res.map((item) => {
-      return this.table.fromDynamo(item)
-    })
-
-    return records
+    return await batch.retrieve()
   }
 
   public async batchDelete(inputs: Array<PrimaryKeyBatchInput<HashKeyType, RangeKeyType>>): Promise<DynamoDB.BatchWriteItemOutput> {

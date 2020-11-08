@@ -54,7 +54,7 @@ describe('Table', () => {
     // Wait 15 seconds
     await new Promise((resolve) => setTimeout(resolve, 15000))
 
-    const reloaded = await TestableTable.primaryKey.getItem({ hash: 10, range: '100', consistent: true })
+    const reloaded = await TestableTable.primaryKey.get(10, '100', { consistent: true })
     expect(reloaded).to.eq(undefined)
   })
 
@@ -88,7 +88,7 @@ describe('Table', () => {
         // confirm you are adding a new record and not unintentionally updating an existing one
         await record.save({ id: ['not exists'] })
 
-        const reloaded = await TestableTable.primaryKey.getItem({ hash: 22, range: 'bar', consistent: true })
+        const reloaded = await TestableTable.primaryKey.get({ id: 22, title: 'bar' }, { consistent: true })
         expect(reloaded).to.be.instanceOf(TestableTable)
       })
     })
@@ -125,7 +125,7 @@ describe('Table', () => {
 
         await record.delete({ id: 24 })
 
-        const reloaded = await TestableTable.primaryKey.getItem({ hash: 24, range: 'bar', consistent: true })
+        const reloaded = await TestableTable.primaryKey.get(record, { consistent: true })
         expect(reloaded).not.to.be.instanceOf(TestableTable)
       })
     })
