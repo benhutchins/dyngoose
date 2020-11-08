@@ -1,10 +1,11 @@
 import { DynamoDB } from 'aws-sdk'
-import { get, has, isArray } from 'lodash'
+import { get, has, isArray, isObject } from 'lodash'
 import { QueryError } from '../errors'
 import * as Metadata from '../metadata'
 import { ITable, Table } from '../table'
 import { TableProperties } from '../tables/properties'
 import { batchGet } from './batch-get'
+import { isDyngooseTableInstance } from '../utils/is'
 import { batchWrite } from './batch-write'
 import { buildQueryExpression } from './expression'
 import { Filters as QueryFilters, UpdateConditions } from './filters'
@@ -16,12 +17,14 @@ type RangePrimaryKeyType = PrimaryKeyType | void
 
 type PrimaryKeyBatchInput<HashKeyType extends PrimaryKeyType, RangeKeyType extends RangePrimaryKeyType> = [HashKeyType, RangeKeyType]
 
-interface PrimaryKeyGetInput<HashKeyType extends PrimaryKeyType, RangeKeyType extends RangePrimaryKeyType> {
-  hash: HashKeyType
-  range: RangeKeyType
+interface PrimaryKeyGetInput {
   projectionExpression?: DynamoDB.ProjectionExpression
   consistent?: DynamoDB.ConsistentRead
   returnConsumedCapacity?: DynamoDB.ReturnConsumedCapacity
+}
+
+interface PrimaryKeyGetGetItemInput extends PrimaryKeyGetInput {
+  key: DynamoDB.Key
 }
 
 interface PrimaryKeyQueryInput {
@@ -29,6 +32,7 @@ interface PrimaryKeyQueryInput {
   limit?: number
   exclusiveStartKey?: DynamoDB.Key
   consistent?: boolean
+  select?: 'COUNT'
 }
 
 interface PrimaryKeyUpdateItem<T extends Table, HashKeyType extends PrimaryKeyType, RangeKeyType extends RangePrimaryKeyType> {
@@ -65,34 +69,37 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     return await this.table.schema.dynamo.deleteItem(input).promise()
   }
 
-  public getGetItemInput(input: PrimaryKeyGetInput<HashKeyType, RangeKeyType>): DynamoDB.GetItemInput {
+  public getGetInput(input: PrimaryKeyGetGetItemInput): DynamoDB.GetItemInput {
     const getItemInput: DynamoDB.GetItemInput = {
       TableName: this.table.schema.name,
-      Key: {
-        [this.metadata.hash.name]: this.metadata.hash.toDynamoAssert(input.hash),
-      },
+      Key: input.key,
       ProjectionExpression: input.projectionExpression,
       ConsistentRead: input.consistent,
       ReturnConsumedCapacity: input.returnConsumedCapacity,
     }
 
-    if (this.metadata.range != null && input.range != null) {
-      getItemInput.Key[this.metadata.range.name] = this.metadata.range.toDynamoAssert(input.range)
-    }
-
     return getItemInput
   }
 
-  public async get(hash: HashKeyType, range: RangeKeyType): Promise<T | undefined> {
-    const getItemInput = this.getGetItemInput({ hash, range })
-    const dynamoRecord = await this.table.schema.dynamo.getItem(getItemInput).promise()
-    if (dynamoRecord.Item != null) {
-      return this.table.fromDynamo(dynamoRecord.Item)
-    }
-  }
+  public async get(filters: QueryFilters<T>, input?: PrimaryKeyGetInput): Promise<T | undefined>
+  public async get(hash: HashKeyType, range: RangeKeyType, input?: PrimaryKeyGetInput): Promise<T | undefined>
+  public async get(record: T, input?: PrimaryKeyGetInput): Promise<T | undefined>
+  public async get(hash: HashKeyType | T | QueryFilters<T>, range?: RangeKeyType | PrimaryKeyGetInput, input?: PrimaryKeyGetInput): Promise<T | undefined> {
+    let record: T
 
-  public async getItem(input: PrimaryKeyGetInput<HashKeyType, RangeKeyType>): Promise<T | undefined> {
-    const getItemInput = this.getGetItemInput(input)
+    if (isDyngooseTableInstance(hash)) {
+      record = hash
+    } else if (isObject(hash)) {
+      record = this.fromKey(hash)
+    } else if (hash != null && !isObject(range)) {
+      record = this.fromKey(hash, range as RangeKeyType)
+    } else {
+      throw new QueryError('PrimaryKey.get called with unknown arguments')
+    }
+
+    const getGetInput: Partial<PrimaryKeyGetGetItemInput> = isObject(range) ? range : {}
+    getGetInput.key = record.getDynamoKey()
+    const getItemInput = this.getGetInput(getGetInput as PrimaryKeyGetGetItemInput)
     const dynamoRecord = await this.table.schema.dynamo.getItem(getItemInput).promise()
     if (dynamoRecord.Item != null) {
       return this.table.fromDynamo(dynamoRecord.Item)
@@ -162,6 +169,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
       ExclusiveStartKey: input.exclusiveStartKey,
       ReturnConsumedCapacity: 'TOTAL',
       ConsistentRead: input.consistent,
+      Select: input.select,
     }
 
     return queryInput
@@ -212,7 +220,47 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
    *
    * This can lead to race conditions if not used properly. Try to use with save conditions.
    */
-  public fromKey(hash: HashKeyType, range: RangeKeyType): T {
+  public fromKey(filters: QueryFilters<T>): T
+  public fromKey(hash: HashKeyType, range: RangeKeyType): T
+  public fromKey(hash: QueryFilters<T> | HashKeyType, range?: RangeKeyType): T {
+    // if the hash was passed a query filters, then extract the hash and range
+    if (isObject(hash)) {
+      const filters = hash
+      if (!has(filters, this.metadata.hash.propertyName)) {
+        throw new QueryError('Cannot perform .get() on a PrimaryKey without specifying a hash key value')
+      } else if (this.metadata.range != null && !has(filters, this.metadata.range.propertyName)) {
+        throw new QueryError('Cannot perform .get() on a PrimaryKey with a range key without specifying a range value')
+      } else if (Object.keys(filters).length > 2) {
+        throw new QueryError('Cannot perform a .get() on a PrimaryKey with additional filters, use .query() instead')
+      }
+
+      hash = get(filters, this.metadata.hash.propertyName)
+
+      if (isArray(hash)) {
+        if (hash[0] === '=') {
+          hash = hash[1]
+        } else {
+          throw new QueryError('DynamoDB only supports using equal operator for the HASH key')
+        }
+      }
+
+      if (this.metadata.range != null) {
+        range = get(filters, this.metadata.range.propertyName)
+
+        if (isArray(hash)) {
+          if (hash[0] === '=') {
+            hash = hash[1]
+          } else {
+            throw new QueryError('DynamoDB only supports using equal operator for the RANGE key on GetItem operations')
+          }
+        }
+      }
+    }
+
+    if (this.metadata.range != null && range == null) {
+      throw new QueryError('Cannot use primaryKey.get without a range key value')
+    }
+
     const keyMap: DynamoDB.AttributeMap = {
       [this.metadata.hash.name]: this.metadata.hash.toDynamoAssert(hash),
     }

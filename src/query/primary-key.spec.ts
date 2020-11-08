@@ -46,12 +46,25 @@ describe('Query/PrimaryKey', () => {
   })
 
   describe('#get', () => {
-    it('should find item', async () => {
-      const item = await primaryKey.get(10, 'abc')
+    it('should find nothing when nothing exists', async () => {
+      let item = await primaryKey.get({ id: 10, title: 'abc' })
+      expect(item).to.eq(undefined)
+
+      item = await primaryKey.get(10, 'abc')
       expect(item).to.eq(undefined)
     })
 
-    it('should find item', async () => {
+    it('should find item using a query filter object', async () => {
+      await Card.new({ id: 10, title: 'abc' }).save()
+      const item = await primaryKey.get({ id: 10, title: 'abc' })
+      expect(item).to.be.instanceof(Card)
+      if (item != null) {
+        expect(item.id).to.eq(10)
+        expect(item.title).to.eq('abc')
+      }
+    })
+
+    it('should find item using hash and range arguments', async () => {
       await Card.new({ id: 10, title: 'abc' }).save()
       const item = await primaryKey.get(10, 'abc')
       expect(item).to.be.instanceof(Card)

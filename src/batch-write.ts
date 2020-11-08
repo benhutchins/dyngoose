@@ -23,7 +23,8 @@ export class BatchWrite {
    * however, the whole batch operation is not atomic. This means that some puts and deletes can
    * be successful and others can fail.
    *
-   * To perform an atomic operation, use `Dyngoose.Transaction`.
+   * To perform an atomic operation, use `Dyngoose.Transaction`. Additioanlyl, BatchWrites cannot
+   * update partial items, however, TransactWrites can.
    *
    * Uses a semaphore to limit parallel writes.
    *
@@ -44,7 +45,7 @@ export class BatchWrite {
     /**
      * Stop future chunks and parallel writes if an exception is encountered.
      * Outputs that contain UnprocessedItems, such as due to provisioned throughout exceptions.
-     * True by default.
+     * True by default. Set to false to disable.
     */
     breakOnException?: boolean
   } = {}) {
@@ -108,7 +109,7 @@ export class BatchWrite {
       await limit()
 
       // If previous batches have already had an exception, then stop and do not continue
-      if (exceptions.length > 0 && this.options.breakOnException === true) {
+      if (exceptions.length > 0 && this.options.breakOnException !== false) {
         return
       }
 
