@@ -327,7 +327,7 @@ export class Table {
    *
    * Unlike {@link this.get}, this excepts the attribute name, not the property name.
    */
-  public getAttribute(attributeName: string): DynamoDB.AttributeValue {
+  public getAttribute(attributeName: string): any {
     const attribute = this.table.schema.getAttributeByName(attributeName)
     return this.getByAttribute(attribute)
   }
