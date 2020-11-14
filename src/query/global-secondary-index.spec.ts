@@ -90,6 +90,21 @@ describe('Query/GlobalSecondaryIndex', () => {
         expect(res.records[1].id).to.eq(11)
       })
 
+      it('should return an empty array when no items match', async () => {
+        const res = await Card.hashTitleIndex.query({ title: '404' })
+        expect(res.records.length).to.eq(0)
+        expect(res.length).to.eq(0)
+        expect(res.count).to.eq(0)
+
+        for (const card of res.records) {
+          expect(card).to.eq('does not exist')
+        }
+
+        for (const card of res) {
+          expect(card).to.eq('does not exist')
+        }
+      })
+
       it('should complain when HASH key is not provided', async () => {
         await Card.hashTitleIndex.query({ id: 10 }).then(
           () => {

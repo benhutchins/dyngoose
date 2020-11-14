@@ -92,6 +92,13 @@ describe('BatchGet', () => {
     expect(item.status).to.eq('a')
   })
 
+  it('should return an empty array when nothing matches', async () => {
+    const batch = new BatchGet<TestTable1 | TestTable2>()
+    batch.get(TestTable1.primaryKey.fromKey(420))
+    const results = await batch.retrieve()
+    expect(results.length).eq(0)
+  })
+
   it('should accept projection expressions', async () => {
     const batch = new BatchGet<TestTable1 | TestTable2>()
     const item = TestTable1.primaryKey.fromKey(1)

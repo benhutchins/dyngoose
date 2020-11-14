@@ -102,16 +102,17 @@ export class BatchGet<T extends Table> {
             return true
           })
 
-          if (attributeMap != null) {
+          if (attributeMap == null) {
+            return null
+          } else {
             item.fromDynamo(attributeMap)
+            return item
           }
-
-          return item
         })
       }),
     ).then((chunks) => {
       return filter(flatten(chunks))
-    })
+    }) as T[]
   }
 
   public async retrieveMapped(): Promise<Map<typeof Table, T[]>> {

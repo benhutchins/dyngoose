@@ -115,6 +115,16 @@ describe('Query/PrimaryKey', () => {
       expect(res.records[0].title).to.eq('abd')
       expect(res.records[1].title).to.eq('abc')
     })
+
+    it('should return an empty array when no results match', async () => {
+      const res = await primaryKey.query({
+        id: 420,
+      })
+
+      expect(res.length).to.eq(0)
+      expect(res.count).to.eq(0)
+      expect(res.records.length).to.eq(0)
+    })
   })
 
   describe('#scan', () => {
