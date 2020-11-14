@@ -3,14 +3,15 @@ import { TestableTable } from '../../setup-tests.spec'
 
 describe('AttributeType/Date', () => {
   let record: TestableTable
+  let now: Date
 
   beforeEach(() => {
-    record = new TestableTable()
+    now = new Date()
+    record = TestableTable.new()
   })
 
   describe(':nowOnCreate', () => {
     it('should set date to now when creating a record', async () => {
-      const now = new Date()
       record.id = 40
       record.title = 'date nowOnCreate test'
       await record.save()
@@ -26,7 +27,6 @@ describe('AttributeType/Date', () => {
 
   describe(':nowOnUpdate', () => {
     it('should set date to now when updating a record', async () => {
-      const start = new Date()
       record.id = 41
       record.title = 'date nowOnUpdate test'
       await record.save()
@@ -36,9 +36,9 @@ describe('AttributeType/Date', () => {
       // wait 2 seconds
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
-      const now = new Date()
-      expect(record.updatedAt).to.be.within(start, now)
-      expect(record.updatedAt).to.be.below(now)
+      const later = new Date()
+      expect(record.updatedAt).to.be.within(now, later)
+      expect(record.updatedAt).to.be.below(later)
 
       // wait 2 seconds
       await new Promise((resolve) => setTimeout(resolve, 2000))
@@ -47,8 +47,8 @@ describe('AttributeType/Date', () => {
       await record.forceSave() // using force save so it saves, ignoring the fact there are no changes
 
       expect(record.updatedAt).to.be.a('date')
-      expect(record.updatedAt).to.be.at.least(now)
-      expect(record.updatedAt).to.be.at.within(now, new Date())
+      expect(record.updatedAt).to.be.at.least(later)
+      expect(record.updatedAt).to.be.at.within(later, new Date())
 
       expect(record.getAttributeDynamoValue('createdAt')).to.deep.eq({
         S: record.createdAt.toISOString(),

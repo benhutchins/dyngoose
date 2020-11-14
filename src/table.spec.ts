@@ -130,4 +130,34 @@ describe('Table', () => {
       })
     })
   })
+
+  it('should apply default values', () => {
+    const record = TestableTable.new()
+    expect(record.id).to.eq(1)
+    expect(record.defaultedString).to.eq('SomeDefault')
+    expect(record.testNumberSetWithDefaults).to.deep.eq([42, 420])
+  })
+
+  it('should not apply defaults when the record is loaded from DynamoDB', () => {
+    const record = TestableTable.fromDynamo({})
+    expect(record.id).to.eq(null)
+  })
+
+  describe('#toJSON', () => {
+    it('should export to an object', () => {
+      const record = TestableTable.new()
+      expect(record.toJSON()).to.deep.eq({
+        id: 1,
+        defaultedString: 'SomeDefault',
+        testNumberSetWithDefaults: [42, 420],
+        createdAt: record.createdAt.toISOString(),
+        updatedAt: record.updatedAt.toISOString(),
+      })
+    })
+
+    it('should not apply defaults when the record is loaded from DynamoDB', () => {
+      const record = TestableTable.fromDynamo({})
+      expect(record.toJSON()).to.deep.eq({})
+    })
+  })
 })

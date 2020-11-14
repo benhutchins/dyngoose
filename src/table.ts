@@ -52,8 +52,12 @@ export class Table {
    *
    * This method is strongly typed and it is recommended you use over `new Table(…)`
    */
-  public static new<T extends Table>(this: StaticThis<T>, values: TableProperties<T>): T {
-    return new this().setValues(values)
+  public static new<T extends Table>(this: StaticThis<T>, values?: TableProperties<T>): T {
+    const record = new this().applyDefaults()
+    if (values != null) {
+      record.setValues(values)
+    }
+    return record
   }
 
   /**
@@ -162,6 +166,22 @@ export class Table {
   }
 
   // #region public methods
+  /**
+   * Apply any default values for attributes.
+   */
+  public applyDefaults(): this {
+    const attributes = this.table.schema.getAttributes()
+
+    for (const [, attribute] of attributes) {
+      const defaultValue = attribute.getDefaultValue()
+      if (defaultValue != null) {
+        this.setByAttribute(attribute, defaultValue)
+      }
+    }
+
+    return this
+  }
+
   /**
    * Load values from an a DynamoDB.AttributeMap into this Table record.
    *

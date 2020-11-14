@@ -44,7 +44,7 @@ export class Attribute<Value> {
   toDynamo(value: Value | null): DynamoDB.AttributeValue | null {
     // if there is no value, inject the default value for this attribute
     if (value == null || isTrulyEmpty(value)) {
-      value = this.getDefaultValue()
+      return null
     }
 
     // if we have no value, allow the manipulateWrite a chance to provide a value

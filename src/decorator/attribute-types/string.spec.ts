@@ -5,7 +5,7 @@ describe('AttributeType/String', () => {
   let record: TestableTable
 
   beforeEach(() => {
-    record = new TestableTable()
+    record = TestableTable.new()
   })
 
   it('should store values as strings', () => {

@@ -88,7 +88,9 @@ describe('AttributeType/Map', () => {
 
     await record.save()
 
-    expect(record.getAttributeDynamoValue('person')).to.deep.eq({
+    const loaded = await MapTestTable.primaryKey.get(1)
+
+    expect(loaded?.getAttributeDynamoValue('person')).to.deep.eq({
       M: {
         first: { S: 'John' },
         middle: { S: 'Jacobs' },
@@ -97,14 +99,24 @@ describe('AttributeType/Map', () => {
       },
     })
 
-    expect(record.person.first).to.eq('John')
+    expect(loaded?.person.first).to.eq('John')
 
-    expect(record.getAttributeDynamoValue('person')).to.deep.eq({
+    expect(loaded?.getAttributeDynamoValue('person')).to.deep.eq({
       M: {
         first: { S: 'John' },
         middle: { S: 'Jacobs' },
         last: { S: 'Smith' },
         level: { N: '1' },
+      },
+    })
+
+    expect(loaded?.toJSON()).to.deep.eq({
+      id: 1,
+      person: {
+        first: 'John',
+        middle: 'Jacobs',
+        last: 'Smith',
+        level: 1,
       },
     })
   })
@@ -181,8 +193,22 @@ describe('AttributeType/Map', () => {
         },
       })
 
-      expect(record.contact.name.first).to.eq('homer')
-      expect(record.contact.name.last).to.eq('SIMPSON')
+      expect(loaded.contact.name.first).to.eq('homer')
+      expect(loaded.contact.name.last).to.eq('SIMPSON')
+      expect(loaded.toJSON()).to.deep.eq({
+        id: 3,
+        contact: {
+          name: {
+            first: 'homer',
+            last: 'SIMPSON',
+          },
+          address: {
+            line1: '742 Evergreen Terrace',
+            city: 'Springfield',
+            state: 'Simpcity',
+          },
+        },
+      })
     }
   })
 
