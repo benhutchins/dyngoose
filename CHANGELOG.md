@@ -1,3 +1,19 @@
+# [2.9.0](https://github.com/benhutchins/dyngoose/compare/v2.8.1...v2.9.0) (2020-11-14)
+
+
+### Bug Fixes
+
+* require the table name to be specified ([5651e1b](https://github.com/benhutchins/dyngoose/commit/5651e1bcea72fe9ed2bc4cdf671fc43360763911))
+
+
+### Features
+
+* allow strict property name pathing into maps ([9078ccb](https://github.com/benhutchins/dyngoose/commit/9078ccb4b73b8def1002dbed605443e800dc79f1))
+* atomic batch get operations ([590f268](https://github.com/benhutchins/dyngoose/commit/590f2682777467f62be95d1ae27736f98e400dc5))
+* primary key .get method accepts filters object ([d08618c](https://github.com/benhutchins/dyngoose/commit/d08618c5a7e0a99bbb3326a81d639bb0b6981c88))
+* semaphore batch writes ([ab42567](https://github.com/benhutchins/dyngoose/commit/ab425679ffca620db7a3969361e6075b211d5cfc))
+* use projection expression builder for MagicSearch ([132ca9b](https://github.com/benhutchins/dyngoose/commit/132ca9b4f09d723152e15b134e0ed3eb8a547152))
+
 ## [2.8.1](https://github.com/benhutchins/dyngoose/compare/v2.8.0...v2.8.1) (2020-11-14)
 
 
