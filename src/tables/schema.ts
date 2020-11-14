@@ -1,5 +1,6 @@
 import { DynamoDB } from 'aws-sdk'
 import { Attribute } from '../attribute'
+import { MapAttributeType } from '../decorator/attribute-types/map'
 import { SchemaError } from '../errors'
 import { IThroughput } from '../interfaces'
 import * as Metadata from '../metadata'
@@ -140,18 +141,29 @@ export class Schema {
   }
 
   public getAttributeByName(attributeName: string): Attribute<any> {
-    let childSegment: string | undefined
+    let attribute: Attribute<any> | undefined
+
     if (attributeName.includes('.')) {
-      [attributeName, childSegment] = attributeName.split('.')
-    }
-    const attribute = this.attributes.get(attributeName)
-    if (attribute != null) {
-      if (childSegment != null) {
-        return (attribute.type as any).attributes[childSegment]
+      const nameSegments = attributeName.split('.')
+      const firstSegment = nameSegments.shift()
+
+      if (firstSegment != null) {
+        attribute = this.attributes.get(firstSegment)
+
+        for (const nameSegment of nameSegments) {
+          if (attribute != null) {
+            attribute = (attribute.type as MapAttributeType<any>).attributes[nameSegment]
+          }
+        }
       }
-      return attribute
     } else {
+      attribute = this.attributes.get(attributeName)
+    }
+
+    if (attribute == null) {
       throw new SchemaError(`Schema for ${this.name} has no attribute named ${attributeName}`)
+    } else {
+      return attribute
     }
   }
 

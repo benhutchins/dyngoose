@@ -42,6 +42,20 @@ describe('query/expression', () => {
     })
     public someMap: ISomeMap
 
+    @Dyngoose.Attribute.Map<ISomeMap>({
+      attributes: {
+        map: Dyngoose.Attribute.Map({
+          attributes: {
+            first: Dyngoose.Attribute.String(),
+            second: Dyngoose.Attribute.String(),
+          },
+        }),
+      },
+    })
+    public someDeepMap: {
+      map: ISomeMap
+    }
+
     @Dyngoose.Attribute.String()
     someNonExistAttr: string
   }
@@ -79,6 +93,22 @@ describe('query/expression', () => {
         ExpressionAttributeNames: {
           '#a00': 'someMap',
           '#a01': 'first',
+        },
+        ExpressionAttributeValues: {
+          ':v0': { S: 'bobby' },
+        },
+      })
+    })
+
+    it('works with deep compound keys', () => {
+      expect(buildQueryExpression(schema, {
+        'someDeepMap.map.first': 'bobby',
+      })).to.deep.equal({
+        FilterExpression: '#a00.#a01.#a02 = :v0',
+        ExpressionAttributeNames: {
+          '#a00': 'someDeepMap',
+          '#a01': 'map',
+          '#a02': 'first',
         },
         ExpressionAttributeValues: {
           ':v0': { S: 'bobby' },

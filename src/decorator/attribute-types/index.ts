@@ -101,9 +101,16 @@ Attribute.NumberSet = (options?: Metadata.AttributeType.NumberSet) => Attribute(
 Attribute.String = (options?: Metadata.AttributeType.String) => Attribute('String', options)
 Attribute.StringSet = (options?: Metadata.AttributeType.StringSet) => Attribute('StringSet', options)
 
-Attribute.Map = <Value>(options: Metadata.AttributeType.Map<Value>) => {
-  return function (record: Table, propertyName: string) {
+Attribute.Map = <Value>(options: Metadata.AttributeType.Map<Value>): AttributeDefinition => {
+  const define = function (record: Table, propertyName: string): void {
     const decorator = new MapAttributeType<Value>(record, propertyName, options as any)
     decorator.decorate()
   }
+
+  define.getAttribute = function (record: Table, propertyName: string): any {
+    const decorator = new MapAttributeType(record, propertyName, options)
+    return decorator.attribute
+  }
+
+  return define
 }

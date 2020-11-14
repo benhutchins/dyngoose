@@ -1,4 +1,4 @@
-import { expect } from 'chai'
+import { expect, should } from 'chai'
 import * as Dyngoose from '../..'
 
 interface ITestMap {
@@ -7,6 +7,18 @@ interface ITestMap {
   last: string
   level: number
   nick?: string
+}
+
+interface ITestContactMap {
+  name: {
+    first: string
+    last: string
+  }
+  address?: {
+    line1: string
+    city: string
+    state: string
+  }
 }
 
 @Dyngoose.$Table({
@@ -32,6 +44,25 @@ export class MapTestTable extends Dyngoose.Table {
     },
   })
   public person: ITestMap
+
+  @Dyngoose.Attribute.Map({
+    attributes: {
+      name: Dyngoose.Attribute.Map({
+        attributes: {
+          first: Dyngoose.Attribute.String({ lowercase: true }),
+          last: Dyngoose.Attribute.String({ uppercase: true }),
+        },
+      }),
+      address: Dyngoose.Attribute.Map({
+        attributes: {
+          line1: Dyngoose.Attribute.String(),
+          city: Dyngoose.Attribute.String(),
+          state: Dyngoose.Attribute.String(),
+        },
+      }),
+    },
+  })
+  public contact: ITestContactMap
 }
 
 describe('AttributeType/Map', () => {
@@ -104,5 +135,76 @@ describe('AttributeType/Map', () => {
     for (const doc of result) {
       expect(doc.person.first).to.eq('Sally')
     }
+  })
+
+  it('should allow maps within maps', async () => {
+    const record = MapTestTable.new({
+      id: 3,
+      contact: {
+        name: {
+          first: 'Homer',
+          last: 'Simpson',
+        },
+        address: {
+          line1: '742 Evergreen Terrace',
+          city: 'Springfield',
+          state: 'Simpcity',
+        },
+      },
+    })
+
+    expect(record.contact?.name.first).to.eq('homer')
+    expect(record.contact?.name.last).to.eq('SIMPSON')
+
+    await record.save()
+
+    const loaded = await MapTestTable.primaryKey.get(3)
+
+    should().exist(loaded)
+
+    if (loaded != null) {
+      expect(loaded.getAttributeDynamoValue('contact')).to.deep.eq({
+        M: {
+          name: {
+            M: {
+              first: { S: 'homer' },
+              last: { S: 'SIMPSON' },
+            },
+          },
+          address: {
+            M: {
+              line1: { S: '742 Evergreen Terrace' },
+              city: { S: 'Springfield' },
+              state: { S: 'Simpcity' },
+            },
+          },
+        },
+      })
+
+      expect(record.contact.name.first).to.eq('homer')
+      expect(record.contact.name.last).to.eq('SIMPSON')
+    }
+  })
+
+  it('should allow you to query using deep child attributes', async () => {
+    const record = MapTestTable.new({
+      id: 4,
+      contact: {
+        name: {
+          first: 'Marge',
+          last: 'Simpson',
+        },
+      },
+    })
+
+    await record.save()
+
+    const result = await MapTestTable.search({
+      'contact.name.first': 'Marge',
+    } as any).exec()
+
+    expect(result.count).to.eq(1)
+    expect(result.length).to.eq(1)
+    expect(result[0].contact.name.first).to.eq('marge')
   })
 })
