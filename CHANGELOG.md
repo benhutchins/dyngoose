@@ -1,3 +1,10 @@
+## [2.9.1](https://github.com/benhutchins/dyngoose/compare/v2.9.0...v2.9.1) (2020-11-14)
+
+
+### Bug Fixes
+
+* fix using dates as range key and calling primarKey.get ([5284298](https://github.com/benhutchins/dyngoose/commit/5284298271ba33df19a793cd46f11baf5e2459d5))
+
 # [2.9.0](https://github.com/benhutchins/dyngoose/compare/v2.8.1...v2.9.0) (2020-11-14)
 
 
