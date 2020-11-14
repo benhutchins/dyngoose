@@ -10,10 +10,12 @@ import { AttributeNames, ComplexFilters, Filter, Filters } from './filters'
 import { GlobalSecondaryIndex } from './global-secondary-index'
 import { LocalSecondaryIndex } from './local-secondary-index'
 import { QueryOutput } from './output'
+import { buildProjectionExpression } from './projection-expression'
 
 export interface MagicSearchInput<T extends Table> {
   limit?: number
   exclusiveStartKey?: DynamoDB.Key
+  attributes?: string[]
   projectionExpression?: DynamoDB.ProjectionExpression
   rangeOrder?: 'ASC' | 'DESC'
   consistent?: DynamoDB.ConsistentRead
@@ -137,20 +139,38 @@ export class MagicSearch<T extends Table> {
   }
 
   /**
-   * This function will limit which attributes DynamoDB returns for each item in the table.
+   * This function will limit which attributes DynamoDB returns for each item in the table
+   * by building a ProjectionExpression for you.
    *
    * This can limit the size of the DynamoDB response and helps you only retrieve the data you need.
    * Simply provide an array of strings representing the property names you wish DynamoDB to return.
    */
-  attributes<Attr extends AttributeNames<T>>(...attributes: Attr[]): this {
+  properties<Attr extends AttributeNames<T>>(...propertyNames: Attr[]): this {
     const attributeNames: string[] = []
 
-    for (const propertyName of attributes) {
+    for (const propertyName of propertyNames) {
       const attr = this.tableClass.schema.getAttributeByPropertyName(propertyName as string)
       attributeNames.push(attr.name)
     }
 
-    this.input.projectionExpression = attributeNames.join(',')
+    if (this.input.attributes == null) {
+      this.input.attributes = []
+    }
+
+    this.input.attributes = this.input.attributes.concat(attributeNames)
+    return this
+  }
+
+  /**
+   * This is similar to `.properties()` except it accepts a list of attribute names
+   * instead of property names.
+  */
+  attributes(...attributeNames: string[]): this {
+    if (this.input.attributes == null) {
+      this.input.attributes = []
+    }
+
+    this.input.attributes = this.input.attributes.concat(attributeNames)
     return this
   }
 
@@ -329,6 +349,11 @@ export class MagicSearch<T extends Table> {
 
     if (this.input.projectionExpression != null) {
       input.ProjectionExpression = this.input.projectionExpression
+    } else if (this.input.attributes != null) {
+      const expression = buildProjectionExpression(this.tableClass, this.input.attributes)
+      input.Select = 'SPECIFIC_ATTRIBUTES'
+      input.ProjectionExpression = expression.ProjectionExpression
+      input.ExpressionAttributeNames = expression.ExpressionAttributeNames
     }
 
     if (this.input.rangeOrder === 'DESC') {

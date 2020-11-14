@@ -172,7 +172,7 @@ export class BatchGet<T extends Table> {
       }),
     ).then((chunks) => {
       return filter(flatten(chunks))
-    }) as T[]
+    })
   }
 
   public async retrieveMapped(): Promise<Map<typeof Table, T[]>> {

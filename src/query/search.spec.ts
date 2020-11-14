@@ -154,7 +154,17 @@ describe('Query/Search', () => {
 
   it('.attributes sets ProjectionExpression on input', async () => {
     const search = new MagicSearch<TestableTable>(TestableTable)
-    search.attributes('id', 'title', 'testAttributeNaming')
+    search.attributes('id', 'name')
+    const input = search.getInput()
+    expect(input.ProjectionExpression).to.eq('id,#p0')
+    expect(input.ExpressionAttributeNames).to.deep.eq({
+      '#p0': 'name',
+    })
+  })
+
+  it('.properties sets ProjectionExpression on input', async () => {
+    const search = new MagicSearch<TestableTable>(TestableTable)
+    search.properties('id', 'title', 'testAttributeNaming')
     const input = search.getInput()
     expect(input.ProjectionExpression).to.eq('id,title,testAttributeNameNotMatchingPropertyName')
   })
