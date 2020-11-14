@@ -1,3 +1,11 @@
+# [2.8.0](https://github.com/benhutchins/dyngoose/compare/v2.7.1...v2.8.0) (2020-11-14)
+
+
+### Features
+
+* remove items not found from batch results ([ed698df](https://github.com/benhutchins/dyngoose/commit/ed698df0d8ced16808238d339225e543bc38dd41))
+* support deep maps ([042bde9](https://github.com/benhutchins/dyngoose/commit/042bde9dfbf5123ba16263644f7e2c7ba6da7b02))
+
 ## [2.7.1](https://github.com/benhutchins/dyngoose/compare/v2.7.0...v2.7.1) (2020-11-04)
 
 
