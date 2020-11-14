@@ -1,3 +1,10 @@
+## [2.8.1](https://github.com/benhutchins/dyngoose/compare/v2.8.0...v2.8.1) (2020-11-14)
+
+
+### Bug Fixes
+
+* do not apply defaults when loading from DynamoDB ([adac797](https://github.com/benhutchins/dyngoose/commit/adac797a7250e348d7886365a476fe5bab7139b5))
+
 # [2.8.0](https://github.com/benhutchins/dyngoose/compare/v2.7.1...v2.8.0) (2020-11-14)
 
 
