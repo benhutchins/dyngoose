@@ -24,7 +24,27 @@ describe('Query/PrimaryKey', () => {
     public count: number
   }
 
+  @TableDecorator({ name: 'QueryPrimaryKeyTableWithDateRange' })
+  class TableWithDateRange extends Table {
+    @PrimaryKeyDecorator('id', 'date')
+    public static readonly primaryKey: PrimaryKey<TableWithDateRange, number, Date>
+
+    @AttributeDecorator.Number()
+    public id: number
+
+    @AttributeDecorator.Date()
+    public date: Date
+  }
+
   let primaryKey: PrimaryKey<Card, number, string>
+
+  before(async () => {
+    await TableWithDateRange.createTable()
+  })
+
+  after(async () => {
+    await TableWithDateRange.deleteTable()
+  })
 
   beforeEach(async () => {
     await Card.createTable()
@@ -71,6 +91,17 @@ describe('Query/PrimaryKey', () => {
       if (item != null) {
         expect(item.id).to.eq(10)
         expect(item.title).to.eq('abc')
+      }
+    })
+
+    it('should allow date type to be the range', async () => {
+      const now = new Date()
+      await TableWithDateRange.new({ id: 1, date: now }).save()
+      const item = await TableWithDateRange.primaryKey.get(1, now)
+      expect(item).to.be.instanceof(TableWithDateRange)
+      if (item != null) {
+        expect(item.id).to.eq(1)
+        expect(item.date.toISOString()).to.eq(now.toISOString())
       }
     })
   })

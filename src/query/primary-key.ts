@@ -1,5 +1,5 @@
 import { DynamoDB } from 'aws-sdk'
-import { get, has, isArray, isObject } from 'lodash'
+import { get, has, isArray, isDate, isObject } from 'lodash'
 import { BatchGet } from '../batch-get'
 import { QueryError } from '../errors'
 import * as Metadata from '../metadata'
@@ -40,6 +40,14 @@ interface PrimaryKeyUpdateItem<T extends Table, HashKeyType extends PrimaryKeyTy
   range: RangeKeyType
   changes: TableProperties<T>
   conditions?: UpdateConditions<T>
+}
+
+/**
+ * Determines if a given value is an accepted value for a hash or range key
+ */
+function isKeyValue(range: any): boolean {
+  const type = typeof range
+  return type === 'string' || type === 'boolean' || type === 'number' || type === 'bigint' || isDate(range)
 }
 
 export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, RangeKeyType extends RangePrimaryKeyType> {
@@ -89,15 +97,15 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
 
     if (isDyngooseTableInstance(hash)) {
       record = hash
-    } else if (isObject(hash)) {
+    } else if (isObject(hash) && !isKeyValue(hash)) {
       record = this.fromKey(hash)
-    } else if (hash != null && !isObject(range)) {
-      record = this.fromKey(hash, range as RangeKeyType)
+    } else if (hash != null && (range == null || isKeyValue(range))) {
+      record = this.fromKey(hash as HashKeyType, range as RangeKeyType)
     } else {
       throw new QueryError('PrimaryKey.get called with unknown arguments')
     }
 
-    const getGetInput: Partial<PrimaryKeyGetGetItemInput> = isObject(range) ? range : {}
+    const getGetInput: Partial<PrimaryKeyGetGetItemInput> = input == null ? ((range == null || isKeyValue(range)) ? {} : range as PrimaryKeyGetInput) : input
     getGetInput.key = record.getDynamoKey()
     const getItemInput = this.getGetInput(getGetInput as PrimaryKeyGetGetItemInput)
     const dynamoRecord = await this.table.schema.dynamo.getItem(getItemInput).promise()
@@ -218,7 +226,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
   public fromKey(hash: HashKeyType, range: RangeKeyType): T
   public fromKey(hash: QueryFilters<T> | HashKeyType, range?: RangeKeyType): T {
     // if the hash was passed a query filters, then extract the hash and range
-    if (isObject(hash)) {
+    if (isObject(hash) && !isDate(hash)) {
       const filters = hash
       if (!has(filters, this.metadata.hash.propertyName)) {
         throw new QueryError('Cannot perform .get() on a PrimaryKey without specifying a hash key value')
