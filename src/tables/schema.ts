@@ -42,7 +42,7 @@ export class Schema {
 
   constructor(private readonly table: ITable<any>) {}
 
-  public setMetadata(metadata: Metadata.Table = {}): void {
+  public setMetadata(metadata: Metadata.Table): void {
     this.options = metadata
 
     this.setThroughput(this.options.throughput != null ? this.options.throughput : {

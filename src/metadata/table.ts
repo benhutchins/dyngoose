@@ -4,10 +4,8 @@ import { IThroughput } from '../interfaces'
 export interface TableMetadata {
   /**
    * The name for your table in DynamoDB.
-   *
-   * Defaults to the class name when no name is provided.
    */
-  name?: string
+  name: string
 
   /**
    * Optional extra data, used for your own logic.
