@@ -13,6 +13,7 @@ import { AttributeType } from './tables/attribute-type'
 import { createTable } from './tables/create-table'
 import { deleteTable } from './tables/delete-table'
 import { Transaction } from './transaction'
+import { Filters } from './query/filters'
 import { QueryOutput } from './query/output'
 
 export const TableOperations = {
@@ -30,6 +31,7 @@ export {
   DynamoAttributeType,
   Errors,
   Events,
+  Filters,
   Metadata,
   Query,
   QueryOutput,
