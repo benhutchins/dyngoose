@@ -147,6 +147,13 @@ describe('AttributeType/Map', () => {
     for (const doc of result) {
       expect(doc.person.first).to.eq('Sally')
     }
+
+    const searchOutput = await MapTestTable.search()
+      .filter('person', 'first').eq('Sally')
+      .exec()
+
+    expect(searchOutput.count).to.eq(1)
+    expect(searchOutput[0].person.first).to.eq('Sally')
   })
 
   it('should allow maps within maps', async () => {
@@ -232,5 +239,13 @@ describe('AttributeType/Map', () => {
     expect(result.count).to.eq(1)
     expect(result.length).to.eq(1)
     expect(result[0].contact.name.first).to.eq('marge')
+
+    const searchOutput = await MapTestTable.search()
+      .filter('contact', 'name', 'first').eq('marge')
+      .exec()
+
+    expect(searchOutput.count).to.eq(1)
+    expect(searchOutput.length).to.eq(1)
+    expect(searchOutput[0].contact.name.first).to.eq('marge')
   })
 })

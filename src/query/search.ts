@@ -60,16 +60,48 @@ export class MagicSearch<T extends Table> {
     return this
   }
 
-  filter<Attr extends AttributeNames<T>>(attributePropertyName: Attr): Condition<T, Attr, T[Attr]> {
-    return new Condition<T, Attr, T[Attr]>(this, attributePropertyName)
+  filter<
+    K1 extends AttributeNames<T>
+  >(a1: K1): Condition<T, Attr, T[K1]>;
+  filter<
+    K1 extends AttributeNames<T>,
+    K2 extends keyof T[K1]
+  >(a1: K1, a2: K2): Condition<T, Attr, T[K1][K2]>;
+  filter<
+    K1 extends AttributeNames<T>,
+    K2 extends keyof T[K1],
+    K3 extends keyof T[K1][K2]
+  >(a1: K1, a2: K2, a3: K3): Condition<T, Attr, T[K1][K2][K3]>;
+  filter<
+    K1 extends AttributeNames<T>,
+    K2 extends keyof T[K1],
+    K3 extends keyof T[K1][K2],
+    K4 extends keyof T[K1][K2][K3]
+  >(a1: K1, a2: K2, a3: K3, a4: K4): Condition<T, Attr, T[K1][K2][K3][K4]>;
+  filter<Attr extends AttributeNames<T>>(...attributePropertyPath: any): Condition<T, Attr, T[Attr]> {
+    return new Condition<T, Attr, T[Attr]>(this, attributePropertyPath.join('.'))
   }
 
-  where<Attr extends AttributeNames<T>>(attributePropertyName: Attr): Condition<T, Attr, T[Attr]> {
-    return new Condition<T, Attr, T[Attr]>(this, attributePropertyName)
-  }
-
-  attribute<Attr extends AttributeNames<T>>(attributePropertyName: Attr): Condition<T, Attr, T[Attr]> {
-    return new Condition<T, Attr, T[Attr]>(this, attributePropertyName)
+  where<
+    K1 extends AttributeNames<T>
+  >(a1: K1): Condition<T, Attr, T[K1]>
+  where<
+    K1 extends AttributeNames<T>,
+    K2 extends keyof T[K1]
+  >(a1: K1, a2: K2): Condition<T, Attr, T[K1][K2]>
+  where<
+    K1 extends AttributeNames<T>,
+    K2 extends keyof T[K1],
+    K3 extends keyof T[K1][K2]
+  >(a1: K1, a2: K2, a3: K3): Condition<T, Attr, T[K1][K2][K3]>
+  where<
+    K1 extends AttributeNames<T>,
+    K2 extends keyof T[K1],
+    K3 extends keyof T[K1][K2],
+    K4 extends keyof T[K1][K2][K3]
+  >(a1: K1, a2: K2, a3: K3, a4: K4): Condition<T, Attr, T[K1][K2][K3][K4]>;
+  where<Attr extends AttributeNames<T>>(...attributePropertyPath: any): Condition<T, Attr, T[Attr]> {
+    return new Condition<T, Attr, T[Attr]>(this, attributePropertyPath.join('.'))
   }
 
   or(): this {
