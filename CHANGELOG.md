@@ -1,3 +1,10 @@
+## [2.9.2](https://github.com/benhutchins/dyngoose/compare/v2.9.1...v2.9.2) (2020-11-27)
+
+
+### Bug Fixes
+
+* using MagicSearch with indexes was not building KeyConditions ([95ae96d](https://github.com/benhutchins/dyngoose/commit/95ae96de2ec7f7cb6ab3e69ccc1b140490403b57))
+
 ## [2.9.1](https://github.com/benhutchins/dyngoose/compare/v2.9.0...v2.9.1) (2020-11-14)
 
 
