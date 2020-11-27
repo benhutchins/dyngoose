@@ -85,6 +85,18 @@ describe('query/expression', () => {
       })
     })
 
+    it('works with complex filters', () => {
+      expect(buildQueryExpression(schema, [{ customer: 'tiny twig' }], DummyTable.customerIndex.metadata)).to.deep.equal({
+        KeyConditionExpression: '#a0 = :v0',
+        ExpressionAttributeNames: {
+          '#a0': 'customer',
+        },
+        ExpressionAttributeValues: {
+          ':v0': { S: 'tiny twig' },
+        },
+      })
+    })
+
     it('works with compound keys', () => {
       expect(buildQueryExpression(schema, {
         'someMap.first': 'bobby',

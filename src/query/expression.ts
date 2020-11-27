@@ -94,7 +94,10 @@ class FilterExpressionQuery<T extends Table> {
 
     if (_.isArray(this.filters)) { // handle ComplexFilters
       const conditions = this.parseComplexFilters(this.filters, false)
-      this.filterConditions.push(conditions)
+
+      if (conditions.length > 0) {
+        this.filterConditions.push(conditions)
+      }
     } else {
       _.each(this.filters, (value, attrName) => {
         this.handleFilter(attrName, value)
@@ -145,11 +148,25 @@ class FilterExpressionQuery<T extends Table> {
         _.each(filters, (value, attrName) => {
           const queryValue = this.handleFilter(attrName, value, false)
 
+          const attribute = this.schema.getAttributeByName(attrName)
+
           if (queryValue.query != null) {
             _.extend(this.attrs, queryValue.attrs)
             _.extend(this.values, queryValue.values)
-            // this.push(attribute, queryValue.query, filter[0])
-            conditions.push(queryValue.query)
+
+            if (this.isHashKey(attribute) || this.isRangeKey(attribute)) {
+              let filter: Filter<any>
+
+              if (_.isArray(value)) {
+                filter = value as any
+              } else {
+                filter = ['=', value]
+              }
+
+              this.push(attribute, queryValue.query, filter[0])
+            } else {
+              conditions.push(queryValue.query)
+            }
           }
         })
       }
