@@ -1,3 +1,15 @@
+# [2.10.0](https://github.com/benhutchins/dyngoose/compare/v2.9.2...v2.10.0) (2020-12-05)
+
+
+### Bug Fixes
+
+* allow deleting of attributes when loaded from primaryKey.fromKey ([5568d6c](https://github.com/benhutchins/dyngoose/commit/5568d6c3d37c9924d85b5369899909ec6d9297d6))
+
+
+### Features
+
+* allow filtering on scans of the primary key ([f753097](https://github.com/benhutchins/dyngoose/commit/f7530973bf117460819c0004f9ad0c6bb6a47341))
+
 ## [2.9.2](https://github.com/benhutchins/dyngoose/compare/v2.9.1...v2.9.2) (2020-11-27)
 
 
