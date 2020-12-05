@@ -1,3 +1,10 @@
+## [2.10.1](https://github.com/benhutchins/dyngoose/compare/v2.10.0...v2.10.1) (2020-12-05)
+
+
+### Bug Fixes
+
+* usage of fromDynamo was not consistent ([88b23b2](https://github.com/benhutchins/dyngoose/commit/88b23b22d7ff6a2537885975f44cb1e86f38fe2b))
+
 # [2.10.0](https://github.com/benhutchins/dyngoose/compare/v2.9.2...v2.10.0) (2020-12-05)
 
 
