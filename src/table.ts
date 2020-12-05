@@ -150,6 +150,7 @@ export class Table {
   private __updatedAttributes: string[] = []
   private __deletedAttributes: string[] = []
   private __putRequired = true // true when this is a new record and a putItem is required, false when updateItem can be used
+  private __entireDocumentIsKnown = true
   // #endregion properties
 
   /**
@@ -189,13 +190,14 @@ export class Table {
    * setting the attributes it resets the attributes pending update and
    * deletion.
    */
-  public fromDynamo(values: DynamoDB.AttributeMap): this {
+  public fromDynamo(values: DynamoDB.AttributeMap, entireDocument = true): this {
     this.__attributes = values
 
     // this is an existing record in the database, so when we save it, we need to update
     this.__updatedAttributes = []
     this.__deletedAttributes = []
     this.__putRequired = false
+    this.__entireDocumentIsKnown = entireDocument
 
     return this
   }
@@ -382,7 +384,7 @@ export class Table {
    */
   public deleteAttribute(attributeName: string): this {
     // delete the attribute as long as it existed and wasn't already null
-    if (!_.isNil(this.__attributes[attributeName])) {
+    if (!_.isNil(this.__attributes[attributeName]) || !this.__entireDocumentIsKnown) {
       this.__attributes[attributeName] = { NULL: true }
       this.__deletedAttributes.push(attributeName)
       _.pull(this.__updatedAttributes, attributeName)
@@ -644,5 +646,5 @@ export interface ITable<T extends Table> {
   schema: Schema
   documentClient: DocumentClient<T>
   new(): T
-  fromDynamo: (attributes: DynamoDB.AttributeMap) => T
+  fromDynamo: (attributes: DynamoDB.AttributeMap, entireDocument?: boolean) => T
 }

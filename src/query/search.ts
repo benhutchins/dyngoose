@@ -395,6 +395,7 @@ export class MagicSearch<T extends Table> {
   }
 
   async page(input: DynamoDB.ScanInput | DynamoDB.QueryInput): Promise<QueryOutput<T>> {
+    const hasProjection = input.ProjectionExpression == null
     let output: DynamoDB.ScanOutput | DynamoDB.QueryOutput
 
     // if we are filtering based on key conditions, run a query instead of a scan
@@ -410,7 +411,7 @@ export class MagicSearch<T extends Table> {
       output = await this.tableClass.schema.dynamo.scan(input).promise()
     }
 
-    return QueryOutput.fromDynamoOutput(this.tableClass, output)
+    return QueryOutput.fromDynamoOutput(this.tableClass, output, !hasProjection)
   }
 
   private findAvailableIndex(): Metadata.Index.GlobalSecondaryIndex | Metadata.Index.PrimaryKey | undefined {

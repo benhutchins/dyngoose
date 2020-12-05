@@ -184,8 +184,9 @@ export class GlobalSecondaryIndex<T extends Table> {
     }
 
     const queryInput = this.getQueryInput(input, filters)
+    const hasProjection = queryInput.ProjectionExpression == null
     const output = await this.tableClass.schema.dynamo.query(queryInput).promise()
-    return QueryOutput.fromDynamoOutput<T>(this.tableClass, output)
+    return QueryOutput.fromDynamoOutput<T>(this.tableClass, output, hasProjection)
   }
 
   public getScanInput(input: GlobalSecondaryIndexScanInput = {}, filters?: QueryFilters<T>): DynamoDB.ScanInput {
@@ -234,8 +235,9 @@ export class GlobalSecondaryIndex<T extends Table> {
    */
   public async scan(filters?: QueryFilters<T> | undefined | null, input: GlobalSecondaryIndexScanInput = {}): Promise<QueryOutput<T>> {
     const scanInput = this.getScanInput(input, filters == null ? undefined : filters)
+    const hasProjection = scanInput.ProjectionExpression == null
     const output = await this.tableClass.schema.dynamo.scan(scanInput).promise()
-    return QueryOutput.fromDynamoOutput<T>(this.tableClass, output)
+    return QueryOutput.fromDynamoOutput<T>(this.tableClass, output, hasProjection)
   }
 
   /**

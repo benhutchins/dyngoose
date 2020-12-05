@@ -66,8 +66,9 @@ export class LocalSecondaryIndex<T extends Table> {
     queryInput.KeyConditionExpression = expression.KeyConditionExpression
     queryInput.ExpressionAttributeNames = expression.ExpressionAttributeNames
     queryInput.ExpressionAttributeValues = expression.ExpressionAttributeValues
+    const hasProjection = queryInput.ProjectionExpression == null
     const output = await this.tableClass.schema.dynamo.query(queryInput).promise()
-    return QueryOutput.fromDynamoOutput(this.tableClass, output)
+    return QueryOutput.fromDynamoOutput(this.tableClass, output, hasProjection)
   }
 
   public getScanInput(input: LocalSecondaryIndexScanInput = {}): DynamoDB.ScanInput {
@@ -93,8 +94,9 @@ export class LocalSecondaryIndex<T extends Table> {
       scanInput.ExpressionAttributeNames = expression.ExpressionAttributeNames
       scanInput.ExpressionAttributeValues = expression.ExpressionAttributeValues
     }
+    const hasProjection = scanInput.ProjectionExpression == null
     const output = await this.tableClass.schema.dynamo.scan(scanInput).promise()
-    return QueryOutput.fromDynamoOutput(this.tableClass, output)
+    return QueryOutput.fromDynamoOutput(this.tableClass, output, hasProjection)
   }
 
   /**

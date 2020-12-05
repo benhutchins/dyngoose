@@ -108,9 +108,10 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     const getGetInput: Partial<PrimaryKeyGetGetItemInput> = input == null ? ((range == null || isKeyValue(range)) ? {} : range as PrimaryKeyGetInput) : input
     getGetInput.key = record.getDynamoKey()
     const getItemInput = this.getGetInput(getGetInput as PrimaryKeyGetGetItemInput)
+    const hasProjection = getItemInput.ProjectionExpression == null
     const dynamoRecord = await this.table.schema.dynamo.getItem(getItemInput).promise()
     if (dynamoRecord.Item != null) {
-      return this.table.fromDynamo(dynamoRecord.Item)
+      return this.table.fromDynamo(dynamoRecord.Item, !hasProjection)
     }
   }
 
@@ -185,6 +186,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     }
 
     const queryInput = this.getQueryInput(input)
+    const hasProjection = queryInput.ProjectionExpression == null
     const expression = buildQueryExpression(this.table.schema, filters, this.metadata)
     queryInput.FilterExpression = expression.FilterExpression
     queryInput.KeyConditionExpression = expression.KeyConditionExpression
@@ -192,7 +194,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     queryInput.ExpressionAttributeValues = expression.ExpressionAttributeValues
 
     const output = await this.table.schema.dynamo.query(queryInput).promise()
-    return QueryOutput.fromDynamoOutput(this.table, output)
+    return QueryOutput.fromDynamoOutput(this.table, output, hasProjection)
   }
 
   public async scan(options: {
@@ -211,7 +213,8 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     }
 
     const output = await this.table.schema.dynamo.scan(params).promise()
-    return QueryOutput.fromDynamoOutput(this.table, output)
+    const hasProjection = scanInput.ProjectionExpression == null
+    return QueryOutput.fromDynamoOutput(this.table, output, hasProjection)
   }
 
   /**
@@ -271,7 +274,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
       keyMap[this.metadata.range.name] = this.metadata.range.toDynamoAssert(range)
     }
 
-    return this.table.fromDynamo(keyMap)
+    return this.table.fromDynamo(keyMap, false)
   }
 
   /**

@@ -6,12 +6,13 @@ export class QueryOutput<T extends Table> extends Array<T> {
   public static fromDynamoOutput<T extends Table>(
     tableClass: ITable<T>,
     output: DynamoDB.ScanOutput | DynamoDB.QueryOutput,
+    hasProjection: boolean,
   ): QueryOutput<T> {
     const items: T[] = []
 
     if (output.Items != null) {
       for (const item of output.Items) {
-        items.push(tableClass.fromDynamo(item))
+        items.push(tableClass.fromDynamo(item, !hasProjection))
       }
     }
 
