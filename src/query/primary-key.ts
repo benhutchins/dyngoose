@@ -10,6 +10,7 @@ import { batchWrite } from './batch-write'
 import { buildQueryExpression } from './expression'
 import { Filters as QueryFilters, UpdateConditions } from './filters'
 import { QueryOutput } from './output'
+import { buildProjectionExpression } from './projection-expression'
 
 type PrimaryKeyType = string | number | Date
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
@@ -40,6 +41,16 @@ interface PrimaryKeyUpdateItem<T extends Table, HashKeyType extends PrimaryKeyTy
   range: RangeKeyType
   changes: TableProperties<T>
   conditions?: UpdateConditions<T>
+}
+
+interface PrimaryKeyScanInput {
+  limit?: number
+  totalSegments?: number
+  segment?: number
+  exclusiveStartKey?: DynamoDB.DocumentClient.Key
+  attributes?: string[]
+  projectionExpression?: DynamoDB.ProjectionExpression
+  expressionAttributeNames?: DynamoDB.ExpressionAttributeNameMap
 }
 
 /**
@@ -197,22 +208,44 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     return QueryOutput.fromDynamoOutput(this.table, output, hasProjection)
   }
 
-  public async scan(options: {
-    limit?: number
-    totalSegments?: number
-    segment?: number
-    exclusiveStartKey?: DynamoDB.DocumentClient.Key
-  } = {}): Promise<QueryOutput<T>> {
-    const params: DynamoDB.DocumentClient.ScanInput = {
+  public getScanInput(input: PrimaryKeyScanInput = {}, filters?: QueryFilters<T>): DynamoDB.ScanInput {
+    const scanInput: DynamoDB.ScanInput = {
       TableName: this.table.schema.name,
-      Limit: options.limit,
-      ExclusiveStartKey: options.exclusiveStartKey,
+      Limit: input.limit,
+      ExclusiveStartKey: input.exclusiveStartKey,
       ReturnConsumedCapacity: 'TOTAL',
-      TotalSegments: options.totalSegments,
-      Segment: options.segment,
+      TotalSegments: input.totalSegments,
+      Segment: input.segment,
     }
 
-    const output = await this.table.schema.dynamo.scan(params).promise()
+    if (input.attributes != null && input.projectionExpression == null) {
+      const expression = buildProjectionExpression(this.table, input.attributes)
+      scanInput.ProjectionExpression = expression.ProjectionExpression
+      scanInput.ExpressionAttributeNames = expression.ExpressionAttributeNames
+    } else if (input.projectionExpression != null) {
+      scanInput.ProjectionExpression = input.projectionExpression
+      scanInput.ExpressionAttributeNames = input.expressionAttributeNames
+    }
+
+    if (filters != null && Object.keys(filters).length > 0) {
+      // don't pass the index metadata, avoids KeyConditionExpression
+      const expression = buildQueryExpression(this.table.schema, filters)
+      scanInput.FilterExpression = expression.FilterExpression
+      scanInput.ExpressionAttributeValues = expression.ExpressionAttributeValues
+
+      if (scanInput.ExpressionAttributeNames == null) {
+        scanInput.ExpressionAttributeNames = expression.ExpressionAttributeNames
+      } else {
+        Object.assign(scanInput.ExpressionAttributeNames, expression.ExpressionAttributeNames)
+      }
+    }
+
+    return scanInput
+  }
+
+  public async scan(filters?: QueryFilters<T> | undefined | null, input?: PrimaryKeyScanInput): Promise<QueryOutput<T>> {
+    const scanInput = this.getScanInput(input, filters == null ? undefined : filters)
+    const output = await this.table.schema.dynamo.scan(scanInput).promise()
     const hasProjection = scanInput.ProjectionExpression == null
     return QueryOutput.fromDynamoOutput(this.table, output, hasProjection)
   }

@@ -177,7 +177,7 @@ describe('Query/PrimaryKey', () => {
       await Card.new({ id: 10, title: 'abd' }).save()
       await Card.new({ id: 10, title: 'aba' }).save()
 
-      const res = await primaryKey.scan({
+      const res = await primaryKey.scan(null, {
         limit: 2,
       })
 
