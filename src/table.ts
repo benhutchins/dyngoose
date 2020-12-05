@@ -67,8 +67,8 @@ export class Table {
    * default to using an `UpdateItem` operation rather than a `PutItem` operation
    * upon being saved.
    */
-  public static fromDynamo<T extends Table>(this: StaticThis<T>, attributes: DynamoDB.AttributeMap): T {
-    return new this().fromDynamo(attributes)
+  public static fromDynamo<T extends Table>(this: StaticThis<T>, attributes: DynamoDB.AttributeMap, entireDocument = true): T {
+    return new this().fromDynamo(attributes, entireDocument)
   }
 
   /**
