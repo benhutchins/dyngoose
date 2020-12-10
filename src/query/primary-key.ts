@@ -11,6 +11,7 @@ import { buildQueryExpression } from './expression'
 import { Filters as QueryFilters, UpdateConditions } from './filters'
 import { QueryOutput } from './output'
 import { buildProjectionExpression } from './projection-expression'
+import { MagicSearch, MagicSearchInput } from './search'
 
 type PrimaryKeyType = string | number | Date
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
@@ -248,6 +249,15 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     const output = await this.table.schema.dynamo.scan(scanInput).promise()
     const hasProjection = scanInput.ProjectionExpression == null
     return QueryOutput.fromDynamoOutput(this.table, output, hasProjection)
+  }
+
+  /**
+   * Query DynamoDB for what you need.
+   *
+   * Starts a MagicSearch using this GlobalSecondaryIndex.
+   */
+  public search(filters?: QueryFilters<T>, input: MagicSearchInput<T> = {}): MagicSearch<T> {
+    return new MagicSearch<T>(this.table as any, filters, input).using(this)
   }
 
   /**

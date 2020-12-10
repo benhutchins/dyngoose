@@ -113,6 +113,11 @@ describe('Query/Search', () => {
     search.using('titleIndex')
     input = search.getInput()
     expect(input.IndexName).to.eq('titleIndex')
+
+    // try using the primary key
+    search.using(TestableTable.primaryKey)
+    input = search.getInput()
+    expect(input.IndexName).to.eq(undefined)
   })
 
   describe('.sort', () => {

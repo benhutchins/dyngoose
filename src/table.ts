@@ -559,8 +559,8 @@ export class Table {
    * Each attribute type can define a custom toJSON and fromJSON method,
    * @see {@link https://github.com/benhutchins/dyngoose/blog/master/docs/Attributes.md#custom-attribute-types}.
    */
-  public toJSON(): any {
-    const json: any = {}
+  public toJSON(): { [key: string]: any } {
+    const json: { [key: string]: any } = {}
 
     for (const [attributeName, attribute] of this.table.schema.getAttributes()) {
       const propertyName = attribute.propertyName

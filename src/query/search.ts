@@ -10,7 +10,10 @@ import { AttributeNames, ComplexFilters, Filter, Filters } from './filters'
 import { GlobalSecondaryIndex } from './global-secondary-index'
 import { LocalSecondaryIndex } from './local-secondary-index'
 import { QueryOutput } from './output'
+import { PrimaryKey } from './primary-key'
 import { buildProjectionExpression } from './projection-expression'
+
+type Index<T extends Table> = PrimaryKey<T, any, any> | GlobalSecondaryIndex<T> | LocalSecondaryIndex<T> | string
 
 export interface MagicSearchInput<T extends Table> {
   limit?: number
@@ -24,12 +27,7 @@ export interface MagicSearchInput<T extends Table> {
   /**
    * Perform your query on the specified index, which can be a GSI object or a string
    */
-  index?: GlobalSecondaryIndex<T> | LocalSecondaryIndex<T> | string
-
-  /**
-   * @deprecated use MagicSearchInput<T>.index
-   */
-  indexName?: string
+  index?: Index<T>
 }
 
 export type SearchGroupFunction<T extends Table> = (condition: MagicSearch<T>) => any
@@ -194,10 +192,9 @@ export class MagicSearch<T extends Table> {
    * This causes the query to be run on a specific index as opposed to the default table wide query.
    * The index parameter you pass in should represent the name of the index you wish to query on.
    */
-  using(index: GlobalSecondaryIndex<T> | LocalSecondaryIndex<T> | string | null): this {
+  using(index: Index<T> | null): this {
     if (index === null) {
       this.input.index = undefined
-      this.input.indexName = undefined
     } else {
       this.input.index = index
     }
@@ -303,21 +300,19 @@ export class MagicSearch<T extends Table> {
   getInput(): DynamoDB.ScanInput | DynamoDB.QueryInput {
     let indexMetadata: Metadata.Index.GlobalSecondaryIndex | Metadata.Index.PrimaryKey | undefined
 
-    if (this.input.index != null && typeof this.input.index !== 'string') {
-      this.input.indexName = this.input.index.metadata.name
-    }
+    if (this.input.index != null && typeof this.input.index === 'string') {
+      const indexName = this.input.index
 
-    if (this.input.indexName != null) {
       // if we were given an index, find the metadata object for it
       for (const index of this.tableClass.schema.globalSecondaryIndexes) {
-        if (index.name === this.input.indexName) {
+        if (index.name === indexName) {
           indexMetadata = index
         }
       }
 
       if (indexMetadata == null) {
         for (const index of this.tableClass.schema.localSecondaryIndexes) {
-          if (index.name === this.input.indexName) {
+          if (index.name === indexName) {
             indexMetadata = Object.assign({
               hash: this.tableClass.schema.primaryKey.hash,
             }, index) as Metadata.Index.GlobalSecondaryIndex
@@ -326,15 +321,21 @@ export class MagicSearch<T extends Table> {
       }
 
       if (indexMetadata == null) {
-        throw new QueryError(`Attempted to perform ${this.tableClass.schema.name}.search using non-existent index ${this.input.indexName}`)
+        throw new QueryError(`Attempted to perform ${this.tableClass.schema.name}.search using non-existent index ${indexName}`)
+      }
+    } else if (this.input.index != null) {
+      if ((typeof this.input.index.metadata as any).hash === 'undefined') {
+        const metadata: Metadata.Index.GlobalSecondaryIndex = Object.assign({
+          hash: this.tableClass.schema.primaryKey.hash,
+        }, this.input.index.metadata as Metadata.Index.LocalSecondaryIndex)
+
+        indexMetadata = metadata
+      } else {
+        indexMetadata = this.input.index.metadata as Metadata.Index.GlobalSecondaryIndex | Metadata.Index.PrimaryKey
       }
     } else {
       // if no index was specified, look to see if there is an available index given the query
       indexMetadata = this.findAvailableIndex()
-
-      if (has(indexMetadata, 'name')) {
-        this.input.indexName = get(indexMetadata, 'name')
-      }
     }
 
     const query = buildQueryExpression(this.tableClass.schema, this.filters, indexMetadata)
@@ -372,8 +373,8 @@ export class MagicSearch<T extends Table> {
       input.ConsistentRead = this.input.consistent
     }
 
-    if (this.input.indexName != null) {
-      input.IndexName = this.input.indexName
+    if (indexMetadata != null && typeof (indexMetadata as any).name === 'string') {
+      input.IndexName = (indexMetadata as Metadata.Index.GlobalSecondaryIndex | Metadata.Index.LocalSecondaryIndex).name
     }
 
     if (this.input.returnOnlyCount === true) {
