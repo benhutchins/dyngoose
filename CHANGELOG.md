@@ -1,3 +1,10 @@
+# [2.11.0](https://github.com/benhutchins/dyngoose/compare/v2.10.1...v2.11.0) (2020-12-10)
+
+
+### Features
+
+* add Query.PrimaryKey.search ([595847e](https://github.com/benhutchins/dyngoose/commit/595847ef5547c006cc19cc01e3c95bd34761d546))
+
 ## [2.10.1](https://github.com/benhutchins/dyngoose/compare/v2.10.0...v2.10.1) (2020-12-05)
 
 
