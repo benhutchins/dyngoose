@@ -70,6 +70,13 @@ export class QueryOutput<T extends Table> extends Array<T> {
       ReadCapacityUnits: readCapacityUnits,
     }
 
+    // pass the lastEvaluatedKey from the last output, so paging could continue
+    const last = outputs[outputs.length - 1]
+
+    if (last != null) {
+      queryOutput.lastEvaluatedKey = last.lastEvaluatedKey
+    }
+
     return queryOutput
   }
 
