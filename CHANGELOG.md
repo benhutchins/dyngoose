@@ -1,3 +1,10 @@
+## [2.11.1](https://github.com/benhutchins/dyngoose/compare/v2.11.0...v2.11.1) (2020-12-15)
+
+
+### Bug Fixes
+
+* pass the lastEvaluatedKey from the last output object during merge ([c15be05](https://github.com/benhutchins/dyngoose/commit/c15be059e26c1db2376bc2b5d7c4e52b0554d963))
+
 # [2.11.0](https://github.com/benhutchins/dyngoose/compare/v2.10.1...v2.11.0) (2020-12-10)
 
 
