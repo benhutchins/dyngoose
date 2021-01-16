@@ -336,7 +336,8 @@ class FilterExpressionQuery<T extends Table> {
       if (_.includes(keyConditionAllowedOperators, operator)) {
         this.keyConditionsMap.push({ attribute, filter })
       } else {
-        throw new QueryError(`Cannot use ${operator} for a HASH key, can only use ${keyConditionAllowedOperators.join(', ')} operators`)
+        // you also can't put key attributes in the filter expression in DynamoDB, so they need to use a supported operator
+        throw new QueryError(`Cannot use ${operator} for a RANGE key, can only use ${keyConditionAllowedOperators.join(', ')} operators`)
       }
     } else {
       this.filterConditions.push(filter)
