@@ -27,7 +27,7 @@
     "url": "git+https://github.com/benhutchins/dyngoose.git"
   },
   "engines": {
-    "node": "^12.4.0"
+    "node": ">=12.4.0"
   },
   "author": "Benjamin Hutchins",
   "license": "ISC",

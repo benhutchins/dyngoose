@@ -3,7 +3,7 @@ on: [push]
 jobs:
   job:
     runs-on: ubuntu-latest
-    container: node:12
+    container: node:14
     timeout-minutes: 15
     services:
       dynamodb:

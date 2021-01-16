@@ -105,7 +105,7 @@ export class GlobalSecondaryIndex<T extends Table> {
     if (!has(filters, this.metadata.hash.propertyName)) {
       throw new QueryError('Cannot perform .get() on a GlobalSecondaryIndex without specifying a hash key value')
     } else if (this.metadata.range != null && !has(filters, this.metadata.range.propertyName)) {
-      throw new QueryError('Cannot perform .get() on a GlobalSecondaryIndex with a range key without specifying a range value')
+      throw new QueryError('Cannot perform .get() on a GlobalSecondaryIndex without specifying a range key value')
     } else if (Object.keys(filters).length > 2) {
       throw new QueryError('Cannot perform a .get() on a GlobalSecondaryIndex with additional filters, use .query() instead')
     }
