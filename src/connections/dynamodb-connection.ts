@@ -28,7 +28,7 @@ export class DynamoDBConnection implements Connection {
   }
 
   private httpAgent(endpoint: string | undefined): HTTPAgent {
-    if (endpoint?.startsWith('http://') === true) {
+    if (typeof endpoint === 'string' && endpoint.startsWith('http://')) {
       return new HTTPAgent({
         keepAlive: true,
       })

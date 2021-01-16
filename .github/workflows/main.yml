@@ -2,10 +2,8 @@ name: workflow
 on: [push]
 jobs:
   job:
-    strategy:
-      matrix:
-        node: [12, 14, 15]
     runs-on: ubuntu-latest
+    container: node:14
     timeout-minutes: 15
     services:
       dynamodb:
@@ -15,9 +13,6 @@ jobs:
           --workdir /home/dynamodblocal
           --health-cmd "curl --fail http://127.0.0.1:8000/shell/ || exit 1" --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
-      - uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node }}
       - uses: actions/checkout@v1
       - name: Prepare
         run: npm ci
