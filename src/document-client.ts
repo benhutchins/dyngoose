@@ -1,4 +1,5 @@
 import { DynamoDB } from 'aws-sdk'
+import { HelpfulError } from './errors'
 import { batchWrite } from './query/batch-write'
 import { buildQueryExpression } from './query/expression'
 import { UpdateConditions } from './query/filters'
@@ -28,8 +29,11 @@ export class DocumentClient<T extends Table> {
 
   public async put(record: T, conditions?: UpdateConditions<T>): Promise<DynamoDB.PutItemOutput> {
     const input = this.getPutInput(record, conditions)
-    const output = this.tableClass.schema.dynamo.putItem(input).promise()
-    return await output
+    try {
+      return await this.tableClass.schema.dynamo.putItem(input).promise()
+    } catch (ex) {
+      throw new HelpfulError(ex, this.tableClass)
+    }
   }
 
   public getUpdateInput(record: T, conditions?: UpdateConditions<T>): DynamoDB.UpdateItemInput {
@@ -38,8 +42,11 @@ export class DocumentClient<T extends Table> {
 
   public async update(record: T, conditions?: UpdateConditions<T>): Promise<DynamoDB.UpdateItemOutput> {
     const input = this.getUpdateInput(record, conditions)
-    const output = this.tableClass.schema.dynamo.updateItem(input).promise()
-    return await output
+    try {
+      return await this.tableClass.schema.dynamo.updateItem(input).promise()
+    } catch (ex) {
+      throw new HelpfulError(ex, this.tableClass)
+    }
   }
 
   public async batchPut(records: T[]): Promise<DynamoDB.BatchWriteItemOutput> {

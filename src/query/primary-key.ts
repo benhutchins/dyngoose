@@ -1,7 +1,7 @@
 import { DynamoDB } from 'aws-sdk'
 import { get, has, isArray, isDate, isObject } from 'lodash'
 import { BatchGet } from '../batch-get'
-import { QueryError } from '../errors'
+import { HelpfulError, QueryError } from '../errors'
 import * as Metadata from '../metadata'
 import { ITable, Table } from '../table'
 import { TableProperties } from '../tables/properties'
@@ -86,7 +86,11 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
 
   public async delete(hash: HashKeyType, range: RangeKeyType): Promise<DynamoDB.Types.DeleteItemOutput> {
     const input = this.getDeleteItemInput(hash, range)
-    return await this.table.schema.dynamo.deleteItem(input).promise()
+    try {
+      return await this.table.schema.dynamo.deleteItem(input).promise()
+    } catch (ex) {
+      throw new HelpfulError(ex, this.table, input)
+    }
   }
 
   public getGetInput(input: PrimaryKeyGetGetItemInput): DynamoDB.GetItemInput {
@@ -121,7 +125,14 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     getGetInput.key = record.getDynamoKey()
     const getItemInput = this.getGetInput(getGetInput as PrimaryKeyGetGetItemInput)
     const hasProjection = getItemInput.ProjectionExpression == null
-    const dynamoRecord = await this.table.schema.dynamo.getItem(getItemInput).promise()
+    let dynamoRecord: DynamoDB.GetItemOutput
+
+    try {
+      dynamoRecord = await this.table.schema.dynamo.getItem(getItemInput).promise()
+    } catch (ex) {
+      throw new HelpfulError(ex, this.table, getItemInput)
+    }
+
     if (dynamoRecord.Item != null) {
       return this.table.fromDynamo(dynamoRecord.Item, !hasProjection)
     }
@@ -204,8 +215,14 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     queryInput.KeyConditionExpression = expression.KeyConditionExpression
     queryInput.ExpressionAttributeNames = expression.ExpressionAttributeNames
     queryInput.ExpressionAttributeValues = expression.ExpressionAttributeValues
+    let output: DynamoDB.QueryOutput
 
-    const output = await this.table.schema.dynamo.query(queryInput).promise()
+    try {
+      output = await this.table.schema.dynamo.query(queryInput).promise()
+    } catch (ex) {
+      throw new HelpfulError(ex, this.table, queryInput)
+    }
+
     return QueryOutput.fromDynamoOutput(this.table, output, hasProjection)
   }
 
@@ -246,7 +263,12 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
 
   public async scan(filters?: QueryFilters<T> | undefined | null, input?: PrimaryKeyScanInput): Promise<QueryOutput<T>> {
     const scanInput = this.getScanInput(input, filters == null ? undefined : filters)
-    const output = await this.table.schema.dynamo.scan(scanInput).promise()
+    let output: DynamoDB.ScanOutput
+    try {
+      output = await this.table.schema.dynamo.scan(scanInput).promise()
+    } catch (ex) {
+      throw new HelpfulError(ex, this.table, scanInput)
+    }
     const hasProjection = scanInput.ProjectionExpression == null
     return QueryOutput.fromDynamoOutput(this.table, output, hasProjection)
   }

@@ -1,6 +1,6 @@
 import { DynamoDB } from 'aws-sdk'
 import { has } from 'lodash'
-import { QueryError } from '../errors'
+import { HelpfulError, QueryError } from '../errors'
 import * as Metadata from '../metadata'
 import { ITable, Table } from '../table'
 import { buildQueryExpression } from './expression'
@@ -67,7 +67,12 @@ export class LocalSecondaryIndex<T extends Table> {
     queryInput.ExpressionAttributeNames = expression.ExpressionAttributeNames
     queryInput.ExpressionAttributeValues = expression.ExpressionAttributeValues
     const hasProjection = queryInput.ProjectionExpression == null
-    const output = await this.tableClass.schema.dynamo.query(queryInput).promise()
+    let output: DynamoDB.QueryOutput
+    try {
+      output = await this.tableClass.schema.dynamo.query(queryInput).promise()
+    } catch (ex) {
+      throw new HelpfulError(ex, this.tableClass, queryInput)
+    }
     return QueryOutput.fromDynamoOutput(this.tableClass, output, hasProjection)
   }
 
@@ -95,7 +100,12 @@ export class LocalSecondaryIndex<T extends Table> {
       scanInput.ExpressionAttributeValues = expression.ExpressionAttributeValues
     }
     const hasProjection = scanInput.ProjectionExpression == null
-    const output = await this.tableClass.schema.dynamo.scan(scanInput).promise()
+    let output: DynamoDB.ScanOutput
+    try {
+      output = await this.tableClass.schema.dynamo.scan(scanInput).promise()
+    } catch (ex) {
+      throw new HelpfulError(ex, this.tableClass, scanInput)
+    }
     return QueryOutput.fromDynamoOutput(this.tableClass, output, hasProjection)
   }
 

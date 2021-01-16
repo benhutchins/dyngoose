@@ -1,6 +1,6 @@
 import { DynamoDB } from 'aws-sdk'
 import { get, has, isArray } from 'lodash'
-import { QueryError } from '../errors'
+import { HelpfulError, QueryError } from '../errors'
 import * as Metadata from '../metadata'
 import { ITable, Table } from '../table'
 import { buildQueryExpression } from './expression'
@@ -185,7 +185,14 @@ export class GlobalSecondaryIndex<T extends Table> {
 
     const queryInput = this.getQueryInput(input, filters)
     const hasProjection = queryInput.ProjectionExpression == null
-    const output = await this.tableClass.schema.dynamo.query(queryInput).promise()
+    let output: DynamoDB.QueryOutput
+
+    try {
+      output = await this.tableClass.schema.dynamo.query(queryInput).promise()
+    } catch (ex) {
+      throw new HelpfulError(ex, this.tableClass, queryInput)
+    }
+
     return QueryOutput.fromDynamoOutput<T>(this.tableClass, output, hasProjection)
   }
 
@@ -236,7 +243,12 @@ export class GlobalSecondaryIndex<T extends Table> {
   public async scan(filters?: QueryFilters<T> | undefined | null, input: GlobalSecondaryIndexScanInput = {}): Promise<QueryOutput<T>> {
     const scanInput = this.getScanInput(input, filters == null ? undefined : filters)
     const hasProjection = scanInput.ProjectionExpression == null
-    const output = await this.tableClass.schema.dynamo.scan(scanInput).promise()
+    let output: DynamoDB.ScanOutput
+    try {
+      output = await this.tableClass.schema.dynamo.scan(scanInput).promise()
+    } catch (ex) {
+      throw new HelpfulError(ex, this.tableClass, scanInput)
+    }
     return QueryOutput.fromDynamoOutput<T>(this.tableClass, output, hasProjection)
   }
 
