@@ -1,3 +1,10 @@
+# [2.12.0](https://github.com/benhutchins/dyngoose/compare/v2.11.1...v2.12.0) (2021-01-16)
+
+
+### Features
+
+* throw helpful errors with useful stacks ([b7c5f05](https://github.com/benhutchins/dyngoose/commit/b7c5f057b21762476362810b72657bf094cb080f))
+
 ## [2.11.1](https://github.com/benhutchins/dyngoose/compare/v2.11.0...v2.11.1) (2020-12-15)
 
 
