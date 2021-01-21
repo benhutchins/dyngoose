@@ -24,6 +24,32 @@ describe('Table', () => {
     }
   })
 
+  describe('.del', () => {
+    it('should allow attributes to be deleted', async () => {
+      const card = TestableTable.new()
+      card.id = 101
+      card.title = '101'
+      card.generic = 'something'
+      card.del('generic')
+      card.del('testString')
+      card.testString = 'value is set'
+
+      await card.save()
+
+      const reloadedCard = await TestableTable.primaryKey.get(101, '101')
+      expect(reloadedCard).to.be.instanceof(TestableTable)
+
+      if (reloadedCard != null) {
+        expect(reloadedCard.id).to.eq(101)
+        expect(reloadedCard.get('id')).to.eq(101)
+        expect(reloadedCard.title).to.eq('101')
+        expect(reloadedCard.generic).to.eq(null)
+        expect(reloadedCard.defaultedString).to.eq('SomeDefault')
+        expect(reloadedCard.testString).to.eq('value is set')
+      }
+    })
+  })
+
   it('should allow an attribute to be emptied', async () => {
     const card = new TestableTable()
     card.id = 10

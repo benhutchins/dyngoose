@@ -343,11 +343,15 @@ export class Table {
       this.__original[attributeName] = this.getAttributeDynamoValue(attributeName)
     }
 
+    // store the new value
     this.__attributes[attributeName] = attributeValue
 
     // track that this value was updated
     this.__updatedAttributes.push(attributeName)
+
+    // ensure the attribute is not marked for being deleted
     _.pull(this.__deletedAttributes, attributeName)
+
     return this
   }
 

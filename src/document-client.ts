@@ -32,7 +32,7 @@ export class DocumentClient<T extends Table> {
     try {
       return await this.tableClass.schema.dynamo.putItem(input).promise()
     } catch (ex) {
-      throw new HelpfulError(ex, this.tableClass)
+      throw new HelpfulError(ex, this.tableClass, input)
     }
   }
 
@@ -45,7 +45,7 @@ export class DocumentClient<T extends Table> {
     try {
       return await this.tableClass.schema.dynamo.updateItem(input).promise()
     } catch (ex) {
-      throw new HelpfulError(ex, this.tableClass)
+      throw new HelpfulError(ex, this.tableClass, input)
     }
   }
 
