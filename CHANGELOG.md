@@ -1,3 +1,10 @@
+## [2.12.1](https://github.com/benhutchins/dyngoose/compare/v2.12.0...v2.12.1) (2021-01-21)
+
+
+### Bug Fixes
+
+* provide the query input to the PrimaryKey put and update handlers ([14cb4e3](https://github.com/benhutchins/dyngoose/commit/14cb4e3603c6e999f9c5693a702135bafc2105de))
+
 # [2.12.0](https://github.com/benhutchins/dyngoose/compare/v2.11.1...v2.12.0) (2021-01-16)
 
 
