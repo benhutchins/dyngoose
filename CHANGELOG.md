@@ -1,3 +1,10 @@
+## [2.12.2](https://github.com/benhutchins/dyngoose/compare/v2.12.1...v2.12.2) (2021-01-21)
+
+
+### Bug Fixes
+
+* support for typescript 4.1.x ([74a8b83](https://github.com/benhutchins/dyngoose/commit/74a8b834b5958616f219199d173cabded8212fac))
+
 ## [2.12.1](https://github.com/benhutchins/dyngoose/compare/v2.12.0...v2.12.1) (2021-01-21)
 
 
