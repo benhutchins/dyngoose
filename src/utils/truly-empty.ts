@@ -26,7 +26,7 @@ export function isTrulyEmpty(value: any): boolean {
   }
 
   if (_.isObjectLike(value)) {
-    value = _.pickBy(value, _.identity)
+    value = _.omitBy(value, isTrulyEmpty)
     return _.isEmpty(value)
   }
 

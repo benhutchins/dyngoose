@@ -33,7 +33,17 @@ describe('utils/empty', () => {
     it('objects', () => {
       expect(isTrulyEmpty({})).to.eq(true)
       expect(isTrulyEmpty({ a: undefined })).to.eq(true)
+      expect(isTrulyEmpty({ a: {} })).to.eq(true)
+      expect(isTrulyEmpty({ a: { a: null } })).to.eq(true)
       expect(isTrulyEmpty({ a: true })).to.eq(false)
+      expect(isTrulyEmpty({ a: false })).to.eq(false)
+      expect(isTrulyEmpty({ a: { b: true } })).to.eq(false)
+      expect(isTrulyEmpty({ a: { b: false } })).to.eq(false)
+
+      // verify it does not mutate
+      const value = { prop: false }
+      expect(isTrulyEmpty(value)).to.eq(false)
+      expect(value).to.deep.eq({ prop: false })
     })
 
     it('arrays', () => {
