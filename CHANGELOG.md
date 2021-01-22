@@ -1,3 +1,10 @@
+## [2.12.3](https://github.com/benhutchins/dyngoose/compare/v2.12.2...v2.12.3) (2021-01-22)
+
+
+### Bug Fixes
+
+* remove isTrulyEmpty's reliance on lodash's identity ([d227771](https://github.com/benhutchins/dyngoose/commit/d22777167c5fb43e6168a631b36c0c0e33486924)), closes [#445](https://github.com/benhutchins/dyngoose/issues/445)
+
 ## [2.12.2](https://github.com/benhutchins/dyngoose/compare/v2.12.1...v2.12.2) (2021-01-21)
 
 
