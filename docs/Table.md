@@ -11,7 +11,7 @@ See [src/metadata/table.ts](https://github.com/benhutchins/dyngoose/blob/master/
 | `name` | Define a table name. | Defaults to the class name of your table. |
 | `throughput` | Define the throughput for your table. | Defaults to AWS default, which is auto-scaling enabled with a minimum of 5 read and 5 write capacity units. When not using CloudFormation, auto-scaling configuration is not created. |
 | `billingMode` | Define the [billing mode](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadWriteCapacityMode.html) for your table. | Defaults to `PROVISIONED`, but can set it to `PAY_PER_REQUEST`. |
-| `encrypted` | Enabled [encryption-at-rest](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/EncryptionAtRest.html) for the table. | `false` |
+              | `encrypted` | Enables[encryption-at-rest](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/EncryptionAtRest.html) using AWS managed CMK for the table. Because all user data stored in Amazon DynamoDB is fully encrypted at rest, leaving this as the default `false` value does not mean your data will be unencrypted. | `false` |
 | `stream` | Enables a [DynamoDB Stream](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html) for the table. | `false` |
 | `connection` | Specify a DynamoDB connection other than the default. | Uses the default connection. See [Connections](Connections.md). |
 
