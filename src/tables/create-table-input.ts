@@ -52,6 +52,14 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Dyn
     }
   }
 
+  if (schema.options.backup === true) {
+    if (forCloudFormation) {
+      (params as any).PointInTimeRecoverySpecification = {
+        PointInTimeRecoveryEnabled: true,
+      }
+    }
+  }
+
   if (schema.options.stream != null) {
     if (typeof schema.options.stream === 'boolean') {
       params.StreamSpecification = {

@@ -50,8 +50,6 @@ export interface TableMetadata {
   /**
    * Whether this table data should be encrypted at rest.
    *
-   * False by default, although it is recommended you enable it.
-   *
    * At this time, encryption can only be enabled using the AWS managed and owned keys.
    * There is no support for specifying KMS keys. Please make a ticket on if someone
    * wants to use that. {@link https://github.com/benhutchins/dyngoose/issues}
@@ -70,4 +68,17 @@ export interface TableMetadata {
    * @see {@link https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html}
    */
   readonly stream?: boolean | DynamoDB.StreamSpecification
+
+  /**
+   * Whether this table should be point-in-time recovery enabled.
+   *
+   * Recommended as part of of AWS Foundational Security Best Practices v1.0.0
+   * @see https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-standards-fsbp-controls.html#fsbp-dynamodb-2
+   *
+   * Enables Point-in-Time Recovery. With point-in-time recovery, you can restore that
+   * table to any point in time during the last 35 days.
+   *
+   * @see {@link https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/PointInTimeRecovery.html}
+   */
+  readonly backup?: boolean
 }

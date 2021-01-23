@@ -17,6 +17,16 @@ export async function createTable(schema: Schema, waitForReady = true): Promise<
         },
       }).promise()
     }
+
+    // Point-in-Time Recovery
+    if (schema.options.backup === true) {
+      await schema.dynamo.updateContinuousBackups({
+        TableName: schema.name,
+        PointInTimeRecoverySpecification: {
+          PointInTimeRecoveryEnabled: true,
+        },
+      }).promise()
+    }
   }
 
   return res.TableDescription as DynamoDB.TableDescription
