@@ -22,7 +22,7 @@ Since `output` is also a native JavaScript array, you can use also `output.lengt
 
 ## `output.scannedCount`
 
-The number of items evaluated. A high `scannedCount` value with a low `count` value indicates an inefficient query operation. If you did not use a filter in the request, then ScannedCount is the same as Count.
+The number of items evaluated. A high `scannedCount` value with a low `count` value indicates an inefficient query operation. If you did not use a filter in the request, then `scannedCount` is the same as `count`.
 
 For more information, see [Count and ScannedCount](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.Count) in the Amazon DynamoDB Developer Guide.
 

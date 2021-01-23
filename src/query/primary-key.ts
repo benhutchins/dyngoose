@@ -84,6 +84,15 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     return input
   }
 
+  /**
+   * Deletes an item from DynamoDB without having to load it from DynamoDB.
+   * It is recommended you specify additional conditions to ensure you are deleting the record you assume.
+   *
+   * If you have already loaded the the record, you can use `Table.delete()`.
+   *
+   * Performs a `DeleteItem` operation.
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_DeleteItem.html
+   */
   public async delete(hash: HashKeyType, range: RangeKeyType): Promise<DynamoDB.Types.DeleteItemOutput> {
     const input = this.getDeleteItemInput(hash, range)
     try {
@@ -105,6 +114,17 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     return getItemInput
   }
 
+  /**
+   * Get an item by its primary key (hash and range).
+   *
+   * `.get({ hashPropName: 'value', rangePropName: 'value' })`
+   * `.get(hash, range)`
+   *
+   * This can be used to load the complete document, helpful if you current have a
+   * projected version with only some attributes:
+   *
+   *   `.get(instanceOfTable)`
+   */
   public async get(filters: QueryFilters<T>, input?: PrimaryKeyGetInput): Promise<T | undefined>
   public async get(hash: HashKeyType, range: RangeKeyType, input?: PrimaryKeyGetInput): Promise<T | undefined>
   public async get(record: T, input?: PrimaryKeyGetInput): Promise<T | undefined>
@@ -156,6 +176,17 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     return await batch.retrieve()
   }
 
+  /**
+   * Deletes several items at once.
+   *
+   * WARNING: This is not atomic.
+   *          It is possible for some deletes to succeed with others fail.
+   *          Use Dyngoose.Transaction to perform an atomic deletion.
+   *
+   * Internally, Dyngoose will chunk the request to bypass the DynamoDB limit of 100 items per batch write.
+   *
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_BatchWriteItem.html
+   */
   public async batchDelete(inputs: Array<PrimaryKeyBatchInput<HashKeyType, RangeKeyType>>): Promise<DynamoDB.BatchWriteItemOutput> {
     return await batchWrite(
       this.table.schema.dynamo,

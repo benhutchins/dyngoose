@@ -270,14 +270,18 @@ The documents for all of the requests will be aggregated into a single `Dyngoose
 
 **This should be avoided under normal circumstances, paging is recommended.**
 
+```typescript
+const output = await Cat.search().filter('name').eq('Will').all()
+```
+
 ### `query.minimum(min)`
 
 Similar to `query.all`, `query.minimum` will page internally for you, however, unlike `query.all`, `query.minimum` will automatically stop once the minimum number of desires records is loaded. This can be useful for paging, infinite scrolling, or performing analytical operations.
 
 Similar to `query.exec()` and `query.all()` this will execute your query and return your results.
 
-The documents for all of the requests will be aggregated into a single `Dyngoose.QueryOutput` response.
+The documents for all of the requests will be aggregated into a single `Dyngoose.QueryOutput` response. If there are more objects, the request will contain a `LastEvaluatedKey` allowing you to continue paging with an additional operation.
 
 ```typescript
-const output = await Cat.search().filter('name').eq('Will').all()
+const output = await Cat.search().filter('name').eq('Will').minimum(25)
 ```
