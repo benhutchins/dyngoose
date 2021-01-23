@@ -1,3 +1,10 @@
+# [2.13.0](https://github.com/benhutchins/dyngoose/compare/v2.12.3...v2.13.0) (2021-01-23)
+
+
+### Features
+
+* support enabling point-in-time recovery ([0462f52](https://github.com/benhutchins/dyngoose/commit/0462f521befd8970b35cce645c1e50998209cab7))
+
 ## [2.12.3](https://github.com/benhutchins/dyngoose/compare/v2.12.2...v2.12.3) (2021-01-22)
 
 
