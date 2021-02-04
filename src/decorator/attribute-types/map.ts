@@ -78,6 +78,25 @@ export class MapAttributeType<Value> extends AttributeType<Value, MapAttributeMe
     return map as Value
   }
 
+  fromJSON(json: any): Value {
+    const mapValue: any = {}
+
+    _.each(json, (value: any, propertyName: string) => {
+      const attribute = _.find(this.attributes, (attr) => attr.propertyName === propertyName)
+
+      if (attribute != null) {
+        if (typeof attribute.type.fromJSON === 'function') {
+          value = attribute.type.fromJSON(value)
+        }
+
+        // compare to current value, to avoid unnecessarily marking attributes as needing to be saved
+        mapValue[propertyName] = value
+      }
+    })
+
+    return mapValue
+  }
+
   toJSON(mapValue: Value): any {
     const json: any = {}
 

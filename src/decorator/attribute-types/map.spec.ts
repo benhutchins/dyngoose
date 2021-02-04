@@ -171,7 +171,7 @@ describe('AttributeType/Map', () => {
           city: 'Springfield',
           state: 'Simpcity',
         },
-        dob: new Date(1950, 10, 15), // Nov 15 1950
+        dob: new Date(1956, 4, 12), // May 12, 1956
       },
     })
 
@@ -201,7 +201,7 @@ describe('AttributeType/Map', () => {
             },
           },
           dob: {
-            S: '1950-11-15',
+            S: '1956-05-12',
           },
         },
       })
@@ -220,7 +220,7 @@ describe('AttributeType/Map', () => {
             city: 'Springfield',
             state: 'Simpcity',
           },
-          dob: '1950-11-15',
+          dob: '1956-05-12',
         },
       })
     }
@@ -254,5 +254,27 @@ describe('AttributeType/Map', () => {
     expect(searchOutput.count).to.eq(1)
     expect(searchOutput.length).to.eq(1)
     expect(searchOutput[0].contact.name.first).to.eq('marge')
+  })
+
+  it('should support use of fromJSON to support REST APIs and DB Seeding', async () => {
+    const record = MapTestTable.fromJSON({
+      id: 3,
+      contact: {
+        name: {
+          first: 'Homer',
+          last: 'Simpson',
+        },
+        address: {
+          line1: '742 Evergreen Terrace',
+          city: 'Springfield',
+          state: 'Simpcity',
+        },
+        dob: '1956-05-12',
+      },
+    })
+
+    expect(record.contact.address?.line1).to.eq('742 Evergreen Terrace')
+    expect(record.contact.dob).to.be.instanceOf(Date)
+    expect(record.contact.dob?.toISOString()).to.eq('1956-05-12T00:00:00.000Z')
   })
 })
