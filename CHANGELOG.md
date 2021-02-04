@@ -1,3 +1,10 @@
+## [2.13.2](https://github.com/benhutchins/dyngoose/compare/v2.13.1...v2.13.2) (2021-02-04)
+
+
+### Bug Fixes
+
+* using Table.fromJSON() with a Map attribute ([1cce51b](https://github.com/benhutchins/dyngoose/commit/1cce51bae09f4ba617d4ff46015a9a6ae49102cc))
+
 ## [2.13.1](https://github.com/benhutchins/dyngoose/compare/v2.13.0...v2.13.1) (2021-02-04)
 
 
