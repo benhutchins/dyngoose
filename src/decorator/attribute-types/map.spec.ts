@@ -19,6 +19,7 @@ interface ITestContactMap {
     city: string
     state: string
   }
+  dob?: Date
 }
 
 @Dyngoose.$Table({
@@ -60,6 +61,7 @@ export class MapTestTable extends Dyngoose.Table {
           state: Dyngoose.Attribute.String(),
         },
       }),
+      dob: Dyngoose.Attribute.Date({ dateOnly: true }),
     },
   })
   public contact: ITestContactMap
@@ -169,6 +171,7 @@ describe('AttributeType/Map', () => {
           city: 'Springfield',
           state: 'Simpcity',
         },
+        dob: new Date(1950, 10, 15), // Nov 15 1950
       },
     })
 
@@ -197,6 +200,9 @@ describe('AttributeType/Map', () => {
               state: { S: 'Simpcity' },
             },
           },
+          dob: {
+            S: '1950-11-15',
+          },
         },
       })
 
@@ -214,6 +220,7 @@ describe('AttributeType/Map', () => {
             city: 'Springfield',
             state: 'Simpcity',
           },
+          dob: '1950-11-15',
         },
       })
     }

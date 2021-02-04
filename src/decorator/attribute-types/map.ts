@@ -7,6 +7,7 @@ import { IAttributeType } from '../../interfaces/attribute-type.interface'
 import { MapAttributeMetadata } from '../../metadata/attribute-types/map.metadata'
 import { Table } from '../../table'
 import { AttributeType } from '../../tables/attribute-type'
+import { isTrulyEmpty } from '../../utils/truly-empty'
 
 export class MapAttributeType<Value> extends AttributeType<Value, MapAttributeMetadata<Value>>
   implements IAttributeType<Value> {
@@ -51,7 +52,7 @@ export class MapAttributeType<Value> extends AttributeType<Value, MapAttributeMe
         if (attributeValue != null) {
           map[attribute.propertyName] = attributeValue
         }
-      } else {
+      } else if (this.metadata.ignoreUnknownProperties !== true) {
         throw new ValidationError(`Unknown property set on Map, ${propertyName}`)
       }
     }
@@ -75,5 +76,28 @@ export class MapAttributeType<Value> extends AttributeType<Value, MapAttributeMe
     }
 
     return map as Value
+  }
+
+  toJSON(mapValue: Value): any {
+    const json: any = {}
+
+    for (const propertyName of Object.keys(mapValue)) {
+      const attribute = _.find(this.attributes, (attr) => attr.propertyName === propertyName)
+      const value = _.get(mapValue, propertyName)
+
+      if (attribute != null) {
+        if (!isTrulyEmpty(value)) {
+          if (_.isFunction(attribute.type.toJSON)) {
+            json[propertyName] = attribute.type.toJSON(value, attribute)
+          } else {
+            json[propertyName] = value
+          }
+        }
+      } else if (this.metadata.ignoreUnknownProperties !== true) {
+        throw new ValidationError(`Unknown property set on Map, ${propertyName}`)
+      }
+    }
+
+    return json
   }
 }

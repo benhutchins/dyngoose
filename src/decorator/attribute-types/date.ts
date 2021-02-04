@@ -86,6 +86,10 @@ export class DateAttributeType extends AttributeType<Value, Metadata> implements
   }
 
   toJSON(dt: Value): string | number {
+    if (!(dt instanceof Date)) {
+      throw new Error('Attempting to pass a non-Date value to DateAttributeType.toJSON is not supported')
+    }
+
     if (this.metadata?.unixTimestamp === true || this.metadata?.timeToLive === true) {
       // the Math.floor gets rid of the decimal places, which would corrupt the value when being saved
       return Math.floor(dt.valueOf() / 1000)
