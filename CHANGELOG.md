@@ -1,3 +1,10 @@
+## [2.13.3](https://github.com/benhutchins/dyngoose/compare/v2.13.2...v2.13.3) (2021-02-05)
+
+
+### Bug Fixes
+
+* expose transaction CancellationReasons on the error ([92c73cd](https://github.com/benhutchins/dyngoose/commit/92c73cdd537d8364f572bdc15e5954c5986501f5))
+
 ## [2.13.2](https://github.com/benhutchins/dyngoose/compare/v2.13.1...v2.13.2) (2021-02-04)
 
 
