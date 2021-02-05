@@ -10,10 +10,22 @@ export async function transactWrite(
 ): Promise<DynamoDB.TransactWriteItemsOutput> {
   await Promise.all(
     _.chunk(requests, MAX_ITEMS).map(async (chunk) => {
-      const res: DynamoDB.TransactWriteItemsOutput = await documentClient.transactWriteItems({
+      const request = documentClient.transactWriteItems({
         TransactItems: [...chunk],
-      }).promise()
-      return res
+      })
+
+      // attempt to expose the cancellation reasons, giving the details on why the transaction failed
+      // @see https://github.com/aws/aws-sdk-js/issues/2464
+      request.on('extractError', (response) => {
+        if (response.error != null) {
+          try {
+            const reasons = JSON.parse(response.httpResponse.body.toString()).CancellationReasons;
+            (response.error as any).cancellationReasons = reasons
+          } catch (ex) {}
+        }
+      })
+
+      return await request.promise()
     }),
   )
 

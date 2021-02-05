@@ -1,4 +1,4 @@
-import { expect } from 'chai'
+import { expect, should } from 'chai'
 import { sortBy } from 'lodash'
 import { PrimaryKey } from './query/primary-key'
 import { Table } from './table'
@@ -91,5 +91,7 @@ describe('Transaction', () => {
 
     expect(error).to.be.instanceOf(Error)
       .with.property('name', 'TransactionCanceledException')
+
+    should().exist((error as any).cancellationReasons)
   })
 })
