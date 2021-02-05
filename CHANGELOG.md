@@ -1,3 +1,10 @@
+## [2.13.4](https://github.com/benhutchins/dyngoose/compare/v2.13.3...v2.13.4) (2021-02-05)
+
+
+### Bug Fixes
+
+* utility to expose whether a record is new ([0ec99e2](https://github.com/benhutchins/dyngoose/commit/0ec99e29b3571e0bcc17b70c1a9e5c1a983d92e0))
+
 ## [2.13.3](https://github.com/benhutchins/dyngoose/compare/v2.13.2...v2.13.3) (2021-02-05)
 
 
