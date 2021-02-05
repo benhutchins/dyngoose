@@ -488,6 +488,14 @@ export class Table {
   }
 
   /**
+   * Returns whether this is a newly created record that hasn't been saved
+   * It is not a guarantee that the hash key is not already in use
+   */
+  public isNew(): boolean {
+    return this.__putRequired
+  }
+
+  /**
    * Determine the best save operation method to use based upon the item's current state
    */
   public getSaveOperation(): 'put' | 'update' {
