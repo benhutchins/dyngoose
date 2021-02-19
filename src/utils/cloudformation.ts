@@ -30,9 +30,14 @@ export default async function createCloudFormationResources(input: MigrateTables
   for (const SomeTable of tables) {
     const properties = SomeTable.schema.createCloudFormationResource()
     const tableName = properties.TableName as string
-    let resourceName = _.upperFirst(SomeTable.name)
-    if (!resourceName.toLowerCase().endsWith('table')) {
-      resourceName += 'Table'
+    let resourceName: string
+    if (typeof SomeTable.schema.options.cloudFormationResourceName === 'string') {
+      resourceName = SomeTable.schema.options.cloudFormationResourceName
+    } else {
+      resourceName = _.upperFirst(SomeTable.name)
+      if (!resourceName.toLowerCase().endsWith('table')) {
+        resourceName += 'Table'
+      }
     }
     properties.TableName = `${prefix}${tableName}${suffix}`
     log(`Generated ${tableName} into ${resourceName} resource`)

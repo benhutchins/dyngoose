@@ -8,6 +8,15 @@ export interface TableMetadata {
   name: string
 
   /**
+   * Specify a custom name for the table's resource name in the generated CloudFormation
+   * template. When not specified, it'll default to using the Table's class name suffixed
+   * with 'Table', example:
+   *
+   *   `class User extends Dyngoose.Table {}` will become `UserTable`
+   */
+  cloudFormationResourceName?: string
+
+  /**
    * Optional extra data, used for your own logic.
    */
   extra?: any
