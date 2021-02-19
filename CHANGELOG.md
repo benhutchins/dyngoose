@@ -1,3 +1,10 @@
+# [2.14.0](https://github.com/benhutchins/dyngoose/compare/v2.13.4...v2.14.0) (2021-02-19)
+
+
+### Features
+
+* support specifying the CloudFormation resource name for a Table ([7f2598b](https://github.com/benhutchins/dyngoose/commit/7f2598bc1853361ec47bebab8013ec3e9231bce5))
+
 ## [2.13.4](https://github.com/benhutchins/dyngoose/compare/v2.13.3...v2.13.4) (2021-02-05)
 
 
