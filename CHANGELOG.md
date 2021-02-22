@@ -1,3 +1,10 @@
+# [2.15.0](https://github.com/benhutchins/dyngoose/compare/v2.14.0...v2.15.0) (2021-02-22)
+
+
+### Features
+
+* throw helpful errors when using MagicSearch and Batch utilities ([6ffb945](https://github.com/benhutchins/dyngoose/commit/6ffb9456e883bb3399469717351023cd5fa9f2db))
+
 # [2.14.0](https://github.com/benhutchins/dyngoose/compare/v2.13.4...v2.14.0) (2021-02-19)
 
 
