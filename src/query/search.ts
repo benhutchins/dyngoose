@@ -379,6 +379,11 @@ export class MagicSearch<T extends Table> {
 
     if (this.input.returnOnlyCount === true) {
       input.Select = 'COUNT'
+
+      // count does not allow ProjectionExpression to be specified
+      if (input.ProjectionExpression != null) {
+        delete input.ProjectionExpression
+      }
     }
 
     if (query.KeyConditionExpression != null) {
