@@ -1,3 +1,10 @@
+## [2.15.1](https://github.com/benhutchins/dyngoose/compare/v2.15.0...v2.15.1) (2021-02-22)
+
+
+### Bug Fixes
+
+* projection expression for MagicSearch ([aa09be3](https://github.com/benhutchins/dyngoose/commit/aa09be36ad5e17b431f20cca8620aeb89adbbe7b))
+
 # [2.15.0](https://github.com/benhutchins/dyngoose/compare/v2.14.0...v2.15.0) (2021-02-22)
 
 
