@@ -1,7 +1,7 @@
 import { DynamoDB } from 'aws-sdk'
 import { get, has, includes, isArray } from 'lodash'
 import { Attribute } from '../attribute'
-import { QueryError } from '../errors'
+import { HelpfulError, QueryError } from '../errors'
 import { Metadata } from '../index'
 import { ITable, Table } from '../table'
 import { Condition } from './condition'
@@ -401,7 +401,11 @@ export class MagicSearch<T extends Table> {
 
     // if we are filtering based on key conditions, run a query instead of a scan
     if ((input as DynamoDB.QueryInput).KeyConditionExpression != null) {
-      output = await this.tableClass.schema.dynamo.query(input).promise()
+      try {
+        output = await this.tableClass.schema.dynamo.query(input).promise()
+      } catch (ex) {
+        throw new HelpfulError(ex, this.tableClass, input)
+      }
     } else {
       if ((input as DynamoDB.QueryInput).ScanIndexForward === false) {
         throw new Error('Cannot use specify a sort direction, range order, or use ScanIndexForward on a scan operation. Try specifying the index being used.')
@@ -409,7 +413,11 @@ export class MagicSearch<T extends Table> {
         delete (input as DynamoDB.QueryInput).ScanIndexForward
       }
 
-      output = await this.tableClass.schema.dynamo.scan(input).promise()
+      try {
+        output = await this.tableClass.schema.dynamo.scan(input).promise()
+      } catch (ex) {
+        throw new HelpfulError(ex, this.tableClass, input)
+      }
     }
 
     return QueryOutput.fromDynamoOutput(this.tableClass, output, !hasProjection)

@@ -30,7 +30,7 @@ export class QueryError extends DyngooseError {}
 export class ValidationError extends DyngooseError {}
 
 export class BatchError extends DyngooseError {
-  constructor(message: string, public errors: AWSError[], public output: BatchWriteItemOutput) {
+  constructor(message: string, public errors: HelpfulError[], public output: BatchWriteItemOutput) {
     super(message)
   }
 }

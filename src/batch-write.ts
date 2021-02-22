@@ -1,9 +1,9 @@
-import { AWSError, DynamoDB } from 'aws-sdk'
+import { DynamoDB } from 'aws-sdk'
 import { RateLimit } from 'async-sema'
 import * as _ from 'lodash'
 import Config from './config'
 import { Table } from './table'
-import { BatchError } from './errors'
+import { BatchError, HelpfulError } from './errors'
 
 export class BatchWrite {
   public static readonly MAX_BATCH_ITEMS = 25 // limit imposed by DynamoDB
@@ -23,7 +23,7 @@ export class BatchWrite {
    * however, the whole batch operation is not atomic. This means that some puts and deletes can
    * be successful and others can fail.
    *
-   * To perform an atomic operation, use `Dyngoose.Transaction`. Additioanlyl, BatchWrites cannot
+   * To perform an atomic operation, use `Dyngoose.Transaction`. Additionally, BatchWrites cannot
    * update partial items, however, TransactWrites can.
    *
    * Uses a semaphore to limit parallel writes.
@@ -102,7 +102,7 @@ export class BatchWrite {
   public async commit(): Promise<DynamoDB.BatchWriteItemOutput> {
     const limit = RateLimit(this.options.maxParallelWrites == null ? BatchWrite.MAX_PARALLEL_WRITES : this.options.maxParallelWrites)
     const chunks = _.chunk(this.list, this.options.maxItemsPerBatch == null ? BatchWrite.MAX_BATCH_ITEMS : this.options.maxItemsPerBatch)
-    const exceptions: AWSError[] = []
+    const exceptions: HelpfulError[] = []
 
     const promises = chunks.map(async (chunk) => {
       // Wait if the maximum amount of parallel writes has been reached
@@ -133,7 +133,7 @@ export class BatchWrite {
         // save the exception to stop all future chunks, because without this the other chunks would continue
         // this is not perfect, because operations that are in-progress will still continue, although they
         // might fail as well for the same reason as the first exception
-        exceptions.push(ex)
+        exceptions.push(new HelpfulError(ex))
       }
     })
 

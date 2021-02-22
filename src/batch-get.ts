@@ -3,6 +3,7 @@ import { DynamoDB } from 'aws-sdk'
 import Config from './config'
 import { Table } from './table'
 import { buildProjectionExpression } from './query/projection-expression'
+import { HelpfulError } from './errors'
 
 export class BatchGet<T extends Table> {
   public static readonly MAX_BATCH_ITEMS = 100
@@ -111,14 +112,18 @@ export class BatchGet<T extends Table> {
 
         let output: DynamoDB.TransactGetItemsOutput | DynamoDB.BatchGetItemOutput
 
-        if (this.atomicity) {
-          output = await this.dynamo.transactGetItems({
-            TransactItems: transactItems,
-          }).promise()
-        } else {
-          output = await this.dynamo.batchGetItem({
-            RequestItems: requestMap,
-          }).promise()
+        try {
+          if (this.atomicity) {
+            output = await this.dynamo.transactGetItems({
+              TransactItems: transactItems,
+            }).promise()
+          } else {
+            output = await this.dynamo.batchGetItem({
+              RequestItems: requestMap,
+            }).promise()
+          }
+        } catch (ex) {
+          throw new HelpfulError(ex)
         }
 
         const responses = output.Responses == null ? [] : output.Responses
