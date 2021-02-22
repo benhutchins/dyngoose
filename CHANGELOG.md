@@ -1,3 +1,10 @@
+## [2.15.2](https://github.com/benhutchins/dyngoose/compare/v2.15.1...v2.15.2) (2021-02-22)
+
+
+### Bug Fixes
+
+* do not specify ProjectionExpression when performing a COUNT ([634f9e1](https://github.com/benhutchins/dyngoose/commit/634f9e1efd5d0ba1a94d5fc9e80f412796897e72))
+
 ## [2.15.1](https://github.com/benhutchins/dyngoose/compare/v2.15.0...v2.15.1) (2021-02-22)
 
 
