@@ -1,4 +1,5 @@
 import { DynamoDB } from 'aws-sdk'
+import { uniq } from 'lodash'
 import { ITable, Table } from '../table'
 
 interface IProjectionExpression {
@@ -586,14 +587,22 @@ const reservedKeywords = [
   'ZONE',
 ]
 
-export function buildProjectionExpression(tableClass: typeof Table | ITable<any>, attributes: string[]): IProjectionExpression {
+export function buildProjectionExpression(
+  tableClass: typeof Table | ITable<any>,
+  attributes: string[],
+  existingExpressionAttributeNames: DynamoDB.ExpressionAttributeNameMap = {},
+): IProjectionExpression {
   const projection: string[] = []
-  const map: DynamoDB.ExpressionAttributeNameMap = {}
+  const map = existingExpressionAttributeNames
+  attributes = uniq(attributes)
 
   let i = 0
 
   for (const attribute of attributes) {
-    if (reservedKeywords.includes(attribute.toUpperCase())) {
+    const existingMappedKey = Object.keys(map).find((key) => map[key] === attribute)
+    if (existingMappedKey != null) {
+      projection.push(existingMappedKey)
+    } else if (reservedKeywords.includes(attribute.toUpperCase())) {
       const mapped = `#p${i}`
       map[mapped] = attribute
       projection.push(mapped)

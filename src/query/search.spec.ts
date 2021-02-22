@@ -174,6 +174,19 @@ describe('Query/Search', () => {
     expect(input.ProjectionExpression).to.eq('id,title,testAttributeNameNotMatchingPropertyName')
   })
 
+  it('merges ExpressionAttributeNames correctly', async () => {
+    const search = new MagicSearch<TestableTable>(TestableTable)
+    search.filter('createdAt').between(new Date(), new Date())
+    search.attributes('name')
+    search.properties('id', 'createdAt', 'title', 'testAttributeNaming')
+    const input = search.getInput()
+    expect(input.ExpressionAttributeNames).to.deep.eq({
+      '#a0': 'createdAt',
+      '#p0': 'name',
+    })
+    expect(input.ProjectionExpression).to.eq('#p0,id,#a0,title,testAttributeNameNotMatchingPropertyName')
+  })
+
   describe('#exec', () => {
     it('should execute the search query', async () => {
       const search = new MagicSearch<TestableTable>(TestableTable)

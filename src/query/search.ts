@@ -351,7 +351,7 @@ export class MagicSearch<T extends Table> {
     if (this.input.projectionExpression != null) {
       input.ProjectionExpression = this.input.projectionExpression
     } else if (this.input.attributes != null) {
-      const expression = buildProjectionExpression(this.tableClass, this.input.attributes)
+      const expression = buildProjectionExpression(this.tableClass, this.input.attributes, input.ExpressionAttributeNames)
       input.Select = 'SPECIFIC_ATTRIBUTES'
       input.ProjectionExpression = expression.ProjectionExpression
       input.ExpressionAttributeNames = expression.ExpressionAttributeNames
