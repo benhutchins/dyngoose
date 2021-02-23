@@ -158,10 +158,15 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Dyn
         Projection: {
           ProjectionType: indexMetadata.projection == null ? 'ALL' : indexMetadata.projection,
         },
-        ProvisionedThroughput: {
+      }
+
+      if (schema.options.billingMode === 'PAY_PER_REQUEST') {
+        index.BillingMode = 'PAY_PER_REQUEST'
+      } else {
+        index.ProvisionedThroughput = {
           ReadCapacityUnits: throughput.read,
           WriteCapacityUnits: throughput.write,
-        },
+        }
       }
 
       if (indexMetadata.nonKeyAttributes != null && indexMetadata.nonKeyAttributes.length > 0) {
