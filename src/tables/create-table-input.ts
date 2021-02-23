@@ -160,9 +160,7 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Dyn
         },
       }
 
-      if (schema.options.billingMode === 'PAY_PER_REQUEST') {
-        index.BillingMode = 'PAY_PER_REQUEST'
-      } else {
+      if (schema.options.billingMode !== 'PAY_PER_REQUEST') {
         index.ProvisionedThroughput = {
           ReadCapacityUnits: throughput.read,
           WriteCapacityUnits: throughput.write,
