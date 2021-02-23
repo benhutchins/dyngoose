@@ -1,3 +1,11 @@
+## [2.15.3](https://github.com/benhutchins/dyngoose/compare/v2.15.2...v2.15.3) (2021-02-23)
+
+
+### Bug Fixes
+
+* 🐛 Billing mode pay per request for GSIs ([#453](https://github.com/benhutchins/dyngoose/issues/453)) ([7bce6be](https://github.com/benhutchins/dyngoose/commit/7bce6be561453b49cb13a2eeaf0c0f3a38e37fd4))
+* cannot specify BillingMode on the GSI input ([148d041](https://github.com/benhutchins/dyngoose/commit/148d04178e07a43c7d8e5c2b448067b3f556f146))
+
 ## [2.15.2](https://github.com/benhutchins/dyngoose/compare/v2.15.1...v2.15.2) (2021-02-22)
 
 
