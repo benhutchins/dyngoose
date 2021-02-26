@@ -51,11 +51,11 @@ export class DateAttributeType extends AttributeType<Value, Metadata> implements
 
     if (this.metadata?.unixTimestamp === true || this.metadata?.millisecondTimestamp === true || this.metadata?.timeToLive === true) {
       return {
-        N: this.toJSON(dt).toString(),
+        N: this.parseDate(dt).toString(),
       }
     } else {
       return {
-        S: this.toJSON(dt).toString(),
+        S: this.parseDate(dt).toString(),
       }
     }
   }
@@ -89,19 +89,6 @@ export class DateAttributeType extends AttributeType<Value, Metadata> implements
   }
 
   toJSON(dt: Value): string | number {
-    // support ISO formatted date strings
-    if (typeof dt === 'string') {
-      // if we are date only, support YYYY-MM-DD
-      if (this.metadata?.dateOnly === true && DateOnlyPattern.test(dt)) {
-        // parse YYYY-MM-DD and ensure we create the Date object in UTC
-        const b = (dt as string).split('-').map((d) => parseInt(d, 10))
-        console.log(b, dt)
-        dt = new Date(Date.UTC(b[0], --b[1], b[2]))
-      } else if (ISOPattern.test(dt)) {
-        dt = new Date(dt as string)
-      }
-    }
-
     if (!(dt instanceof Date)) {
       throw new Error('Attempting to pass a non-Date value to DateAttributeType.toJSON is not supported')
     }
@@ -117,5 +104,21 @@ export class DateAttributeType extends AttributeType<Value, Metadata> implements
     } else {
       return dt.toISOString()
     }
+  }
+
+  parseDate(dt: Value | string): string | number {
+    // support ISO formatted date strings
+    if (typeof dt === 'string') {
+      // if we are date only, support YYYY-MM-DD
+      if (this.metadata?.dateOnly === true && DateOnlyPattern.test(dt)) {
+        // parse YYYY-MM-DD and ensure we create the Date object in UTC
+        const b = dt.split('-').map((d) => parseInt(d, 10))
+        dt = new Date(Date.UTC(b[0], --b[1], b[2]))
+      } else if (ISOPattern.test(dt)) {
+        dt = new Date(dt)
+      }
+    }
+
+    return this.toJSON(dt as Date)
   }
 }
