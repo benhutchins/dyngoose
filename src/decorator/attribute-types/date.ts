@@ -10,6 +10,9 @@ import { stringToNumber } from './utils'
 type Value = Date
 type Metadata = DateAttributeMetadata
 
+const DateOnlyPattern = /^\d{4}-\d{2}-\d{2}$/
+const ISOPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
+
 export class DateAttributeType extends AttributeType<Value, Metadata> implements IAttributeType<Value> {
   type = DynamoAttributeType.String
 
@@ -86,6 +89,19 @@ export class DateAttributeType extends AttributeType<Value, Metadata> implements
   }
 
   toJSON(dt: Value): string | number {
+    // support ISO formatted date strings
+    if (typeof dt === 'string') {
+      // if we are date only, support YYYY-MM-DD
+      if (this.metadata?.dateOnly === true && DateOnlyPattern.test(dt)) {
+        // parse YYYY-MM-DD and ensure we create the Date object in UTC
+        const b = (dt as string).split('-').map((d) => parseInt(d, 10))
+        console.log(b, dt)
+        dt = new Date(Date.UTC(b[0], --b[1], b[2]))
+      } else if (ISOPattern.test(dt)) {
+        dt = new Date(dt as string)
+      }
+    }
+
     if (!(dt instanceof Date)) {
       throw new Error('Attempting to pass a non-Date value to DateAttributeType.toJSON is not supported')
     }

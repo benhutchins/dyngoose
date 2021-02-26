@@ -89,4 +89,20 @@ describe('AttributeType/Date', () => {
       })
     })
   })
+
+  describe('Passing strings', () => {
+    it('should allow strings to be passed with date only', async () => {
+      (record as any).dateOnly = '2021-02-24'
+
+      expect(record.dateOnly).to.be.a('date')
+      expect(record.dateOnly.toISOString()).to.eq('2021-02-24T00:00:00.000Z')
+    })
+
+    it('should allow strings to be passed with date and time', async () => {
+      (record as any).fullDate = '2018-01-25T23:55:39.000Z'
+
+      expect(record.fullDate).to.be.a('date')
+      expect(record.fullDate.toISOString()).to.eq('2018-01-25T23:55:39.000Z')
+    })
+  })
 })
