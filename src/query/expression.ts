@@ -252,6 +252,20 @@ class FilterExpressionQuery<T extends Table> {
         }
 
         const strValue = attr.toDynamoAssert(filter[1])
+
+        // convert sets to single values, since contains and not contains only work on the single value
+        // and sets do not support beginsWith so we don't have to be concerned with that here
+        if (strValue.SS != null) {
+          strValue.S = _.isArray(strValue.SS) ? strValue.SS[0] : strValue.SS
+          delete strValue.SS
+        } else if (strValue.NS != null) {
+          strValue.N = _.isArray(strValue.NS) ? strValue.NS[0] : strValue.NS
+          delete strValue.NS
+        } else if (strValue.BS != null) {
+          strValue.B = _.isArray(strValue.BS) ? strValue.BS[0] : strValue.BS
+          delete strValue.BS
+        }
+
         const queryOperator = operator === 'beginsWith' ? 'begins_with' : operator.replace(' ', '_')
         query = `${queryOperator}(${attrNameMappedTo}, ${variableName})`
         values[variableName] = strValue

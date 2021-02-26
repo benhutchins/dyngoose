@@ -37,6 +37,12 @@ export class TestableTable extends Dyngoose.Table {
   @Dyngoose.Attribute.Date({ millisecondTimestamp: true })
   public msTimestamp: Date
 
+  @Dyngoose.Attribute.Date({ dateOnly: true })
+  public dateOnly: Date
+
+  @Dyngoose.Attribute.Date()
+  public fullDate: Date
+
   @Dyngoose.Attribute('String', { default: 'SomeDefault' })
   public defaultedString: string
 
