@@ -1,3 +1,11 @@
+# [2.16.0](https://github.com/benhutchins/dyngoose/compare/v2.15.3...v2.16.0) (2021-02-26)
+
+
+### Features
+
+* accept ISO formatted strings for Date attributes ([843396a](https://github.com/benhutchins/dyngoose/commit/843396a8a5c5bbceec99446f9c7ee6051ee68b90))
+* add better typing for MagicSearch conditions ([27f01c9](https://github.com/benhutchins/dyngoose/commit/27f01c98920e0f625478d1beaba94850dfe556b0))
+
 ## [2.15.3](https://github.com/benhutchins/dyngoose/compare/v2.15.2...v2.15.3) (2021-02-23)
 
 
