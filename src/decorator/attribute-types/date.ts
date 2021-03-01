@@ -106,15 +106,26 @@ export class DateAttributeType extends AttributeType<Value, Metadata> implements
     }
   }
 
-  parseDate(dt: Value | string): string | number {
+  parseDate(dt: Value | string | number): string | number {
     // support ISO formatted date strings
     if (typeof dt === 'string') {
-      // if we are date only, support YYYY-MM-DD
+      // if date only, support YYYY-MM-DD
       if (this.metadata?.dateOnly === true && DateOnlyPattern.test(dt)) {
         // parse YYYY-MM-DD and ensure we create the Date object in UTC
         const b = dt.split('-').map((d) => parseInt(d, 10))
         dt = new Date(Date.UTC(b[0], --b[1], b[2]))
+      // if timestamp, assume the value is a timestamp
+      } else if (this.metadata?.unixTimestamp === true || this.metadata?.timeToLive === true) {
+        dt = new Date(stringToNumber(dt) * 1000)
+      } else if (this.metadata?.millisecondTimestamp === true) {
+        dt = new Date(stringToNumber(dt))
       } else if (ISOPattern.test(dt)) {
+        dt = new Date(dt)
+      }
+    } else if (typeof dt === 'number') {
+      if (this.metadata?.unixTimestamp === true || this.metadata?.timeToLive === true) {
+        dt = new Date(dt * 1000)
+      } else if (this.metadata?.millisecondTimestamp === true) {
         dt = new Date(dt)
       }
     }
