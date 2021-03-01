@@ -38,7 +38,7 @@ export interface AttributeMetadata<Value> {
   /**
    * Manipulate the value whenever it is read from the AttributeValue into Value
    */
-  manipulateRead?: (value: Value | null, attributeValue: AttributeValue, attribute: Attribute<any>) => Value | null
+  manipulateRead?: (value: Value | null, attributeValue: AttributeValue | null, attribute: Attribute<any>) => Value | null
 
   /**
    * Define custom validation logic.

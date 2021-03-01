@@ -89,7 +89,11 @@ export class Attribute<Value> {
 
     // all attributes support null
     if (attributeValue == null || attributeValue.NULL === true) {
-      return null
+      if (typeof this.metadata.manipulateRead === 'function') {
+        return this.metadata.manipulateRead(null, attributeValue, this)
+      } else {
+        return null
+      }
     }
 
     const value = this.type.fromDynamo(attributeValue, this)
