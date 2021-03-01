@@ -1,3 +1,11 @@
+## [2.16.1](https://github.com/benhutchins/dyngoose/compare/v2.16.0...v2.16.1) (2021-03-01)
+
+
+### Bug Fixes
+
+* allow manipulateRead to be used even when the value is null ([f2f2935](https://github.com/benhutchins/dyngoose/commit/f2f29359b32fafca1387b6a2ab252b9742ed908b))
+* allow manipulateWrite to be used when the value is null ([a204fcd](https://github.com/benhutchins/dyngoose/commit/a204fcd5148810c91a290a8c8072eb766b7c82bf))
+
 # [2.16.0](https://github.com/benhutchins/dyngoose/compare/v2.15.3...v2.16.0) (2021-02-26)
 
 
