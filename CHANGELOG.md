@@ -1,3 +1,10 @@
+## [2.16.2](https://github.com/benhutchins/dyngoose/compare/v2.16.1...v2.16.2) (2021-03-01)
+
+
+### Bug Fixes
+
+* date attributes should accept number timestamps ([75a88e6](https://github.com/benhutchins/dyngoose/commit/75a88e6af5163745a934c22151668ca56041b761))
+
 ## [2.16.1](https://github.com/benhutchins/dyngoose/compare/v2.16.0...v2.16.1) (2021-03-01)
 
 
