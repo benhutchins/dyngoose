@@ -292,20 +292,11 @@ class FilterExpressionQuery<T extends Table> {
         })
 
         const possibleVariableNamesStr = possibleVariableNames.join(', ')
-        query = `${attrNameMappedTo} ${operator === 'includes' ? 'IN' : 'NOT IN'} (${possibleVariableNamesStr})`
+        query = `${attrNameMappedTo} IN (${possibleVariableNamesStr})`
 
-        // if ((filter.operator === Query.OPERATOR.IN || filter.operator === Query.OPERATOR.NOT_IN) && _.isArray(filter.value)) {
-        //   this.parseArrayOfStrings(prefix, attr, filter.value, filter.operator)
-        // } else {
-        //   value = attr.toDynamo(filter.value)
-        //   operator = filter.operator
-
-        //   // convert String Set (SS) to a String (S)
-        //   if (value && _.isString(value.SS)) {
-        //     value.S = value.SS
-        //     delete value.SS
-        //   }
-        // }
+        if (operator === 'excludes') {
+          query = `NOT (${query})`
+        }
         break
       }
 

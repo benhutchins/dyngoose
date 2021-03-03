@@ -197,7 +197,7 @@ describe('query/expression', () => {
       expect(buildQueryExpression(schema, {
         someString: ['excludes', ['Apples', 'Carrots']],
       })).to.deep.equal({
-        FilterExpression: '#a0 NOT IN (:v00, :v01)',
+        FilterExpression: 'NOT (#a0 IN (:v00, :v01))',
         ExpressionAttributeNames: {
           '#a0': 'someString',
         },
@@ -285,6 +285,27 @@ describe('query/expression', () => {
         FilterExpression: '#a0 IN (:v00, :v01) AND #a1 <= :v1 AND #a2 = :v2',
         ExpressionAttributeNames: {
           '#a0': 'id',
+          '#a1': 'someNumber',
+          '#a2': 'someBool',
+        },
+        ExpressionAttributeValues: {
+          ':v00': { S: 'opt1' },
+          ':v01': { S: 'opt2' },
+          ':v1': { N: '-100' },
+          ':v2': { BOOL: true },
+        },
+      })
+    })
+
+    it('works with excludes/NOT IN operator', () => {
+      expect(buildQueryExpression(schema, {
+        someString: ['excludes', ['opt1', 'opt2']],
+        someNumber: ['<=', -100],
+        someBool: true,
+      })).to.deep.equal({
+        FilterExpression: 'NOT (#a0 IN (:v00, :v01)) AND #a1 <= :v1 AND #a2 = :v2',
+        ExpressionAttributeNames: {
+          '#a0': 'someString',
           '#a1': 'someNumber',
           '#a2': 'someBool',
         },
