@@ -1,3 +1,10 @@
+## [2.16.3](https://github.com/benhutchins/dyngoose/compare/v2.16.2...v2.16.3) (2021-03-03)
+
+
+### Bug Fixes
+
+* excludes operator incorrectly formatting the query ([7e37678](https://github.com/benhutchins/dyngoose/commit/7e3767863706ca2457379bcb75948db2951f7ffe))
+
 ## [2.16.2](https://github.com/benhutchins/dyngoose/compare/v2.16.1...v2.16.2) (2021-03-01)
 
 
