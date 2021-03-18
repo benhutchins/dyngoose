@@ -1,3 +1,10 @@
+## [2.16.4](https://github.com/benhutchins/dyngoose/compare/v2.16.3...v2.16.4) (2021-03-18)
+
+
+### Bug Fixes
+
+* apply defaults before importing values when using Table.fromJSON ([2d92a76](https://github.com/benhutchins/dyngoose/commit/2d92a76314608ad01bccfcd65326e07f20bf9a87))
+
 ## [2.16.3](https://github.com/benhutchins/dyngoose/compare/v2.16.2...v2.16.3) (2021-03-03)
 
 
