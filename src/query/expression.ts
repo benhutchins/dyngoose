@@ -288,7 +288,7 @@ class FilterExpressionQuery<T extends Table> {
           const value = attr.toDynamoAssert(possibleValue)
           const possibleVariableName = ':v' + prefix + String(possibleValueIndex)
           possibleVariableNames.push(possibleVariableName)
-          this.values[possibleVariableName] = value
+          values[possibleVariableName] = value
         })
 
         const possibleVariableNamesStr = possibleVariableNames.join(', ')
