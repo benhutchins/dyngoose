@@ -23,21 +23,21 @@ Each individual filter can specify additional conditions. See [Filter Conditions
 
 ```typescript
 // a simple search
-User.search({ email: 'john@example.com' }).exec()
+const users = await User.search({ email: 'john@example.com' }).exec()
 
 // perform a search for any email containing @example.com
-User.search({ email: ['contains', '@example.com'] }).exec()
+const users = await User.search({ email: ['contains', '@example.com'] }).exec()
 ```
 
 `.search` returns a [`MagicSearch`](MagicSearch.md) which can be call-chained to build more complex queries:
 
 ```typescript
-Invoice.search()
+const invoices = await Invoice.search()
   .filter('user').eq(user.id)
   .and()
-  .filter('status', 'unpaid')
+  .filter('status').eq('unpaid')
   .or()
-  .filter('status', 'partially-paid')
+  .filter('status').eq('partially-paid')
   .exec()
 ```
 
@@ -47,11 +47,44 @@ For more information on using the call-chaining, see the documentation on [Magic
 
 Get a record by it's primary key values. This returns the record instance directly or will return `void` if the record could not be found.
 
+```typescript
+// you can use filter by passing hash as an argument, and if there
+// is a range key on the table that will be the second argument
+const user = await User.primaryKey.query('hash value')
+
+// or you can pass the hash (and range) as a strongly-typed object
+const user = await User.primaryKey.query({
+  id: '…'
+})
+```
+
 You can also use `.get(hash, range)` which will use the `Dyngoose.Query.PrimaryKey` instance on the table.
+
+#### `.get` on Indexes
+
+`.get` cannot be used to perform a search or query of any kind if is used for retreiving a single document and assumes it will
+find only one document. For your table's PrimaryKey, DynamoDB forces a unique pairing between the hash and range key so this
+is ensured for you. For indexes, however, DynamoDB does not ensure that the indexes will be unique. For convenience, Dyngoose
+offers a `.get` method on indexes and will apply a `Limit` of `1`. If you define your indexes in a way that you can ensure the
+values will still be unique, `.get` can be helpful. In most circumstances it will be best to utilize `.query` and handle the
+situation when multiple records are returned (for indexes).
 
 ### `.primaryKey.query(filters)`
 
 Perform a filtered query on a table using the primary key. You must specify filters for your table's `HASH` and `RANGE`, but can additionally provide more filters to narrow the results.
+
+```typescript
+// query an index or a table's primary key
+const users = await User.emailIndex.query({
+  email: 'user@example.com',
+})
+
+// you can provide additional values if you'd like
+const users = await User.emailIndex.query({
+  email: 'user@example.com',
+  fullName: ['contains', 'Smith'],
+})
+```
 
 ### `.primaryKey.scan([filters])`
 
