@@ -1,3 +1,11 @@
+## [2.16.5](https://github.com/benhutchins/dyngoose/compare/v2.16.4...v2.16.5) (2021-05-25)
+
+
+### Bug Fixes
+
+* the order of arguments for beforeSave [#479](https://github.com/benhutchins/dyngoose/issues/479) ([821fcb5](https://github.com/benhutchins/dyngoose/commit/821fcb50a161c4409421663609ad8b767a9f58e8))
+* use of MagicSearch without filters for paging entire table/index ([9ba0309](https://github.com/benhutchins/dyngoose/commit/9ba03096d48be752faf771a73685ad17e14e5327)), closes [#478](https://github.com/benhutchins/dyngoose/issues/478)
+
 ## [2.16.4](https://github.com/benhutchins/dyngoose/compare/v2.16.3...v2.16.4) (2021-03-18)
 
 
