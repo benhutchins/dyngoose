@@ -592,7 +592,7 @@ export class Table {
   // #endregion public methods
 
   // #region protected methods
-  protected async beforeSave(meta?: any, conditions?: any): Promise<boolean> {
+  protected async beforeSave(conditions?: UpdateConditions<this>, meta?: any): Promise<boolean> {
     return true
   }
 
