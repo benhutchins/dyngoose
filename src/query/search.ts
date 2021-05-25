@@ -343,9 +343,12 @@ export class MagicSearch<T extends Table> {
     const input: DynamoDB.ScanInput | DynamoDB.QueryInput = {
       TableName: this.tableClass.schema.name,
       ConsistentRead: false,
-      ExpressionAttributeNames: query.ExpressionAttributeNames,
       ExpressionAttributeValues: query.ExpressionAttributeValues,
       FilterExpression: query.FilterExpression,
+    }
+
+    if (Object.keys(query.ExpressionAttributeNames).length > 0) {
+      input.ExpressionAttributeNames = query.ExpressionAttributeNames
     }
 
     if (this.input.projectionExpression != null) {

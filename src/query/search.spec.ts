@@ -202,6 +202,12 @@ describe('Query/Search', () => {
       const output = await search.exec()
       expect(output.length).to.eq(2)
     })
+
+    it('allowing paging the entire table when no filters are specified', async () => {
+      const search = new MagicSearch<TestableTable>(TestableTable)
+      const output = await search.exec()
+      expect(output.length).to.be.at.least(8)
+    })
   })
 
   describe('#all', () => {
