@@ -59,58 +59,66 @@ export class Schema {
   public defineAttributeProperties(): void {
     // for each attribute, add the get and set property handlers
     for (const attribute of this.attributes.values()) {
-      Object.defineProperty(
-        this.table.prototype,
-        attribute.propertyName,
-        {
-          configurable: true,
-          enumerable: true,
-          get(this: Table) {
-            return this.getAttribute(attribute.name)
+      if (!this.table.hasOwnProperty(attribute.propertyName)) {
+        Object.defineProperty(
+          this.table.prototype,
+          attribute.propertyName,
+          {
+            configurable: true,
+            enumerable: true,
+            get(this: Table) {
+              return this.getAttribute(attribute.name)
+            },
+            set(this: Table, value: any) {
+              this.setAttribute(attribute.name, value)
+            },
           },
-          set(this: Table, value: any) {
-            this.setAttribute(attribute.name, value)
-          },
-        },
-      )
+        )
+      }
     }
   }
 
   public defineGlobalSecondaryIndexes(): void {
     for (const indexMetadata of this.globalSecondaryIndexes) {
-      Object.defineProperty(
-        this.table,
-        indexMetadata.propertyName,
-        {
-          value: new Query.GlobalSecondaryIndex(this.table, indexMetadata),
-          writable: false,
-        },
-      )
+      if (!this.table.hasOwnProperty(indexMetadata.propertyName)) {
+        Object.defineProperty(
+          this.table,
+          indexMetadata.propertyName,
+          {
+            value: new Query.GlobalSecondaryIndex(this.table, indexMetadata),
+            writable: false,
+          },
+        )
+      }
     }
   }
 
   public defineLocalSecondaryIndexes(): void {
     for (const indexMetadata of this.localSecondaryIndexes) {
-      Object.defineProperty(
-        this.table,
-        indexMetadata.propertyName,
-        {
-          value: new Query.LocalSecondaryIndex(this.table, indexMetadata),
-          writable: false,
-        },
-      )
+      if (!this.table.hasOwnProperty(indexMetadata.propertyName)) {
+        Object.defineProperty(
+          this.table,
+          indexMetadata.propertyName,
+          {
+            value: new Query.LocalSecondaryIndex(this.table, indexMetadata),
+            writable: false,
+          },
+        )
+      }
     }
   }
 
   public definePrimaryKeyProperty(): void {
-    Object.defineProperty(
-      this.table,
-      this.primaryKey.propertyName,
-      {
-        value: new Query.PrimaryKey(this.table, this.primaryKey),
-        writable: false,
-      },
-    )
+    if (!this.table.hasOwnProperty(this.primaryKey.propertyName)) {
+      Object.defineProperty(
+        this.table,
+        this.primaryKey.propertyName,
+        {
+          value: new Query.PrimaryKey(this.table, this.primaryKey),
+          writable: false,
+        },
+      )
+    }
   }
 
   public setThroughput(throughput: number | IThroughput): void {

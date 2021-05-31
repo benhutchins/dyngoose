@@ -416,7 +416,7 @@ export class MagicSearch<T extends Table> {
       }
     } else {
       if ((input as DynamoDB.QueryInput).ScanIndexForward === false) {
-        throw new Error('Cannot use specify a sort direction, range order, or use ScanIndexForward on a scan operation. Try specifying the index being used.')
+        throw new Error('Cannot specify a sort direction, range order, or use ScanIndexForward on a scan operation. Try specifying the index being used.')
       } else {
         delete (input as DynamoDB.QueryInput).ScanIndexForward
       }
