@@ -65,7 +65,7 @@ await batch.commit()
 
 DynamoDB supports batch get operations via the [`BatchGetItem`](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_BatchGetItem.html) method. This operation allows you to retrieve records from one or more tables. To expose this functionality within Dyngoose, there is the `Dyngoose.BatchGet` class.
 
-### Example
+### Multi-Table Example
 
 ```typescript
 const batch = new Dyngoose.BatchGet()
@@ -74,7 +74,7 @@ const user = User.primaryKey.fromKey(…)
 const product = Product.primaryKey.fromKey(…)
 const order = Order.primaryKey.fromKey(…)
 
-// save new items
+// specify items to get
 batch.get(
   user,
   product,
@@ -91,4 +91,26 @@ console.log(items[1] instanceof Order) // true
 
 // the batch get operation also mutates the original object
 console.log(user.toJSON()) // will contain data
+```
+
+### Single-Table Example
+
+If you are getting items from only a single table, you can specify the table as a type argument:
+
+
+```typescript
+const batch = new Dyngoose.BatchGet<Product>()
+
+batch.get(
+  Product.primaryKey.fromKey(…),
+  Product.primaryKey.fromKey(…),
+  Product.primaryKey.fromKey(…),
+)
+
+// will prevent you from specifying other tables
+// batch.get(User.primaryKey.fromKey(…)) // throws a type error
+
+// retrieve all the records
+// comes back as a Product[] because the BatchGet it typed
+const products = await batch.retrieve()
 ```
