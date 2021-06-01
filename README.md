@@ -43,7 +43,7 @@ class Card extends Dyngoose.Table {
   static readonly primaryKey: Dyngoose.Query.PrimaryKey<Card, number, string>
 
   @Dyngoose.$DocumentClient()
-  static readonly writer: Dyngoose.DocumentClient<Card>
+  static readonly documentClient: Dyngoose.DocumentClient<Card>
 }
 
 // Perform table operations
