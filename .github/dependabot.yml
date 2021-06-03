@@ -1,0 +1,35 @@
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: monthly
+    time: "10:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: "@typescript-eslint/parser"
+    versions:
+    - 4.14.0
+    - 4.14.1
+  - dependency-name: "@typescript-eslint/eslint-plugin"
+    versions:
+    - 4.14.0
+    - 4.14.1
+  - dependency-name: eslint
+    versions:
+    - 7.18.0
+    - 7.19.0
+  - dependency-name: semantic-release
+    versions:
+    - 17.3.6
+    - 17.3.7
+  - dependency-name: aws-sdk
+    versions:
+    - 2.834.0
+  - dependency-name: "@typescript-eslint/eslint-plugin-tslint"
+    versions:
+    - 4.14.0
+    - 4.14.1
+  - dependency-name: husky
+    versions:
+    - 4.3.8
