@@ -1,3 +1,27 @@
+# [3.0.0](https://github.com/benhutchins/dyngoose/compare/v2.16.5...v3.0.0) (2021-08-21)
+
+
+### Bug Fixes
+
+* additional testing to prevent [null] output [#482](https://github.com/benhutchins/dyngoose/issues/482) ([59f0541](https://github.com/benhutchins/dyngoose/commit/59f0541f5fcacfce46fc559fbabafc5215dcea10))
+* querying by property names does not work as expected ([12e4d5d](https://github.com/benhutchins/dyngoose/commit/12e4d5dcc89ecec3f5ff56d742a0584209264edf)), closes [#494](https://github.com/benhutchins/dyngoose/issues/494)
+
+
+### Features
+
+* rework Table.save ([5ae4832](https://github.com/benhutchins/dyngoose/commit/5ae4832c2fc08a7e929bc6058a75f7a7bf37a604)), closes [#503](https://github.com/benhutchins/dyngoose/issues/503)
+* update operators ([1fa1133](https://github.com/benhutchins/dyngoose/commit/1fa1133c8fc10d931ec2187bb41d7234c530bbb8))
+
+
+### BREAKING CHANGES
+
+* This has changed the way the `Table.save` method
+accepts arguments. It now accepts an object of parameters, rather than
+two hard-coded arguments. In addition, I've removed the
+`Table.forceSave` method, that functionality is now integrated into the
+`Table.save` method and is available by passing `{ force: true }` in the
+parameters object.
+
 ## [2.16.5](https://github.com/benhutchins/dyngoose/compare/v2.16.4...v2.16.5) (2021-05-25)
 
 
