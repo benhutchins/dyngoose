@@ -77,6 +77,7 @@ describe('Table', () => {
     card.id = 10
     card.title = '100'
     card.testString = 'some value'
+    card.testAttributeNaming = 'test'
     await card.save()
     expect(card.testString).to.eq('some value', 'initial card created')
 
