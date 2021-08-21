@@ -102,8 +102,8 @@ describe('Table', () => {
         let error: Error | undefined
 
         try {
-          record.title = 'something blue'
-          await record.save({ id: 23 })
+          record.generic = 'something blue'
+          await record.save({ conditions: { generic: 'fail' } })
         } catch (ex) {
           error = ex
         }
@@ -121,11 +121,39 @@ describe('Table', () => {
 
         // save a new record, and confirm the id does not exist… useful to
         // confirm you are adding a new record and not unintentionally updating an existing one
-        await record.save({ id: ['not exists'] })
+        await record.save({ conditions: { id: ['not exists'] } })
 
         const reloaded = await TestableTable.primaryKey.get({ id: 22, title: 'bar' }, { consistent: true })
         expect(reloaded).to.be.instanceOf(TestableTable)
       })
+    })
+  })
+
+  describe('saving should support returnValue', () => {
+    it('should parse the returned values', async () => {
+      const newRecord = TestableTable.new({
+        id: 99,
+        title: 'new record',
+        generic: 'before update',
+        unixTimestamp: new Date(),
+      })
+      await newRecord.save()
+
+      // load the record we just created
+      const record = await TestableTable.primaryKey.fromKey({
+        id: 99,
+        title: 'new record',
+      })
+
+      record.generic = 'after update'
+      const output = await record.save({ returnOutput: true, operator: 'update', returnValues: 'ALL_OLD' })
+
+      expect(output.Attributes).to.not.be.a('undefined')
+
+      if (output.Attributes != null) {
+        const oldRecord = TestableTable.fromDynamo(output.Attributes)
+        expect(oldRecord.generic).to.eq('before update')
+      }
     })
   })
 
@@ -138,7 +166,7 @@ describe('Table', () => {
         let error: Error | undefined
 
         try {
-          await record.delete({ id: 24 })
+          await record.delete({ conditions: { id: 24 } })
         } catch (ex) {
           error = ex
         }
@@ -158,7 +186,7 @@ describe('Table', () => {
         // confirm you are adding a new record and not unintentionally updating an existing one
         await record.save()
 
-        await record.delete({ id: 24 })
+        await record.delete({ conditions: { id: 24 } })
 
         const reloaded = await TestableTable.primaryKey.get(record, { consistent: true })
         expect(reloaded).not.to.be.instanceOf(TestableTable)

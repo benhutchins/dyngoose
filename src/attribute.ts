@@ -1,7 +1,7 @@
 import { DynamoDB } from 'aws-sdk'
 import * as _ from 'lodash'
 import { ValidationError } from './errors'
-import { IAttributeType } from './interfaces/attribute-type.interface'
+import { IAttributeType } from './interfaces'
 import { AttributeMetadata } from './metadata/attribute'
 import { isTrulyEmpty } from './utils/truly-empty'
 

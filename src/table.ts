@@ -3,7 +3,7 @@ import * as _ from 'lodash'
 import { Attribute } from './attribute'
 import { DocumentClient } from './document-client'
 import * as Events from './events'
-import { Filters, UpdateConditions } from './query/filters'
+import { Filters } from './query/filters'
 import { MagicSearch, MagicSearchInput } from './query/search'
 import { createTable } from './tables/create-table'
 import { deleteTable } from './tables/delete-table'
@@ -473,17 +473,49 @@ export class Table {
    * Save this record to DynamoDB.
    *
    * Will check to see if there are changes to the record, if there are none the save request is ignored.
-   * To skip this check, use {@link this.forceSave} instead.
+   * To skip this check, use {@link Table.forceSave} instead.
    *
-   * Calls the {@link this.beforeSave} before saving the record.
-   * If {@link this.beforeSave} returns false, the save request is ignored.
+   * Calls the {@link Table.beforeSave} before saving the record.
+   * If {@link Table.beforeSave} returns false, the save request is ignored.
    *
-   * Automatically determines if the the save should use use a PutItem or UpdateItem request.
+   * Automatically determines if the the save should use a PutItem or UpdateItem request.
    */
-  public async save(conditions?: UpdateConditions<this>, meta?: any): Promise<void> {
-    const allowSave = await this.beforeSave(conditions, meta)
-    if (allowSave && this.hasChanges()) {
-      await this.forceSave(conditions, meta)
+  public async save(event?: undefined | { returnOutput?: false } & Events.SaveEvent<this>): Promise<void>
+  public async save(event: { returnOutput: true, operator?: undefined } & Events.SaveEvent<this>): Promise<DynamoDB.PutItemOutput | DynamoDB.UpdateItemOutput>
+  public async save(event: { returnOutput: true, operator: 'put' } & Events.SaveEvent<this>): Promise<DynamoDB.PutItemOutput>
+  public async save(event: { returnOutput: true, operator: 'update' } & Events.SaveEvent<this>): Promise<DynamoDB.UpdateItemOutput>
+  public async save(event?: Events.SaveEvent<this>): Promise<any> {
+    const operator = event?.operator ?? this.getSaveOperation()
+    const beforeSaveEvent: Events.BeforeSaveEvent<this> = {
+      ...event,
+      operator,
+    }
+    const allowSave = await this.beforeSave(beforeSaveEvent)
+
+    if (beforeSaveEvent.force === true || (allowSave !== false && this.hasChanges())) {
+      let output: DynamoDB.PutItemOutput | DynamoDB.UpdateItemOutput
+      if (beforeSaveEvent.operator === 'put') {
+        output = await this.table.documentClient.put(this, beforeSaveEvent)
+        this.__putRequired = false
+      } else {
+        output = await this.table.documentClient.update(this, beforeSaveEvent)
+      }
+
+      // trigger afterSave before clearing values, so the hook can determine what has been changed
+      await this.afterSave({
+        ...beforeSaveEvent,
+        output,
+        deletedAttributes: this.__removedAttributes,
+        updatedAttributes: this.__updatedAttributes,
+      })
+
+      // reset internal tracking of changes attributes
+      this.__removedAttributes = []
+      this.__updatedAttributes = []
+
+      if (beforeSaveEvent.returnOutput === true) {
+        return output
+      }
     }
   }
 
@@ -500,7 +532,7 @@ export class Table {
    */
   public getSaveOperation(): 'put' | 'update' {
     let type: 'put' | 'update'
-    if (this.__putRequired) {
+    if (this.__putRequired || !this.hasChanges()) {
       this.__putRequired = false
       type = 'put'
     } else {
@@ -510,52 +542,30 @@ export class Table {
   }
 
   /**
-   * Saves this record without calling beforeSave or considering if there are changed attributes.
-   *
-   * Most of the time, you should use {@link this.save} instead.
-   */
-  public async forceSave(conditions?: UpdateConditions<this>, meta?: any): Promise<void> {
-    const type = this.getSaveOperation()
-    let output: DynamoDB.PutItemOutput | DynamoDB.UpdateItemOutput
-    if (type === 'put') {
-      output = await this.table.documentClient.put(this, conditions)
-      this.__putRequired = false
-    } else {
-      output = await this.table.documentClient.update(this, conditions)
-    }
-
-    // trigger afterSave before clearing values, so the hook can determine what has been changed
-    await this.afterSave({
-      type,
-      output,
-      meta,
-      deletedAttributes: this.__deletedAttributes,
-      updatedAttributes: this.__updatedAttributes,
-    })
-
-    // reset internal tracking of changes attributes
-    this.__deletedAttributes = []
-    this.__updatedAttributes = []
-  }
-
-  /**
    * Deletes this record from DynamoDB.
    *
-   * Before deleting, it will call {@link this.beforeDelete}. If {@link this.beforeDelete}
+   * Before deleting, it will call {@link Table.beforeDelete}. If {@link Table.beforeDelete}
    * returns false then this record will not be deleted.
    *
-   * After deleting, {@link this.afterDelete} will be called.
-   *
-   * @param {UpdateConditions} conditions Optional conditions
-   * @param {any} meta Optional metadata for the action, passed to {@link this.beforeDelete}
-   *                   and {@link this.afterDelete}.
+   * After deleting, {@link Table.afterDelete} will be called.
    */
-  public async delete(conditions?: UpdateConditions<this>, meta?: any): Promise<void> {
-    const allowDeletion = await this.beforeDelete(meta)
+  public async delete(event?: { returnOutput?: false } & Events.DeleteEvent<this>): Promise<void>
+  public async delete(event: { returnOutput: true } & Events.DeleteEvent<this>): Promise<DynamoDB.DeleteItemOutput>
+  public async delete(event?: Events.DeleteEvent<this>): Promise<any> {
+    const beforeDeleteEvent = { ...event }
+    const allowDeletion = await this.beforeDelete(beforeDeleteEvent)
 
     if (allowDeletion) {
-      const output = await this.table.documentClient.delete(this, conditions)
-      await this.afterDelete(output, meta)
+      const output = await this.table.documentClient.delete(this, event?.conditions)
+      const afterDeleteEvent: Events.AfterDeleteEvent<this> = {
+        ...beforeDeleteEvent,
+        output,
+      }
+      await this.afterDelete(afterDeleteEvent)
+
+      if (beforeDeleteEvent.returnOutput === true) {
+        return output
+      }
     }
   }
 
@@ -592,14 +602,14 @@ export class Table {
   // #endregion public methods
 
   // #region protected methods
-  protected async beforeSave(conditions?: UpdateConditions<this>, meta?: any): Promise<boolean> {
+  protected async beforeSave(event: Events.BeforeSaveEvent<this>): Promise<boolean | undefined> {
     return true
   }
 
   /**
    * After a record is deleted, this handler is called.
    */
-  protected async afterSave(event: Events.AfterSaveEvent): Promise<void> {
+  protected async afterSave(event: Events.AfterSaveEvent<this>): Promise<void> {
     return undefined
   }
 
@@ -607,29 +617,30 @@ export class Table {
    * Before a record is deleted, this handler is called and if the promise
    * resolves as false, the delete request will be ignored.
    */
-  protected async beforeDelete(meta?: any): Promise<boolean> {
+  protected async beforeDelete(event: Events.BeforeDeleteEvent<this>): Promise<boolean> {
     return true
   }
 
   /**
    * After a record is deleted, this handler is called.
    */
-  protected async afterDelete(output: DynamoDB.DeleteItemOutput, meta?: any): Promise<void> {
+  protected async afterDelete(event: Events.AfterDeleteEvent<this>): Promise<void> {
     return undefined
   }
 
-  protected setByAttribute(attribute: Attribute<any>, value: any, force = false): this {
+  protected setByAttribute(attribute: Attribute<any>, value: any, params: SetPropParams = {}): this {
     const attributeValue = attribute.toDynamo(value)
 
     // avoid recording the value if it is unchanged, so we do not send it as an updated value during a save
-    if (!force && !_.isUndefined(this.__attributes[attribute.name]) && _.isEqual(this.__attributes[attribute.name], attributeValue)) {
+    if (params.force !== true && !_.isUndefined(this.__attributes[attribute.name]) && _.isEqual(this.__attributes[attribute.name], attributeValue)) {
       return this
     }
 
     if (attributeValue == null) {
-      this.deleteAttribute(attribute.name)
+      this.removeAttribute(attribute.name)
     } else {
       this.setAttributeDynamoValue(attribute.name, attributeValue)
+      this.setAttributeUpdateOperator(attribute.name, params.operator ?? 'set')
     }
 
     return this

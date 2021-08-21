@@ -1,7 +1,7 @@
 import { DynamoDB } from 'aws-sdk'
 import { Attribute } from '../attribute'
 import { DynamoAttributeTypes } from '../dynamo-attribute-types'
-import { IAttributeType } from '../interfaces/attribute-type.interface'
+import { IAttributeType } from '../interfaces'
 import { AttributeMetadata } from '../metadata/attribute'
 import { ITable, Table } from '../table'
 import { Schema } from './schema'

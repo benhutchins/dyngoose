@@ -2,7 +2,7 @@ import { DynamoDB } from 'aws-sdk'
 import { trim } from 'lodash'
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
 import { ValidationError } from '../../errors'
-import { IAttributeType } from '../../interfaces/attribute-type.interface'
+import { IAttributeType } from '../../interfaces'
 import { StringAttributeMetadata } from '../../metadata/attribute-types/string.metadata'
 import { AttributeType } from '../../tables/attribute-type'
 

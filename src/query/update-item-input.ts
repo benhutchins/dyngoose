@@ -1,19 +1,30 @@
 import { DynamoDB } from 'aws-sdk'
 import * as _ from 'lodash'
+import { DynamoReturnValues } from '../interfaces'
 import { Table } from '../table'
 import { buildQueryExpression } from './expression'
 import { UpdateConditions } from './filters'
+
+export interface UpdateItemInputParams<T extends Table> {
+  conditions?: UpdateConditions<T>
+  returnValues?: DynamoReturnValues
+  returnConsumedCapacity?: DynamoDB.ReturnConsumedCapacity
+}
 
 interface UpdateItemInput extends DynamoDB.UpdateItemInput {
   UpdateExpression: string
 }
 
-export function getUpdateItemInput<T extends Table>(record: T, conditions?: UpdateConditions<T>): UpdateItemInput {
+export function getUpdateItemInput<T extends Table>(record: T, params?: UpdateItemInputParams<T>): UpdateItemInput {
   const tableClass = (record.constructor as typeof Table)
   const input: DynamoDB.UpdateItemInput = {
     TableName: tableClass.schema.name,
     Key: record.getDynamoKey(),
-    ReturnValues: 'NONE', // we don't need to get back what we just set
+    ReturnValues: params?.returnValues ?? 'NONE',
+  }
+
+  if (params?.returnConsumedCapacity != null) {
+    input.ReturnConsumedCapacity = params.returnConsumedCapacity
   }
 
   const sets: string[] = []
@@ -60,8 +71,8 @@ export function getUpdateItemInput<T extends Table>(record: T, conditions?: Upda
     updateExpression += 'REMOVE ' + removes.join(', ')
   }
 
-  if (conditions != null) {
-    const conditionExpression = buildQueryExpression(tableClass.schema, conditions)
+  if (params?.conditions != null) {
+    const conditionExpression = buildQueryExpression(tableClass.schema, params.conditions)
     input.ConditionExpression = conditionExpression.FilterExpression
     Object.assign(attributeNameMap, conditionExpression.ExpressionAttributeNames)
     Object.assign(attributeValueMap, conditionExpression.ExpressionAttributeValues)
