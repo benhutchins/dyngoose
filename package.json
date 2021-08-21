@@ -48,7 +48,7 @@
     "@typescript-eslint/eslint-plugin-tslint": "^4.4.1",
     "@typescript-eslint/parser": "^4.4.1",
     "aws-sdk": "^2.627.0",
-    "chai": "4.2.0",
+    "chai": "4.3.4",
     "check-engine": "1.10.0",
     "eslint": "^7.11.0",
     "eslint-config-standard-with-typescript": "^19.0.1",
