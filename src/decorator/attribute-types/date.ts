@@ -1,7 +1,7 @@
 import { DynamoDB } from 'aws-sdk'
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
 import { SchemaError } from '../../errors'
-import { IAttributeType } from '../../interfaces/attribute-type.interface'
+import { IAttributeType } from '../../interfaces'
 import { DateAttributeMetadata } from '../../metadata/attribute-types/date.metadata'
 import { Table } from '../../table'
 import { AttributeType } from '../../tables/attribute-type'

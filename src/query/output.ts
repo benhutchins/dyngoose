@@ -12,7 +12,13 @@ export class QueryOutput<T extends Table> extends Array<T> {
 
     if (output.Items != null) {
       for (const item of output.Items) {
-        items.push(tableClass.fromDynamo(item, !hasProjection))
+        if (item != null) {
+          const instance = tableClass.fromDynamo(item, !hasProjection)
+
+          if (instance != null) {
+            items.push(instance)
+          }
+        }
       }
     }
 
@@ -98,10 +104,13 @@ export class QueryOutput<T extends Table> extends Array<T> {
     records: T[],
     protected readonly tableClass: ITable<T>,
   ) {
-    super(records.length)
+    super()
 
     for (let i = 0; i < records.length; i++) {
-      this[i] = records[i]
+      const item = records[i]
+      if (item != null) {
+        this[i] = item
+      }
     }
   }
 }

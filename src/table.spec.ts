@@ -50,6 +50,28 @@ describe('Table', () => {
     })
   })
 
+  it('should support update operators', async () => {
+    const card = TestableTable.new({
+      id: 98,
+      title: '98',
+      testString: 'some value',
+      testNumber: 11,
+      testNumberSet: [1, 2, 3],
+    })
+    await card.save()
+    expect(card.testNumber).to.eq(11, 'num eq 11')
+
+    card.set('testNumber', 5, { operator: 'decrement' })
+    await card.save()
+
+    const reloadedCard = await TestableTable.primaryKey.get(card)
+    expect(reloadedCard).to.be.instanceof(TestableTable)
+
+    if (reloadedCard != null) {
+      expect(reloadedCard.testNumber).to.eq(11 - 5, 'decrement worked')
+    }
+  })
+
   it('should allow an attribute to be emptied', async () => {
     const card = new TestableTable()
     card.id = 10
@@ -75,6 +97,7 @@ describe('Table', () => {
     card.id = 10
     card.title = '100'
     card.expiresAt = new Date(Date.now() + 5000) // 5 secs away
+    card.testAttributeNaming = 'test'
     await card.save()
 
     // Wait 15 seconds
@@ -82,6 +105,14 @@ describe('Table', () => {
 
     const reloaded = await TestableTable.primaryKey.get(10, '100', { consistent: true })
     expect(reloaded).to.eq(undefined)
+  })
+
+  it('should be able to query by property names', async () => {
+    const results = await TestableTable.primaryKey.scan({
+      testAttributeNaming: 'test',
+    })
+
+    expect(results.length).to.eq(1)
   })
 
   describe('saving should support conditions', () => {
@@ -93,8 +124,8 @@ describe('Table', () => {
         let error: Error | undefined
 
         try {
-          record.title = 'something blue'
-          await record.save({ id: 23 })
+          record.generic = 'something blue'
+          await record.save({ conditions: { generic: 'fail' } })
         } catch (ex) {
           error = ex
         }
@@ -112,11 +143,39 @@ describe('Table', () => {
 
         // save a new record, and confirm the id does not exist… useful to
         // confirm you are adding a new record and not unintentionally updating an existing one
-        await record.save({ id: ['not exists'] })
+        await record.save({ conditions: { id: ['not exists'] } })
 
         const reloaded = await TestableTable.primaryKey.get({ id: 22, title: 'bar' }, { consistent: true })
         expect(reloaded).to.be.instanceOf(TestableTable)
       })
+    })
+  })
+
+  describe('saving should support returnValue', () => {
+    it('should parse the returned values', async () => {
+      const newRecord = TestableTable.new({
+        id: 99,
+        title: 'new record',
+        generic: 'before update',
+        unixTimestamp: new Date(),
+      })
+      await newRecord.save()
+
+      // load the record we just created
+      const record = await TestableTable.primaryKey.fromKey({
+        id: 99,
+        title: 'new record',
+      })
+
+      record.generic = 'after update'
+      const output = await record.save({ returnOutput: true, operator: 'update', returnValues: 'ALL_OLD' })
+
+      expect(output.Attributes).to.not.be.a('undefined')
+
+      if (output.Attributes != null) {
+        const oldRecord = TestableTable.fromDynamo(output.Attributes)
+        expect(oldRecord.generic).to.eq('before update')
+      }
     })
   })
 
@@ -129,7 +188,7 @@ describe('Table', () => {
         let error: Error | undefined
 
         try {
-          await record.delete({ id: 24 })
+          await record.delete({ conditions: { id: 24 } })
         } catch (ex) {
           error = ex
         }
@@ -149,7 +208,7 @@ describe('Table', () => {
         // confirm you are adding a new record and not unintentionally updating an existing one
         await record.save()
 
-        await record.delete({ id: 24 })
+        await record.delete({ conditions: { id: 24 } })
 
         const reloaded = await TestableTable.primaryKey.get(record, { consistent: true })
         expect(reloaded).not.to.be.instanceOf(TestableTable)

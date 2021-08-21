@@ -10,7 +10,9 @@ Elegant DynamoDB object modeling for Typescript.
 
 Let's face it, all good databases need good model casting. DynamoDB is powerful but libraries that used it were not. That's where Dyngoose comes in.
 
-[Read the docs!](https://github.com/benhutchins/dyngoose/blob/master/docs)
+## Getting Started
+
+[Take a look the docs!](https://github.com/benhutchins/dyngoose/blob/master/docs/Home.md) to find information about how to get started.
 
 ## Features
 
@@ -35,6 +37,9 @@ class Card extends Dyngoose.Table {
 
   @Dyngoose.Attribute.String()
   public title: string
+
+  @Dyngoose.Attribute.Number()
+  public number: number
 
   @Dyngoose.Attribute.Date({ timeToLive: true })
   public expiresAt: Date
@@ -71,7 +76,7 @@ await Card.documentClient.batchPut([
 ])
 
 // Get record by the primary key
-await Card.primaryKey.get(100, 'Title')
+await Card.primaryKey.get({ id: 100, title: 'Title' })
 
 // BatchGet
 // This array is strongly typed such as Array<[number, string]> so don't worry.
@@ -104,6 +109,11 @@ for (const card of cards) {
 
 // the output contains additional properties
 console.log(`Your query returned ${cards.count} and scanned ${cards.scannedCount} documents`)
+
+// Atomic counters, advanced update expressions
+// Increment or decrement automatically, based on the current value in DynamoDB
+card.set('number', 2, { operator: 'increment' }) // if the current value had been 5, it would now be 7
+card.set('number', 2, { operator: 'decrement' }) // if the current value had been 5, it would now be 3
 ```
 
 ### TS Compiler Setting

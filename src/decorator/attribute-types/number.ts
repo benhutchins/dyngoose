@@ -1,7 +1,7 @@
 import { DynamoDB } from 'aws-sdk'
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
 import { ValidationError } from '../../errors'
-import { IAttributeType } from '../../interfaces/attribute-type.interface'
+import { IAttributeType } from '../../interfaces'
 import { NumberAttributeMetadata } from '../../metadata/attribute-types/number.metadata'
 import { AttributeType } from '../../tables/attribute-type'
 import { isNumber, numberToString, stringToNumber } from './utils'

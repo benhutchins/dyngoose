@@ -4,21 +4,28 @@ import { batchWrite } from './query/batch-write'
 import { buildQueryExpression } from './query/expression'
 import { UpdateConditions } from './query/filters'
 import { transactWrite } from './query/transact-write'
-import { getUpdateItemInput } from './query/update-item-input'
+import { getUpdateItemInput, UpdateItemInputParams } from './query/update-item-input'
 import { ITable, Table } from './table'
+
+interface PutItemInputParams<T extends Table> extends UpdateItemInputParams<T> {
+}
 
 export class DocumentClient<T extends Table> {
   constructor(private readonly tableClass: ITable<T>) {
   }
 
-  public getPutInput(record: T, conditions?: UpdateConditions<T>): DynamoDB.PutItemInput {
+  public getPutInput(record: T, params?: PutItemInputParams<T>): DynamoDB.PutItemInput {
     const input: DynamoDB.PutItemInput = {
       TableName: this.tableClass.schema.name,
       Item: record.toDynamo(),
     }
 
-    if (conditions != null) {
-      const conditionExpression = buildQueryExpression(this.tableClass.schema, conditions)
+    if (params?.returnValues != null) {
+      input.ReturnValues = params.returnValues
+    }
+
+    if (params?.conditions != null) {
+      const conditionExpression = buildQueryExpression(this.tableClass.schema, params.conditions)
       input.ConditionExpression = conditionExpression.FilterExpression
       input.ExpressionAttributeNames = conditionExpression.ExpressionAttributeNames
       input.ExpressionAttributeValues = conditionExpression.ExpressionAttributeValues
@@ -27,8 +34,8 @@ export class DocumentClient<T extends Table> {
     return input
   }
 
-  public async put(record: T, conditions?: UpdateConditions<T>): Promise<DynamoDB.PutItemOutput> {
-    const input = this.getPutInput(record, conditions)
+  public async put(record: T, params?: PutItemInputParams<T>): Promise<DynamoDB.PutItemOutput> {
+    const input = this.getPutInput(record, params)
     try {
       return await this.tableClass.schema.dynamo.putItem(input).promise()
     } catch (ex) {
@@ -36,12 +43,12 @@ export class DocumentClient<T extends Table> {
     }
   }
 
-  public getUpdateInput(record: T, conditions?: UpdateConditions<T>): DynamoDB.UpdateItemInput {
-    return getUpdateItemInput(record, conditions)
+  public getUpdateInput(record: T, params?: UpdateItemInputParams<T>): DynamoDB.UpdateItemInput {
+    return getUpdateItemInput(record, params)
   }
 
-  public async update(record: T, conditions?: UpdateConditions<T>): Promise<DynamoDB.UpdateItemOutput> {
-    const input = this.getUpdateInput(record, conditions)
+  public async update(record: T, params?: UpdateItemInputParams<T>): Promise<DynamoDB.UpdateItemOutput> {
+    const input = this.getUpdateInput(record, params)
     try {
       return await this.tableClass.schema.dynamo.updateItem(input).promise()
     } catch (ex) {

@@ -1,19 +1,30 @@
 import { DynamoDB } from 'aws-sdk'
 import * as _ from 'lodash'
+import { DynamoReturnValues } from '../interfaces'
 import { Table } from '../table'
 import { buildQueryExpression } from './expression'
 import { UpdateConditions } from './filters'
+
+export interface UpdateItemInputParams<T extends Table> {
+  conditions?: UpdateConditions<T>
+  returnValues?: DynamoReturnValues
+  returnConsumedCapacity?: DynamoDB.ReturnConsumedCapacity
+}
 
 interface UpdateItemInput extends DynamoDB.UpdateItemInput {
   UpdateExpression: string
 }
 
-export function getUpdateItemInput<T extends Table>(record: T, conditions?: UpdateConditions<T>): UpdateItemInput {
+export function getUpdateItemInput<T extends Table>(record: T, params?: UpdateItemInputParams<T>): UpdateItemInput {
   const tableClass = (record.constructor as typeof Table)
   const input: DynamoDB.UpdateItemInput = {
     TableName: tableClass.schema.name,
     Key: record.getDynamoKey(),
-    ReturnValues: 'NONE', // we don't need to get back what we just set
+    ReturnValues: params?.returnValues ?? 'NONE',
+  }
+
+  if (params?.returnConsumedCapacity != null) {
+    input.ReturnConsumedCapacity = params.returnConsumedCapacity
   }
 
   const sets: string[] = []
@@ -29,12 +40,26 @@ export function getUpdateItemInput<T extends Table>(record: T, conditions?: Upda
   _.each(_.uniq(record.getUpdatedAttributes()), (attributeName, i) => {
     const attribute = tableClass.schema.getAttributeByName(attributeName)
     const value = attribute.toDynamo(record.getAttribute(attributeName))
+    const operator = record.getUpdateOperator(attributeName)
     const slug = `#UA${valueCounter}`
 
     if (value != null) {
       attributeNameMap[slug] = attributeName
       attributeValueMap[`:u${valueCounter}`] = value
-      sets.push(`${slug} = :u${valueCounter}`)
+
+      switch (operator) {
+        // Number attribute operators
+        case 'increment': sets.push(`${slug} = ${slug} + :u${valueCounter}`); break
+        case 'decrement': sets.push(`${slug} = ${slug} - :u${valueCounter}`); break
+
+        // List attribute operators
+        case 'append': sets.push(`${slug} = list_append(${slug}, :u${valueCounter})`); break
+        case 'if_not_exists': sets.push(`${slug} = if_not_exists(${slug}, :u${valueCounter})`); break
+
+        case 'set':
+        default: sets.push(`${slug} = :u${valueCounter}`); break
+      }
+
       valueCounter++
     }
   })
@@ -60,8 +85,8 @@ export function getUpdateItemInput<T extends Table>(record: T, conditions?: Upda
     updateExpression += 'REMOVE ' + removes.join(', ')
   }
 
-  if (conditions != null) {
-    const conditionExpression = buildQueryExpression(tableClass.schema, conditions)
+  if (params?.conditions != null) {
+    const conditionExpression = buildQueryExpression(tableClass.schema, params.conditions)
     input.ConditionExpression = conditionExpression.FilterExpression
     Object.assign(attributeNameMap, conditionExpression.ExpressionAttributeNames)
     Object.assign(attributeValueMap, conditionExpression.ExpressionAttributeValues)

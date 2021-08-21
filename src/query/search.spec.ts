@@ -58,6 +58,9 @@ describe('Query/Search', () => {
     expect(input.FilterExpression).to.eq('#a0 = :v0 AND #a0 = :v1')
     const result = await search.exec()
     expect(result.count).to.eq(0)
+    expect(result.length).to.eq(0)
+    expect(result[0]).to.eq(undefined)
+    expect(result.map(i => i)[0]).to.eq(undefined)
   })
 
   it('should support OR operators', async () => {

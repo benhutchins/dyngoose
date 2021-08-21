@@ -165,9 +165,11 @@ describe('Query/PrimaryKey', () => {
         id: 420,
       })
 
+      expect(res[0]).to.not.eq(null)
       expect(res.length).to.eq(0)
       expect(res.count).to.eq(0)
       expect(res.records.length).to.eq(0)
+      expect(res.map(i => i)[0]).to.eq(undefined)
     })
   })
 

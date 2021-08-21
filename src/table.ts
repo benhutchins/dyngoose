@@ -3,7 +3,8 @@ import * as _ from 'lodash'
 import { Attribute } from './attribute'
 import { DocumentClient } from './document-client'
 import * as Events from './events'
-import { Filters, UpdateConditions } from './query/filters'
+import { SetPropParams, UpdateOperator } from './interfaces'
+import { Filters } from './query/filters'
 import { MagicSearch, MagicSearchInput } from './query/search'
 import { createTable } from './tables/create-table'
 import { deleteTable } from './tables/delete-table'
@@ -148,7 +149,8 @@ export class Table {
   private __attributes: DynamoDB.AttributeMap = {}
   private __original: DynamoDB.AttributeMap = {}
   private __updatedAttributes: string[] = []
-  private __deletedAttributes: string[] = []
+  private __removedAttributes: string[] = []
+  private __updateOperators: { [key: string]: UpdateOperator } = {}
   private __putRequired = true // true when this is a new record and a putItem is required, false when updateItem can be used
   private __entireDocumentIsKnown = true
   // #endregion properties
@@ -156,8 +158,8 @@ export class Table {
   /**
    * Create a new Table record by attribute names, not property names.
    *
-   * To create a strongly-typed record by property names, use {@link Table.new}.
-  */
+   * @see {@link Table.new} To create a strongly-typed record by property names.
+   */
   constructor(values?: { [key: string]: any }) {
     if (values != null) {
       for (const key of _.keys(values)) {
@@ -195,7 +197,7 @@ export class Table {
 
     // this is an existing record in the database, so when we save it, we need to update
     this.__updatedAttributes = []
-    this.__deletedAttributes = []
+    this.__removedAttributes = []
     this.__putRequired = false
     this.__entireDocumentIsKnown = entireDocument
 
@@ -243,9 +245,9 @@ export class Table {
    * Get the list of attributes pending update.
    *
    * The result includes attributes that have also been deleted. To get just
-   * the list of attributes pending deletion, use {@link this.getDeletedAttributes}.
+   * the list of attributes pending deletion, use {@link Table.getDeletedAttributes}.
    *
-   * If you want to easily know if this record has updates pending, use {@link this.hasChanges}.
+   * If you want to easily know if this record has updates pending, use {@link Table.hasChanges}.
    */
   public getUpdatedAttributes(): string[] {
     return this.__updatedAttributes
@@ -254,12 +256,12 @@ export class Table {
   /**
    * Get the list of attributes pending deletion.
    *
-   * To get all the attributes that have been updated, use {@link this.getUpdatedAttributes}.
+   * To get all the attributes that have been updated, use {@link Table.getUpdatedAttributes}.
    *
-   * If you want to easily know if this record has updates pending, use {@link this.hasChanges}.
+   * If you want to easily know if this record has updates pending, use {@link Table.hasChanges}.
    */
   public getDeletedAttributes(): string[] {
-    return this.__deletedAttributes
+    return this.__removedAttributes
   }
 
   /**
@@ -299,7 +301,7 @@ export class Table {
         // compare to current value, to avoid unnecessarily marking attributes as needing to be saved
         if (!_.isEqual(currentValue, value)) {
           if (isTrulyEmpty(value)) {
-            this.deleteAttribute(attribute.name)
+            this.removeAttribute(attribute.name)
           } else {
             this.setByAttribute(attribute, value)
           }
@@ -313,7 +315,7 @@ export class Table {
   /**
    * Returns the DynamoDB.AttributeValue value for an attribute.
    *
-   * To get the transformed value, use {@link this.getAttribute}
+   * To get the transformed value, use {@link Table.getAttribute}
    */
   public getAttributeDynamoValue(attributeName: string): DynamoDB.AttributeValue {
     return this.__attributes[attributeName]
@@ -322,10 +324,10 @@ export class Table {
   /**
    * Gets the JavaScript transformed value for an attribute.
    *
-   * While you can read values directly on the Table record by it's property name,
+   * While you can read values directly on the Table record by its property name,
    * sometimes you need to get attribute.
    *
-   * Unlike {@link this.get}, this excepts the attribute name, not the property name.
+   * Unlike {@link Table.get}, this excepts the attribute name, not the property name.
    */
   public getAttribute(attributeName: string): any {
     const attribute = this.table.schema.getAttributeByName(attributeName)
@@ -333,9 +335,24 @@ export class Table {
   }
 
   /**
+   * Get the update operator for an attribute.
+   */
+  public getUpdateOperator(attributeName: string): UpdateOperator {
+    return this.__updateOperators[attributeName] ?? 'set'
+  }
+
+  /**
+   * Set the update operator for an attribute.
+   */
+  public setAttributeUpdateOperator(attributeName: string, operator: UpdateOperator): this {
+    this.__updateOperators[attributeName] = operator
+    return this
+  }
+
+  /**
    * Sets the DynamoDB.AttributeValue for an attribute.
    *
-   * To set the value from a JavaScript object, use {@link this.setAttribute}
+   * To set the value from a JavaScript object, use {@link Table.setAttribute}
   */
   public setAttributeDynamoValue(attributeName: string, attributeValue: DynamoDB.AttributeValue): this {
     // save the original value before we update the attributes value
@@ -350,7 +367,7 @@ export class Table {
     this.__updatedAttributes.push(attributeName)
 
     // ensure the attribute is not marked for being deleted
-    _.pull(this.__deletedAttributes, attributeName)
+    _.pull(this.__removedAttributes, attributeName)
 
     return this
   }
@@ -358,19 +375,19 @@ export class Table {
   /**
    * Sets the value of an attribute by attribute name from a JavaScript object.
    *
-   * - To set an attribute value by property name, use {@link this.set}.
+   * - To set an attribute value by property name, use {@link Table.set}.
    */
-  public setAttribute(attributeName: string, value: any, force = false): this {
+  public setAttribute(attributeName: string, value: any, params?: SetPropParams): this {
     const attribute = this.table.schema.getAttributeByName(attributeName)
-    return this.setByAttribute(attribute, value, force)
+    return this.setByAttribute(attribute, value, params)
   }
 
   /**
    * Sets several attribute values on this record by attribute names.
    *
-   * - To set several values by property names, use {@link this.setValues}.
-   * - To set a single attribute value by attribute name, use {@link this.setAttribute}.
-   * - To set a single attribute value by property name, use {@link this.set}.
+   * - To set several values by property names, use {@link Table.setValues}.
+   * - To set a single attribute value by attribute name, use {@link Table.setAttribute}.
+   * - To set a single attribute value by property name, use {@link Table.set}.
    *
    * @param {object} values An object, where the keys are the attribute names,
    *                        and the values are the values you'd like to set.
@@ -384,45 +401,71 @@ export class Table {
   }
 
   /**
-   * Marks an attribute to be deleted.
+   * Remove a single attribute by its attribute name.
+   *
+   * Replaced by {@link Table.removeAttribute}.
+   * @deprecated Since 3.0.0, will be removed in 4.0.0
    */
   public deleteAttribute(attributeName: string): this {
+    return this.removeAttribute(attributeName)
+  }
+
+  /**
+   * Remove a single attribute by its attribute name.
+   *
+   * @see {@link Table.remove} Remove an attribute by its property name.
+   * @see {@link Table.removeAttributes} Remove several attributes by their property names.
+   */
+  public removeAttribute(attributeName: string): this {
     // delete the attribute as long as it existed and wasn't already null
     if (!_.isNil(this.__attributes[attributeName]) || !this.__entireDocumentIsKnown) {
       this.__attributes[attributeName] = { NULL: true }
-      this.__deletedAttributes.push(attributeName)
+      this.__removedAttributes.push(attributeName)
       _.pull(this.__updatedAttributes, attributeName)
     }
     return this
   }
 
   /**
-   * Marks several attributes to be deleted.
+   * Mark several attributes to be removed.
+   *
+   * Replaced by {@link Table.removeAttributes}.
+   * @deprecated Since 3.0.0, will be removed in 4.0.0
    */
   public deleteAttributes(attributes: string[]): this {
+    return this.removeAttributes(attributes)
+  }
+
+  /**
+   * Remove several attributes by their property names.
+   *
+   * @see {@link Table.remove} Remove an attribute by its property name.
+   * @see {@link Table.removeAttribute} Remove a single attribute by its attribute name.
+   */
+  public removeAttributes(attributes: string[]): this {
     for (const attribute of attributes) {
-      this.deleteAttribute(attribute)
+      this.removeAttribute(attribute)
     }
     return this
   }
 
   /**
-   * Sets a value of an attribute by it's property name.
+   * Sets a value of an attribute by its property name.
    *
-   * - To set several attribute values by property names, use {@link this.setValues}.
-   * - To set an attribute value by an attribute name, use {@link this.setAttribute}.
-   * - To set several attribute values by attribute names, use {@link this.setAttributes}.
+   * @see {@link Table.setValues} To set several attribute values by property names.
+   * @see {@link Table.setAttribute} To set an attribute value by an attribute name.
+   * @see {@link Table.setAttributes} To set several attribute values by attribute names.
    */
-  public set<P extends TableProperty<this>>(propertyName: P | string, value: this[P]): this {
+  public set<P extends TableProperty<this>>(propertyName: P | string, value: this[P], params?: SetPropParams): this {
     const attribute = this.table.schema.getAttributeByPropertyName(propertyName as string)
-    return this.setByAttribute(attribute, value)
+    return this.setByAttribute(attribute, value, params)
   }
 
   /**
-   * Gets a value of an attribute by it's property name.
+   * Gets a value of an attribute by its property name.
    *
-   * - To get a value by an attribute name, use {@link this.getAttribute}.
-   * - To get the entire record, use {@link this.toJSON}.
+   * @see {@link Table.getAttribute} To get a value by an attribute name.
+   * @see {@link Table.toJSON} To get the entire record.
    */
   public get<P extends TableProperty<this>>(propertyName: P | string): this[P] {
     const attribute = this.table.schema.getAttributeByPropertyName(propertyName as string)
@@ -430,22 +473,32 @@ export class Table {
   }
 
   /**
-   * Delete the value of an attribute by it's property name.
+   * Remove an attribute by its property name.
    *
-   * - To get a value by an attribute name, use {@link this.deleteAttribute}.
-   * - To delete the entire record, use {@link this.delete}.
+   * Replaced by {@link Table.remove}
+   * @deprecated Since 3.0.0, will be removed in 4.0.0
    */
   public del<P extends TableProperty<this>>(propertyName: P | string): this {
+    return this.remove(propertyName)
+  }
+
+  /**
+   * Remove an attribute by its property name.
+   *
+   * @see {@link Table.removeAttribute} Remove a single attribute by its attribute name.
+   * @see {@link Table.removeAttributes} Remove several attributes by their property names.
+   */
+  public remove<P extends TableProperty<this>>(propertyName: P | string): this {
     const attribute = this.table.schema.getAttributeByPropertyName(propertyName as string)
-    return this.deleteAttribute(attribute.name)
+    return this.removeAttribute(attribute.name)
   }
 
   /**
    * Sets several attribute values on this record by property names.
    *
-   * - To set an attribute value by property name, use {@link this.set}.
-   * - To set an attribute value by an attribute names, use {@link this.setAttribute}.
-   * - To set several attribute values by attribute names, use {@link this.setAttributes}.
+   * @see {@link Table.set} To set an attribute value by property name.
+   * @see {@link Table.setAttribute} To set an attribute value by an attribute names.
+   * @see {@link Table.setAttributes} To set several attribute values by attribute names.
    */
   public setValues(values: TableProperties<this>): this {
     for (const key in values) {
@@ -459,7 +512,7 @@ export class Table {
    * Determines if this record has any attributes pending an update or deletion.
    */
   public hasChanges(): boolean {
-    return this.__updatedAttributes.length > 0 || this.__deletedAttributes.length > 0
+    return this.__updatedAttributes.length > 0 || this.__removedAttributes.length > 0
   }
 
   /**
@@ -473,17 +526,49 @@ export class Table {
    * Save this record to DynamoDB.
    *
    * Will check to see if there are changes to the record, if there are none the save request is ignored.
-   * To skip this check, use {@link this.forceSave} instead.
+   * To skip this check, use {@link Table.forceSave} instead.
    *
-   * Calls the {@link this.beforeSave} before saving the record.
-   * If {@link this.beforeSave} returns false, the save request is ignored.
+   * Calls the {@link Table.beforeSave} before saving the record.
+   * If {@link Table.beforeSave} returns false, the save request is ignored.
    *
-   * Automatically determines if the the save should use use a PutItem or UpdateItem request.
+   * Automatically determines if the the save should use a PutItem or UpdateItem request.
    */
-  public async save(conditions?: UpdateConditions<this>, meta?: any): Promise<void> {
-    const allowSave = await this.beforeSave(conditions, meta)
-    if (allowSave && this.hasChanges()) {
-      await this.forceSave(conditions, meta)
+  public async save(event?: undefined | { returnOutput?: false } & Events.SaveEvent<this>): Promise<void>
+  public async save(event: { returnOutput: true, operator?: undefined } & Events.SaveEvent<this>): Promise<DynamoDB.PutItemOutput | DynamoDB.UpdateItemOutput>
+  public async save(event: { returnOutput: true, operator: 'put' } & Events.SaveEvent<this>): Promise<DynamoDB.PutItemOutput>
+  public async save(event: { returnOutput: true, operator: 'update' } & Events.SaveEvent<this>): Promise<DynamoDB.UpdateItemOutput>
+  public async save(event?: Events.SaveEvent<this>): Promise<any> {
+    const operator = event?.operator ?? this.getSaveOperation()
+    const beforeSaveEvent: Events.BeforeSaveEvent<this> = {
+      ...event,
+      operator,
+    }
+    const allowSave = await this.beforeSave(beforeSaveEvent)
+
+    if (beforeSaveEvent.force === true || (allowSave !== false && this.hasChanges())) {
+      let output: DynamoDB.PutItemOutput | DynamoDB.UpdateItemOutput
+      if (beforeSaveEvent.operator === 'put') {
+        output = await this.table.documentClient.put(this, beforeSaveEvent)
+        this.__putRequired = false
+      } else {
+        output = await this.table.documentClient.update(this, beforeSaveEvent)
+      }
+
+      // trigger afterSave before clearing values, so the hook can determine what has been changed
+      await this.afterSave({
+        ...beforeSaveEvent,
+        output,
+        deletedAttributes: this.__removedAttributes,
+        updatedAttributes: this.__updatedAttributes,
+      })
+
+      // reset internal tracking of changes attributes
+      this.__removedAttributes = []
+      this.__updatedAttributes = []
+
+      if (beforeSaveEvent.returnOutput === true) {
+        return output
+      }
     }
   }
 
@@ -500,7 +585,7 @@ export class Table {
    */
   public getSaveOperation(): 'put' | 'update' {
     let type: 'put' | 'update'
-    if (this.__putRequired) {
+    if (this.__putRequired || !this.hasChanges()) {
       this.__putRequired = false
       type = 'put'
     } else {
@@ -510,52 +595,30 @@ export class Table {
   }
 
   /**
-   * Saves this record without calling beforeSave or considering if there are changed attributes.
-   *
-   * Most of the time, you should use {@link this.save} instead.
-   */
-  public async forceSave(conditions?: UpdateConditions<this>, meta?: any): Promise<void> {
-    const type = this.getSaveOperation()
-    let output: DynamoDB.PutItemOutput | DynamoDB.UpdateItemOutput
-    if (type === 'put') {
-      output = await this.table.documentClient.put(this, conditions)
-      this.__putRequired = false
-    } else {
-      output = await this.table.documentClient.update(this, conditions)
-    }
-
-    // trigger afterSave before clearing values, so the hook can determine what has been changed
-    await this.afterSave({
-      type,
-      output,
-      meta,
-      deletedAttributes: this.__deletedAttributes,
-      updatedAttributes: this.__updatedAttributes,
-    })
-
-    // reset internal tracking of changes attributes
-    this.__deletedAttributes = []
-    this.__updatedAttributes = []
-  }
-
-  /**
    * Deletes this record from DynamoDB.
    *
-   * Before deleting, it will call {@link this.beforeDelete}. If {@link this.beforeDelete}
+   * Before deleting, it will call {@link Table.beforeDelete}. If {@link Table.beforeDelete}
    * returns false then this record will not be deleted.
    *
-   * After deleting, {@link this.afterDelete} will be called.
-   *
-   * @param {UpdateConditions} conditions Optional conditions
-   * @param {any} meta Optional metadata for the action, passed to {@link this.beforeDelete}
-   *                   and {@link this.afterDelete}.
+   * After deleting, {@link Table.afterDelete} will be called.
    */
-  public async delete(conditions?: UpdateConditions<this>, meta?: any): Promise<void> {
-    const allowDeletion = await this.beforeDelete(meta)
+  public async delete(event?: { returnOutput?: false } & Events.DeleteEvent<this>): Promise<void>
+  public async delete(event: { returnOutput: true } & Events.DeleteEvent<this>): Promise<DynamoDB.DeleteItemOutput>
+  public async delete(event?: Events.DeleteEvent<this>): Promise<any> {
+    const beforeDeleteEvent = { ...event }
+    const allowDeletion = await this.beforeDelete(beforeDeleteEvent)
 
     if (allowDeletion) {
-      const output = await this.table.documentClient.delete(this, conditions)
-      await this.afterDelete(output, meta)
+      const output = await this.table.documentClient.delete(this, event?.conditions)
+      const afterDeleteEvent: Events.AfterDeleteEvent<this> = {
+        ...beforeDeleteEvent,
+        output,
+      }
+      await this.afterDelete(afterDeleteEvent)
+
+      if (beforeDeleteEvent.returnOutput === true) {
+        return output
+      }
     }
   }
 
@@ -592,14 +655,14 @@ export class Table {
   // #endregion public methods
 
   // #region protected methods
-  protected async beforeSave(conditions?: UpdateConditions<this>, meta?: any): Promise<boolean> {
+  protected async beforeSave(event: Events.BeforeSaveEvent<this>): Promise<boolean | undefined> {
     return true
   }
 
   /**
    * After a record is deleted, this handler is called.
    */
-  protected async afterSave(event: Events.AfterSaveEvent): Promise<void> {
+  protected async afterSave(event: Events.AfterSaveEvent<this>): Promise<void> {
     return undefined
   }
 
@@ -607,29 +670,30 @@ export class Table {
    * Before a record is deleted, this handler is called and if the promise
    * resolves as false, the delete request will be ignored.
    */
-  protected async beforeDelete(meta?: any): Promise<boolean> {
+  protected async beforeDelete(event: Events.BeforeDeleteEvent<this>): Promise<boolean> {
     return true
   }
 
   /**
    * After a record is deleted, this handler is called.
    */
-  protected async afterDelete(output: DynamoDB.DeleteItemOutput, meta?: any): Promise<void> {
+  protected async afterDelete(event: Events.AfterDeleteEvent<this>): Promise<void> {
     return undefined
   }
 
-  protected setByAttribute(attribute: Attribute<any>, value: any, force = false): this {
+  protected setByAttribute(attribute: Attribute<any>, value: any, params: SetPropParams = {}): this {
     const attributeValue = attribute.toDynamo(value)
 
     // avoid recording the value if it is unchanged, so we do not send it as an updated value during a save
-    if (!force && !_.isUndefined(this.__attributes[attribute.name]) && _.isEqual(this.__attributes[attribute.name], attributeValue)) {
+    if (params.force !== true && !_.isUndefined(this.__attributes[attribute.name]) && _.isEqual(this.__attributes[attribute.name], attributeValue)) {
       return this
     }
 
     if (attributeValue == null) {
-      this.deleteAttribute(attribute.name)
+      this.removeAttribute(attribute.name)
     } else {
       this.setAttributeDynamoValue(attribute.name, attributeValue)
+      this.setAttributeUpdateOperator(attribute.name, params.operator ?? 'set')
     }
 
     return this
@@ -648,6 +712,10 @@ export class Table {
     const blacklist: string[] = [
       this.schema.primaryKey.hash.name,
     ]
+
+    if (this.schema.primaryKey.range != null) {
+      blacklist.push(this.schema.primaryKey.range.name)
+    }
 
     return blacklist
   }
