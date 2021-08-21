@@ -18,6 +18,7 @@ module.exports = {
       'error',
       'always-multiline',
     ],
+    'no-labels': 'off'
   },
   // "env": {
   //   "browser": true,

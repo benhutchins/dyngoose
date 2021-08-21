@@ -106,7 +106,7 @@ class FilterExpressionQuery<T extends Table> {
   }
 
   private handleFilter(attrName: string, value: any, push = true): QueryFilterQuery {
-    const attribute = this.schema.getAttributeByName(attrName)
+    const attribute = this.schema.getAttributeByPropertyName(attrName)
 
     let filter: Filter<any>
 
@@ -145,10 +145,9 @@ class FilterExpressionQuery<T extends Table> {
       } else if (_.isArray(filters)) {
         conditions.push(this.parseComplexFilters(filters, true))
       } else {
-        _.each(filters, (value, attrName) => {
-          const queryValue = this.handleFilter(attrName, value, false)
-
-          const attribute = this.schema.getAttributeByName(attrName)
+        _.each(filters, (value, propName) => {
+          const queryValue = this.handleFilter(propName, value, false)
+          const attribute = this.schema.getAttributeByPropertyName(propName)
 
           if (queryValue.query != null) {
             _.extend(this.attrs, queryValue.attrs)

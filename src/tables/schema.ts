@@ -168,13 +168,44 @@ export class Schema {
   }
 
   public getAttributeByPropertyName(propertyName: string): Attribute<any> {
-    for (const attribute of this.attributes.values()) {
-      if (attribute.propertyName === propertyName) {
-        return attribute
+    let attribute: Attribute<any> | undefined
+
+    if (propertyName.includes('.')) {
+      const nameSegments = propertyName.split('.')
+      const firstSegment = nameSegments.shift()
+
+      if (firstSegment != null) {
+        for (const attr of this.attributes.values()) {
+          if (attr.propertyName === firstSegment) {
+            attribute = attr
+          }
+        }
+
+        for (const nameSegment of nameSegments) {
+          if (attribute != null) {
+            const mapAttributes = (attribute.type as MapAttributeType<any>).attributes
+            mapAttributesFor: for (const mapAttribute of Object.values(mapAttributes)) {
+              if (mapAttribute.propertyName === nameSegment) {
+                attribute = mapAttribute
+                break mapAttributesFor
+              }
+            }
+          }
+        }
+      }
+    } else {
+      for (const attr of this.attributes.values()) {
+        if (attr.propertyName === propertyName) {
+          attribute = attr
+        }
       }
     }
 
-    throw new SchemaError(`Schema for ${this.name} has no attribute by property name ${propertyName}`)
+    if (attribute == null) {
+      throw new SchemaError(`Schema for ${this.name} has no attribute by property name ${propertyName}`)
+    } else {
+      return attribute
+    }
   }
 
   public addAttribute(attribute: Attribute<any>): Attribute<any> {

@@ -75,6 +75,7 @@ describe('Table', () => {
     card.id = 10
     card.title = '100'
     card.expiresAt = new Date(Date.now() + 5000) // 5 secs away
+    card.testAttributeNaming = 'test'
     await card.save()
 
     // Wait 15 seconds
@@ -82,6 +83,14 @@ describe('Table', () => {
 
     const reloaded = await TestableTable.primaryKey.get(10, '100', { consistent: true })
     expect(reloaded).to.eq(undefined)
+  })
+
+  it('should be able to query by property names', async () => {
+    const results = await TestableTable.primaryKey.scan({
+      testAttributeNaming: 'test',
+    })
+
+    expect(results.length).to.eq(1)
   })
 
   describe('saving should support conditions', () => {
