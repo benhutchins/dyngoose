@@ -57,6 +57,7 @@ describe('Table', () => {
       testString: 'some value',
       testNumber: 11,
       testNumberSet: [1, 2, 3],
+      testAttributeNaming: 'test',
     })
     await card.save()
     expect(card.testNumber).to.eq(11, 'num eq 11')
@@ -77,7 +78,6 @@ describe('Table', () => {
     card.id = 10
     card.title = '100'
     card.testString = 'some value'
-    card.testAttributeNaming = 'test'
     await card.save()
     expect(card.testString).to.eq('some value', 'initial card created')
 
@@ -98,7 +98,6 @@ describe('Table', () => {
     card.id = 10
     card.title = '100'
     card.expiresAt = new Date(Date.now() + 5000) // 5 secs away
-    card.testAttributeNaming = 'test'
     await card.save()
 
     // Wait 15 seconds
