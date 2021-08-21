@@ -149,7 +149,8 @@ export class Table {
   private __attributes: DynamoDB.AttributeMap = {}
   private __original: DynamoDB.AttributeMap = {}
   private __updatedAttributes: string[] = []
-  private __deletedAttributes: string[] = []
+  private __removedAttributes: string[] = []
+  private __updateOperators: { [key: string]: UpdateOperator } = {}
   private __putRequired = true // true when this is a new record and a putItem is required, false when updateItem can be used
   private __entireDocumentIsKnown = true
   // #endregion properties
@@ -157,8 +158,8 @@ export class Table {
   /**
    * Create a new Table record by attribute names, not property names.
    *
-   * To create a strongly-typed record by property names, use {@link Table.new}.
-  */
+   * @see {@link Table.new} To create a strongly-typed record by property names.
+   */
   constructor(values?: { [key: string]: any }) {
     if (values != null) {
       for (const key of _.keys(values)) {
@@ -196,7 +197,7 @@ export class Table {
 
     // this is an existing record in the database, so when we save it, we need to update
     this.__updatedAttributes = []
-    this.__deletedAttributes = []
+    this.__removedAttributes = []
     this.__putRequired = false
     this.__entireDocumentIsKnown = entireDocument
 
@@ -244,9 +245,9 @@ export class Table {
    * Get the list of attributes pending update.
    *
    * The result includes attributes that have also been deleted. To get just
-   * the list of attributes pending deletion, use {@link this.getDeletedAttributes}.
+   * the list of attributes pending deletion, use {@link Table.getDeletedAttributes}.
    *
-   * If you want to easily know if this record has updates pending, use {@link this.hasChanges}.
+   * If you want to easily know if this record has updates pending, use {@link Table.hasChanges}.
    */
   public getUpdatedAttributes(): string[] {
     return this.__updatedAttributes
@@ -255,12 +256,12 @@ export class Table {
   /**
    * Get the list of attributes pending deletion.
    *
-   * To get all the attributes that have been updated, use {@link this.getUpdatedAttributes}.
+   * To get all the attributes that have been updated, use {@link Table.getUpdatedAttributes}.
    *
-   * If you want to easily know if this record has updates pending, use {@link this.hasChanges}.
+   * If you want to easily know if this record has updates pending, use {@link Table.hasChanges}.
    */
   public getDeletedAttributes(): string[] {
-    return this.__deletedAttributes
+    return this.__removedAttributes
   }
 
   /**
@@ -300,7 +301,7 @@ export class Table {
         // compare to current value, to avoid unnecessarily marking attributes as needing to be saved
         if (!_.isEqual(currentValue, value)) {
           if (isTrulyEmpty(value)) {
-            this.deleteAttribute(attribute.name)
+            this.removeAttribute(attribute.name)
           } else {
             this.setByAttribute(attribute, value)
           }
@@ -314,7 +315,7 @@ export class Table {
   /**
    * Returns the DynamoDB.AttributeValue value for an attribute.
    *
-   * To get the transformed value, use {@link this.getAttribute}
+   * To get the transformed value, use {@link Table.getAttribute}
    */
   public getAttributeDynamoValue(attributeName: string): DynamoDB.AttributeValue {
     return this.__attributes[attributeName]
@@ -323,10 +324,10 @@ export class Table {
   /**
    * Gets the JavaScript transformed value for an attribute.
    *
-   * While you can read values directly on the Table record by it's property name,
+   * While you can read values directly on the Table record by its property name,
    * sometimes you need to get attribute.
    *
-   * Unlike {@link this.get}, this excepts the attribute name, not the property name.
+   * Unlike {@link Table.get}, this excepts the attribute name, not the property name.
    */
   public getAttribute(attributeName: string): any {
     const attribute = this.table.schema.getAttributeByName(attributeName)
@@ -366,7 +367,7 @@ export class Table {
     this.__updatedAttributes.push(attributeName)
 
     // ensure the attribute is not marked for being deleted
-    _.pull(this.__deletedAttributes, attributeName)
+    _.pull(this.__removedAttributes, attributeName)
 
     return this
   }
@@ -400,24 +401,50 @@ export class Table {
   }
 
   /**
-   * Marks an attribute to be deleted.
+   * Remove a single attribute by its attribute name.
+   *
+   * Replaced by {@link Table.removeAttribute}.
+   * @deprecated Since 3.0.0, will be removed in 4.0.0
    */
   public deleteAttribute(attributeName: string): this {
+    return this.removeAttribute(attributeName)
+  }
+
+  /**
+   * Remove a single attribute by its attribute name.
+   *
+   * @see {@link Table.remove} Remove an attribute by its property name.
+   * @see {@link Table.removeAttributes} Remove several attributes by their property names.
+   */
+  public removeAttribute(attributeName: string): this {
     // delete the attribute as long as it existed and wasn't already null
     if (!_.isNil(this.__attributes[attributeName]) || !this.__entireDocumentIsKnown) {
       this.__attributes[attributeName] = { NULL: true }
-      this.__deletedAttributes.push(attributeName)
+      this.__removedAttributes.push(attributeName)
       _.pull(this.__updatedAttributes, attributeName)
     }
     return this
   }
 
   /**
-   * Marks several attributes to be deleted.
+   * Mark several attributes to be removed.
+   *
+   * Replaced by {@link Table.removeAttributes}.
+   * @deprecated Since 3.0.0, will be removed in 4.0.0
    */
   public deleteAttributes(attributes: string[]): this {
+    return this.removeAttributes(attributes)
+  }
+
+  /**
+   * Remove several attributes by their property names.
+   *
+   * @see {@link Table.remove} Remove an attribute by its property name.
+   * @see {@link Table.removeAttribute} Remove a single attribute by its attribute name.
+   */
+  public removeAttributes(attributes: string[]): this {
     for (const attribute of attributes) {
-      this.deleteAttribute(attribute)
+      this.removeAttribute(attribute)
     }
     return this
   }
@@ -446,22 +473,32 @@ export class Table {
   }
 
   /**
-   * Delete the value of an attribute by it's property name.
+   * Remove an attribute by its property name.
    *
-   * - To get a value by an attribute name, use {@link this.deleteAttribute}.
-   * - To delete the entire record, use {@link this.delete}.
+   * Replaced by {@link Table.remove}
+   * @deprecated Since 3.0.0, will be removed in 4.0.0
    */
   public del<P extends TableProperty<this>>(propertyName: P | string): this {
+    return this.remove(propertyName)
+  }
+
+  /**
+   * Remove an attribute by its property name.
+   *
+   * @see {@link Table.removeAttribute} Remove a single attribute by its attribute name.
+   * @see {@link Table.removeAttributes} Remove several attributes by their property names.
+   */
+  public remove<P extends TableProperty<this>>(propertyName: P | string): this {
     const attribute = this.table.schema.getAttributeByPropertyName(propertyName as string)
-    return this.deleteAttribute(attribute.name)
+    return this.removeAttribute(attribute.name)
   }
 
   /**
    * Sets several attribute values on this record by property names.
    *
-   * - To set an attribute value by property name, use {@link this.set}.
-   * - To set an attribute value by an attribute names, use {@link this.setAttribute}.
-   * - To set several attribute values by attribute names, use {@link this.setAttributes}.
+   * @see {@link Table.set} To set an attribute value by property name.
+   * @see {@link Table.setAttribute} To set an attribute value by an attribute names.
+   * @see {@link Table.setAttributes} To set several attribute values by attribute names.
    */
   public setValues(values: TableProperties<this>): this {
     for (const key in values) {
@@ -475,7 +512,7 @@ export class Table {
    * Determines if this record has any attributes pending an update or deletion.
    */
   public hasChanges(): boolean {
-    return this.__updatedAttributes.length > 0 || this.__deletedAttributes.length > 0
+    return this.__updatedAttributes.length > 0 || this.__removedAttributes.length > 0
   }
 
   /**
@@ -675,6 +712,10 @@ export class Table {
     const blacklist: string[] = [
       this.schema.primaryKey.hash.name,
     ]
+
+    if (this.schema.primaryKey.range != null) {
+      blacklist.push(this.schema.primaryKey.range.name)
+    }
 
     return blacklist
   }
