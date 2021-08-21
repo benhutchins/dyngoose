@@ -50,6 +50,28 @@ describe('Table', () => {
     })
   })
 
+  it('should support update operators', async () => {
+    const card = TestableTable.new({
+      id: 98,
+      title: '98',
+      testString: 'some value',
+      testNumber: 11,
+      testNumberSet: [1, 2, 3],
+    })
+    await card.save()
+    expect(card.testNumber).to.eq(11, 'num eq 11')
+
+    card.set('testNumber', 5, { operator: 'decrement' })
+    await card.save()
+
+    const reloadedCard = await TestableTable.primaryKey.get(card)
+    expect(reloadedCard).to.be.instanceof(TestableTable)
+
+    if (reloadedCard != null) {
+      expect(reloadedCard.testNumber).to.eq(11 - 5, 'decrement worked')
+    }
+  })
+
   it('should allow an attribute to be emptied', async () => {
     const card = new TestableTable()
     card.id = 10

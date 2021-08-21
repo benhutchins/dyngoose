@@ -40,12 +40,26 @@ export function getUpdateItemInput<T extends Table>(record: T, params?: UpdateIt
   _.each(_.uniq(record.getUpdatedAttributes()), (attributeName, i) => {
     const attribute = tableClass.schema.getAttributeByName(attributeName)
     const value = attribute.toDynamo(record.getAttribute(attributeName))
+    const operator = record.getUpdateOperator(attributeName)
     const slug = `#UA${valueCounter}`
 
     if (value != null) {
       attributeNameMap[slug] = attributeName
       attributeValueMap[`:u${valueCounter}`] = value
-      sets.push(`${slug} = :u${valueCounter}`)
+
+      switch (operator) {
+        // Number attribute operators
+        case 'increment': sets.push(`${slug} = ${slug} + :u${valueCounter}`); break
+        case 'decrement': sets.push(`${slug} = ${slug} - :u${valueCounter}`); break
+
+        // List attribute operators
+        case 'append': sets.push(`${slug} = list_append(${slug}, :u${valueCounter})`); break
+        case 'if_not_exists': sets.push(`${slug} = if_not_exists(${slug}, :u${valueCounter})`); break
+
+        case 'set':
+        default: sets.push(`${slug} = :u${valueCounter}`); break
+      }
+
       valueCounter++
     }
   })

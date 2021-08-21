@@ -3,6 +3,7 @@ import * as _ from 'lodash'
 import { Attribute } from './attribute'
 import { DocumentClient } from './document-client'
 import * as Events from './events'
+import { SetPropParams, UpdateOperator } from './interfaces'
 import { Filters } from './query/filters'
 import { MagicSearch, MagicSearchInput } from './query/search'
 import { createTable } from './tables/create-table'
@@ -333,9 +334,24 @@ export class Table {
   }
 
   /**
+   * Get the update operator for an attribute.
+   */
+  public getUpdateOperator(attributeName: string): UpdateOperator {
+    return this.__updateOperators[attributeName] ?? 'set'
+  }
+
+  /**
+   * Set the update operator for an attribute.
+   */
+  public setAttributeUpdateOperator(attributeName: string, operator: UpdateOperator): this {
+    this.__updateOperators[attributeName] = operator
+    return this
+  }
+
+  /**
    * Sets the DynamoDB.AttributeValue for an attribute.
    *
-   * To set the value from a JavaScript object, use {@link this.setAttribute}
+   * To set the value from a JavaScript object, use {@link Table.setAttribute}
   */
   public setAttributeDynamoValue(attributeName: string, attributeValue: DynamoDB.AttributeValue): this {
     // save the original value before we update the attributes value
@@ -358,19 +374,19 @@ export class Table {
   /**
    * Sets the value of an attribute by attribute name from a JavaScript object.
    *
-   * - To set an attribute value by property name, use {@link this.set}.
+   * - To set an attribute value by property name, use {@link Table.set}.
    */
-  public setAttribute(attributeName: string, value: any, force = false): this {
+  public setAttribute(attributeName: string, value: any, params?: SetPropParams): this {
     const attribute = this.table.schema.getAttributeByName(attributeName)
-    return this.setByAttribute(attribute, value, force)
+    return this.setByAttribute(attribute, value, params)
   }
 
   /**
    * Sets several attribute values on this record by attribute names.
    *
-   * - To set several values by property names, use {@link this.setValues}.
-   * - To set a single attribute value by attribute name, use {@link this.setAttribute}.
-   * - To set a single attribute value by property name, use {@link this.set}.
+   * - To set several values by property names, use {@link Table.setValues}.
+   * - To set a single attribute value by attribute name, use {@link Table.setAttribute}.
+   * - To set a single attribute value by property name, use {@link Table.set}.
    *
    * @param {object} values An object, where the keys are the attribute names,
    *                        and the values are the values you'd like to set.
@@ -407,22 +423,22 @@ export class Table {
   }
 
   /**
-   * Sets a value of an attribute by it's property name.
+   * Sets a value of an attribute by its property name.
    *
-   * - To set several attribute values by property names, use {@link this.setValues}.
-   * - To set an attribute value by an attribute name, use {@link this.setAttribute}.
-   * - To set several attribute values by attribute names, use {@link this.setAttributes}.
+   * @see {@link Table.setValues} To set several attribute values by property names.
+   * @see {@link Table.setAttribute} To set an attribute value by an attribute name.
+   * @see {@link Table.setAttributes} To set several attribute values by attribute names.
    */
-  public set<P extends TableProperty<this>>(propertyName: P | string, value: this[P]): this {
+  public set<P extends TableProperty<this>>(propertyName: P | string, value: this[P], params?: SetPropParams): this {
     const attribute = this.table.schema.getAttributeByPropertyName(propertyName as string)
-    return this.setByAttribute(attribute, value)
+    return this.setByAttribute(attribute, value, params)
   }
 
   /**
-   * Gets a value of an attribute by it's property name.
+   * Gets a value of an attribute by its property name.
    *
-   * - To get a value by an attribute name, use {@link this.getAttribute}.
-   * - To get the entire record, use {@link this.toJSON}.
+   * @see {@link Table.getAttribute} To get a value by an attribute name.
+   * @see {@link Table.toJSON} To get the entire record.
    */
   public get<P extends TableProperty<this>>(propertyName: P | string): this[P] {
     const attribute = this.table.schema.getAttributeByPropertyName(propertyName as string)
