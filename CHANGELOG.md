@@ -1,3 +1,10 @@
+## [3.0.2](https://github.com/benhutchins/dyngoose/compare/v3.0.1...v3.0.2) (2021-09-27)
+
+
+### Bug Fixes
+
+* allow attributes with the property name of 'name' ([d044c3d](https://github.com/benhutchins/dyngoose/commit/d044c3dd592e59ef19922c6e29426b1884b44c82))
+
 ## [3.0.1](https://github.com/benhutchins/dyngoose/compare/v3.0.0...v3.0.1) (2021-09-27)
 
 
