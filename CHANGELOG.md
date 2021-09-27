@@ -1,3 +1,11 @@
+## [3.0.1](https://github.com/benhutchins/dyngoose/compare/v3.0.0...v3.0.1) (2021-09-27)
+
+
+### Bug Fixes
+
+* do not force Dyngoose-generated properties when the property is set ([fb7f9e8](https://github.com/benhutchins/dyngoose/commit/fb7f9e87ef7a42c333418c90b7fe37128aa0210a))
+* ignore unknown properties when reading a map when told to ignore ([991a7b3](https://github.com/benhutchins/dyngoose/commit/991a7b3639a219e2742952c138c43c0e82bb0a54))
+
 # [3.0.0](https://github.com/benhutchins/dyngoose/compare/v2.16.5...v3.0.0) (2021-08-21)
 
 
