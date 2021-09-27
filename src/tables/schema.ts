@@ -59,7 +59,13 @@ export class Schema {
   public defineAttributeProperties(): void {
     // for each attribute, add the get and set property handlers
     for (const attribute of this.attributes.values()) {
-      if (Object.prototype.hasOwnProperty.call(this.table, attribute.propertyName) === false) {
+      if (
+        Object.prototype.hasOwnProperty.call(this.table, attribute.propertyName) === false ||
+        // every function in JavaScript has a 'name' property, however, name is commonly
+        // used as an attribute name so we basically want to ignore the default object property
+        // … I know, a weird exception
+        attribute.propertyName === 'name'
+      ) {
         Object.defineProperty(
           this.table.prototype,
           attribute.propertyName,
