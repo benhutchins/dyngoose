@@ -68,7 +68,7 @@ export class Attribute<Value> {
     const attributeValue = this.toDynamo(value)
 
     if (attributeValue == null) {
-      throw new ValidationError('Attribute.toDynamoAssert called without a valid value')
+      throw new ValidationError(`Attribute.toDynamoAssert called without a valid value for ${this.name}`)
     } else {
       return attributeValue
     }
