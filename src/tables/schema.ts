@@ -59,7 +59,7 @@ export class Schema {
   public defineAttributeProperties(): void {
     // for each attribute, add the get and set property handlers
     for (const attribute of this.attributes.values()) {
-      if (!this.table.hasOwnProperty(attribute.propertyName)) {
+      if (Object.prototype.hasOwnProperty.call(this.table, attribute.propertyName) === false) {
         Object.defineProperty(
           this.table.prototype,
           attribute.propertyName,
@@ -80,7 +80,7 @@ export class Schema {
 
   public defineGlobalSecondaryIndexes(): void {
     for (const indexMetadata of this.globalSecondaryIndexes) {
-      if (!this.table.hasOwnProperty(indexMetadata.propertyName)) {
+      if (Object.prototype.hasOwnProperty.call(this.table, indexMetadata.propertyName) === false) {
         Object.defineProperty(
           this.table,
           indexMetadata.propertyName,
@@ -95,7 +95,7 @@ export class Schema {
 
   public defineLocalSecondaryIndexes(): void {
     for (const indexMetadata of this.localSecondaryIndexes) {
-      if (!this.table.hasOwnProperty(indexMetadata.propertyName)) {
+      if (Object.prototype.hasOwnProperty.call(this.table, indexMetadata.propertyName) === false) {
         Object.defineProperty(
           this.table,
           indexMetadata.propertyName,
@@ -109,7 +109,7 @@ export class Schema {
   }
 
   public definePrimaryKeyProperty(): void {
-    if (!this.table.hasOwnProperty(this.primaryKey.propertyName)) {
+    if (Object.prototype.hasOwnProperty.call(this.table, this.primaryKey.propertyName) === false) {
       Object.defineProperty(
         this.table,
         this.primaryKey.propertyName,
