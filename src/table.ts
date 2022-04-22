@@ -10,7 +10,7 @@ import { createTable } from './tables/create-table'
 import { deleteTable } from './tables/delete-table'
 import { describeTable } from './tables/describe-table'
 import { migrateTable } from './tables/migrate-table'
-import { TableProperties, TableProperty } from './tables/properties'
+import { SetTableProperty, SetValue, TableProperties, TableProperty } from './tables/properties'
 import { Schema } from './tables/schema'
 import { isTrulyEmpty } from './utils/truly-empty'
 
@@ -494,7 +494,7 @@ export class Table {
   }
 
   /**
-   * Sets several attribute values on this record by property names.
+   * Update several attribute values on this record by property names.
    *
    * @see {@link Table.set} To set an attribute value by property name.
    * @see {@link Table.setAttribute} To set an attribute value by an attribute names.
@@ -503,6 +503,28 @@ export class Table {
   public setValues(values: TableProperties<this>): this {
     for (const key in values) {
       this.set(key as TableProperty<this>, (values as any)[key])
+    }
+
+    return this
+  }
+
+  /**
+   * Sets (StringSet, NumberSet, and BinarySet) in DynamoDB have some unique rules:
+   * 
+   * Each value within a set must be unique.
+   * The order of the values within a set is not preserved.
+   *
+   * Therefore, your applications must not rely on any particular order of elements within the set.
+   * DynamoDB does not support empty sets, however, empty string and binary values are allowed within a set.
+   */
+  public updateSet<P extends SetTableProperty<this>>(propertyName: P, set: SetValue, clean = true): this {
+    const newSet: any = clean ? _.filter(_.uniq(set as any)) : set
+    const currentSet = this.get(propertyName as any) as any as string[]
+  
+    if (!currentSet || currentSet.length === 0) {
+      this.set(propertyName as any, newSet)
+    } else if (_.intersection(currentSet, newSet).length !== newSet.length) {
+      this.set(propertyName as any, newSet)
     }
 
     return this
