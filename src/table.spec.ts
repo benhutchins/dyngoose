@@ -24,14 +24,14 @@ describe('Table', () => {
     }
   })
 
-  describe('.del', () => {
-    it('should allow attributes to be deleted', async () => {
+  describe('.remove', () => {
+    it('should allow attributes to be removed', async () => {
       const card = TestableTable.new()
       card.id = 101
       card.title = '101'
       card.generic = 'something'
-      card.del('generic')
-      card.del('testString')
+      card.remove('generic')
+      card.remove('testString')
       card.testString = 'value is set'
 
       await card.save()
@@ -47,6 +47,38 @@ describe('Table', () => {
         expect(reloadedCard.defaultedString).to.eq('SomeDefault')
         expect(reloadedCard.testString).to.eq('value is set')
       }
+    })
+  })
+
+  describe('.updateSet', () => {
+    it('should update a set', async () => {
+      const card = TestableTable.new({
+        id: 98,
+        title: '98',
+        testStringSet: [
+          '',
+          'test',
+          'strings',
+        ],
+        testNumberSet: [
+          1,
+          2,
+          3,
+        ],
+      })
+
+      expect(card.testStringSet).to.deep.eq(['', 'test', 'strings'])
+      expect(card.testNumberSet).to.deep.eq([1, 2, 3])
+
+      card.updateSet('testStringSet', ['', 'test', 'test', 'abc'])
+
+      expect(card.testStringSet).to.deep.eq(['test', 'abc'], 'set was cleaned by updateSet')
+
+      card.updateSet('testStringSet', ['abc', 'test'])
+      card.updateSet('testNumberSet', [3, 2, 1])
+
+      expect(card.testStringSet).to.deep.eq(['test', 'abc'], 'set should not have been changed')
+      expect(card.testNumberSet).to.deep.eq([1, 2, 3], 'set should not have been changed')
     })
   })
 

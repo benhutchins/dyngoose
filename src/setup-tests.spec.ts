@@ -49,6 +49,9 @@ export class TestableTable extends Dyngoose.Table {
   @Dyngoose.Attribute.String()
   public testString: string
 
+  @Dyngoose.Attribute.StringSet()
+  public testStringSet: string[]
+
   @Dyngoose.Attribute.String({ lowercase: true })
   public lowercaseString: string
 
