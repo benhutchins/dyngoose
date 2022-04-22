@@ -1,3 +1,10 @@
+## [3.1.1](https://github.com/benhutchins/dyngoose/compare/v3.1.0...v3.1.1) (2022-04-22)
+
+
+### Bug Fixes
+
+* allow use of updateSet with nullable properties ([a6d8736](https://github.com/benhutchins/dyngoose/commit/a6d87369b077d8ad44858d54ace717edfd3b057d))
+
 # [3.1.0](https://github.com/benhutchins/dyngoose/compare/v3.0.2...v3.1.0) (2022-04-22)
 
 
