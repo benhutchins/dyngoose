@@ -7,15 +7,36 @@ type IThroughputTargetUtilization = 20
 | 71 | 72 | 73 | 74 | 75 | 76 | 77 | 78 | 79 | 80
 | 81 | 82 | 83 | 84 | 85 | 86 | 87 | 88 | 89 | 90
 
-interface IThroughputAutoScalingCapacity {
+export interface IThroughputAutoScalingCapacity {
   // these apply to both read and write
   targetUtilization: IThroughputTargetUtilization // defaults to 70
   minCapacity: number // defaults to 5 units
   maxCapacity: number // defaults to 40000 units
 }
 
-export interface IThroughput {
+interface IStaticThroughput {
   read: number
   write: number
-  autoScaling?: true | IThroughputAutoScalingCapacity | { read: IThroughputAutoScalingCapacity, write: IThroughputAutoScalingCapacity }
+  autoScaling?: void
 }
+
+interface IAutoScalingThroughputFields {
+  read?: void
+  write?: void
+
+  /**
+   * Tries to enable auto scaling for this table.
+   *
+   * Note: You cannot actually create a table with autoscaling enabled by
+   * default, so the process requires you to create a provisioned table and then
+   * enable autoscaling has to be enabled later.
+   *
+   * WARNING: Dyngoose DOES NOT automatically enable auto-scaling when using the
+   * `Table.createTable` utility! Use the CloudFormation template generator.
+   *
+   * @see {@link https://aws.amazon.com/blogs/database/how-to-use-aws-cloudformation-to-configure-auto-scaling-for-amazon-dynamodb-tables-and-indexes/}
+   */
+  autoScaling: true | IThroughputAutoScalingCapacity | { read: IThroughputAutoScalingCapacity, write: IThroughputAutoScalingCapacity }
+}
+
+export type IThroughput = IStaticThroughput | IAutoScalingThroughputFields

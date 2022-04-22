@@ -46,8 +46,6 @@ export class Schema {
     this.options = metadata
 
     this.setThroughput(this.options.throughput != null ? this.options.throughput : {
-      read: 5,
-      write: 5,
       autoScaling: {
         targetUtilization: 70,
         minCapacity: 5,

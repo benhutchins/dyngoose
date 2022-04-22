@@ -25,8 +25,8 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Dyn
     params.BillingMode = 'PAY_PER_REQUEST'
   } else {
     params.ProvisionedThroughput = {
-      ReadCapacityUnits: schema.throughput.read,
-      WriteCapacityUnits: schema.throughput.write,
+      ReadCapacityUnits: schema.throughput.read ?? 5,
+      WriteCapacityUnits: schema.throughput.write ?? 5,
     }
   }
 
@@ -162,8 +162,8 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Dyn
 
       if (schema.options.billingMode !== 'PAY_PER_REQUEST') {
         index.ProvisionedThroughput = {
-          ReadCapacityUnits: throughput.read,
-          WriteCapacityUnits: throughput.write,
+          ReadCapacityUnits: throughput.read ?? 5,
+          WriteCapacityUnits: throughput.write ?? 5,
         }
       }
 
