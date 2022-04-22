@@ -7,7 +7,7 @@ type KeyOfType<T, V> = keyof {
   [P in keyof T as T[P] extends V ? P : never]: any
 }
 
-export type SetValue = string[] | (BigInt | number)[] | BinarySetAttributeValue[]
+export type SetValue = string[] | Array<BigInt | number> | BinarySetAttributeValue[]
 
 export type SetTableProperty<T> = KeyOfType<T, SetValue>
 

@@ -510,7 +510,7 @@ export class Table {
 
   /**
    * Sets (StringSet, NumberSet, and BinarySet) in DynamoDB have some unique rules:
-   * 
+   *
    * Each value within a set must be unique.
    * The order of the values within a set is not preserved.
    *
@@ -519,12 +519,17 @@ export class Table {
    */
   public updateSet<P extends SetTableProperty<this>>(propertyName: P, set: SetValue, clean = true): this {
     const newSet: any = clean ? _.filter(_.uniq(set as any)) : set
-    const currentSet = this.get(propertyName as any) as any as string[]
-  
-    if (!currentSet || currentSet.length === 0) {
-      this.set(propertyName as any, newSet)
-    } else if (_.intersection(currentSet, newSet).length !== newSet.length) {
-      this.set(propertyName as any, newSet)
+
+    if (newSet.length > 0) {
+      const currentSet = this.get(propertyName as any) as any
+
+      if (
+        currentSet == null ||
+        currentSet.length === 0 ||
+        _.intersection(currentSet, newSet).length !== newSet.length
+      ) {
+        this.set(propertyName as any, newSet)
+      }
     }
 
     return this
