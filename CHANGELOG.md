@@ -1,3 +1,10 @@
+# [3.1.0](https://github.com/benhutchins/dyngoose/compare/v3.0.2...v3.1.0) (2022-04-22)
+
+
+### Features
+
+* utility to update sets more intelligently ([#570](https://github.com/benhutchins/dyngoose/issues/570)) ([0e23430](https://github.com/benhutchins/dyngoose/commit/0e234306dde7d39299e38895b96c79940c4ef210))
+
 ## [3.0.2](https://github.com/benhutchins/dyngoose/compare/v3.0.1...v3.0.2) (2021-09-27)
 
 
