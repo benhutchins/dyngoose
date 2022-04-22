@@ -7,7 +7,7 @@ jobs:
     timeout-minutes: 15
     services:
       dynamodb:
-        image: amazon/dynamodb-local
+        image: amazon/dynamodb-local:1.16.0
         # @note Github overwrites WORKDIR to repository path, so overwrite that again
         options: >-
           --workdir /home/dynamodblocal
