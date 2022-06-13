@@ -107,15 +107,11 @@ export class DocumentClient<T extends Table> {
   }
 
   public async delete(record: T, conditions?: UpdateConditions<T>): Promise<DynamoDB.DeleteItemOutput> {
-    return await new Promise((resolve, reject) => {
-      const input = this.getDeleteInput(record, conditions)
-      this.tableClass.schema.dynamo.deleteItem(input, (err, output) => {
-        if (err != null) {
-          reject(err)
-        } else {
-          resolve(output)
-        }
-      })
-    })
+    const input = this.getDeleteInput(record, conditions)
+    try {
+      return await this.tableClass.schema.dynamo.deleteItem(input).promise()
+    } catch (ex) {
+      throw new HelpfulError(ex, this.tableClass, input)
+    }
   }
 }
