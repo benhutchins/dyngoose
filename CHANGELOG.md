@@ -1,3 +1,11 @@
+## [3.1.2](https://github.com/benhutchins/dyngoose/compare/v3.1.1...v3.1.2) (2022-06-13)
+
+
+### Bug Fixes
+
+* provide a helpful error when a delete item fails ([c16b1b6](https://github.com/benhutchins/dyngoose/commit/c16b1b69e66e360dc07cf679b15d9f37b8caf28d))
+* updateSet could fail to remove items from the set ([7e30de5](https://github.com/benhutchins/dyngoose/commit/7e30de5380cd08e5d187a8f213b43bcb2ed80060))
+
 ## [3.1.1](https://github.com/benhutchins/dyngoose/compare/v3.1.0...v3.1.1) (2022-04-22)
 
 
