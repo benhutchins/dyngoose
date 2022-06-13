@@ -526,6 +526,7 @@ export class Table {
       if (
         currentSet == null ||
         currentSet.length === 0 ||
+        newSet.length !== currentSet.length ||
         _.intersection(currentSet, newSet).length !== newSet.length
       ) {
         this.set(propertyName as any, newSet)

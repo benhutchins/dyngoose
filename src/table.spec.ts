@@ -79,6 +79,9 @@ describe('Table', () => {
 
       expect(card.testStringSet).to.deep.eq(['test', 'abc'], 'set should not have been changed')
       expect(card.testNumberSet).to.deep.eq([1, 2, 3], 'set should not have been changed')
+
+      card.updateSet('testStringSet', ['abc'])
+      expect(card.testStringSet).to.deep.eq(['abc'], 'test should have been removed from testStringSet')
     })
   })
 
