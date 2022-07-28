@@ -1,3 +1,10 @@
+## [3.1.3](https://github.com/benhutchins/dyngoose/compare/v3.1.2...v3.1.3) (2022-07-28)
+
+
+### Bug Fixes
+
+* **date:** passing invalid date values to fromJSON would error ([14904d5](https://github.com/benhutchins/dyngoose/commit/14904d53ae719b39a1b861a990897e7bd20c0828))
+
 ## [3.1.2](https://github.com/benhutchins/dyngoose/compare/v3.1.1...v3.1.2) (2022-06-13)
 
 
