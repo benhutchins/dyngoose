@@ -105,4 +105,29 @@ describe('AttributeType/Date', () => {
       expect(record.fullDate.toISOString()).to.eq('2018-01-25T23:55:39.000Z')
     })
   })
+
+  describe('.fromJSON', () => {
+    it('should ignore empty values', async () => {
+      record.fromJSON({
+        dateOnly: '',
+        fullDate: '',
+      })
+
+      expect(record.dateOnly).to.be.eq(null)
+      expect(record.fullDate).to.be.eq(null)
+    })
+
+    it('should accept string values', async () => {
+      record.fromJSON({
+        dateOnly: '2021-02-24',
+        fullDate: '2018-01-25T23:55:39.000Z',
+      })
+
+      expect(record.dateOnly).to.be.a('date')
+      expect(record.dateOnly.toISOString()).to.eq('2021-02-24T00:00:00.000Z')
+
+      expect(record.fullDate).to.be.a('date')
+      expect(record.fullDate.toISOString()).to.eq('2018-01-25T23:55:39.000Z')
+    })
+  })
 })

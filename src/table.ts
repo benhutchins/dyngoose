@@ -292,7 +292,8 @@ export class Table {
       }
 
       if (!_.includes(blacklist, attribute.name)) {
-        if (typeof attribute.type.fromJSON === 'function') {
+        // allow the attribute to transform the value via a custom fromJSON method
+        if (!isTrulyEmpty(value) && typeof attribute.type.fromJSON === 'function') {
           value = attribute.type.fromJSON(value)
         }
 
