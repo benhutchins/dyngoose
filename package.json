@@ -1,5 +1,5 @@
 {
-  "name": "dyngoose",
+  "name": "@hixme/dyngoose",
   "version": "3.2.0",
   "description": "Elegant DynamoDB object modeling for Typescript",
   "keywords": [
