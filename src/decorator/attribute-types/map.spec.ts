@@ -7,6 +7,7 @@ interface ITestMap {
   last: string
   level: number
   nick?: string
+  gender?: string
 }
 
 interface ITestContactMap {
@@ -35,6 +36,9 @@ export class MapTestTable extends Dyngoose.Table {
   @Dyngoose.Attribute.Number()
   id: number
 
+  @Dyngoose.Attribute.String({ name: 'Job' })
+  job: String
+
   @Dyngoose.Attribute.Map({
     attributes: {
       first: Dyngoose.Attribute.String(),
@@ -42,6 +46,7 @@ export class MapTestTable extends Dyngoose.Table {
       last: Dyngoose.Attribute.String(),
       level: Dyngoose.Attribute.Number(),
       nick: Dyngoose.Attribute.String(),
+      gender: Dyngoose.Attribute.String({ name: 'Gender' }),
     },
   })
   public person: ITestMap
@@ -74,6 +79,51 @@ describe('AttributeType/Map', () => {
 
   after(async () => {
     await MapTestTable.deleteTable()
+  })
+
+  it('should be able to change the name of an attribute', async () => {
+    const record = MapTestTable.new({
+      id: 1,
+      job: 'Software Engineer',
+      person: {
+        first: 'John',
+        middle: 'Jacobs',
+        last: 'Smith',
+        level: 1,
+        gender: 'MALE',
+        // nick is left empty to ensure optional properties work
+      },
+    })
+
+    await record.save()
+
+    const loaded = await MapTestTable.primaryKey.get(1)
+
+    // Should be able to change name of root string attribute
+    expect(loaded?.getAttributeDynamoValue('Job')).deep.eq({ S: 'Software Engineer' })
+
+    // Should be able to change name of string attribute in map
+    expect(loaded?.getAttributeDynamoValue('person')).to.deep.eq({
+      M: {
+        first: { S: 'John' },
+        middle: { S: 'Jacobs' },
+        last: { S: 'Smith' },
+        level: { N: '1' },
+        Gender: { S: 'MALE' },
+      },
+    })
+
+    expect(loaded?.toJSON()).to.deep.eq({
+      id: 1,
+      job: 'Software Engineer',
+      person: {
+        first: 'John',
+        middle: 'Jacobs',
+        last: 'Smith',
+        level: 1,
+        gender: 'MALE',
+      },
+    })
   })
 
   it('should store the object as a map', async () => {
