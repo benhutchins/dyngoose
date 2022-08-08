@@ -22,7 +22,7 @@ export class MapAttributeType<Value> extends AttributeType<Value, MapAttributeMe
     for (const childAttributePropertyName of Object.keys(this.metadata.attributes)) {
       const childAttributeDef = this.metadata?.attributes[childAttributePropertyName]
       const childAttribute = childAttributeDef.getAttribute(record, childAttributePropertyName)
-      this.attributes[childAttribute.name] = childAttribute
+      this.attributes[childAttribute.propertyName] = childAttribute
     }
   }
 
@@ -50,7 +50,7 @@ export class MapAttributeType<Value> extends AttributeType<Value, MapAttributeMe
       if (attribute != null) {
         const attributeValue = attribute.toDynamo(value)
         if (attributeValue != null) {
-          map[attribute.propertyName] = attributeValue
+          map[attribute.name] = attributeValue
         }
       } else if (this.metadata.ignoreUnknownProperties !== true) {
         throw new ValidationError(`Unknown property set on Map, ${propertyName}`)
@@ -65,10 +65,16 @@ export class MapAttributeType<Value> extends AttributeType<Value, MapAttributeMe
     const map: any = mapValue
 
     for (const attributeName of Object.keys(mapValue)) {
+      const attribute = _.find(this.attributes, (attr) => attr.name === attributeName)
       const value = mapValue[attributeName]
-      const attribute = this.attributes[attributeName]
+
+      // const value = mapValue[attributeName]
+      // const attribute = this.attributes[attributeName]
 
       if (attribute != null) {
+        // Delete the previously name non-dynamo attribute
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        delete map[attribute.name]
         map[attribute.propertyName] = attribute.fromDynamo(value)
       } else if (this.metadata.ignoreUnknownProperties !== true) {
         throw new ValidationError(`Unknown attribute seen on Map, ${attributeName}`)
