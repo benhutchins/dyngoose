@@ -43,7 +43,7 @@
     "@types/chai": "4.2.22",
     "@types/lodash": "^4.14.162",
     "@types/mocha": "9.0.0",
-    "@types/node": "14.14.21",
+    "@types/node": "18.11.10",
     "@typescript-eslint/eslint-plugin": "^4.4.1",
     "@typescript-eslint/eslint-plugin-tslint": "^4.4.1",
     "@typescript-eslint/parser": "^4.4.1",
