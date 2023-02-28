@@ -35,7 +35,7 @@ describe('query/expression', () => {
     public someBool: boolean
 
     @Dyngoose.Attribute.StringSet()
-    public someStrings: string[]
+    public someStrings: Set<string>
 
     @Dyngoose.Attribute.Map<ISomeMap>({
       attributes: {

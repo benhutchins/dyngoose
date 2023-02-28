@@ -1,4 +1,7 @@
 import { AttributeMetadata } from '../attribute'
+import { NumberValue } from './number.metadata'
 
-export interface NumberSetAttributeMetadata extends AttributeMetadata<Array<number | BigInt>> {
+export type NumberSetValue = Set<NumberValue>
+
+export interface NumberSetAttributeMetadata extends AttributeMetadata<NumberSetValue> {
 }

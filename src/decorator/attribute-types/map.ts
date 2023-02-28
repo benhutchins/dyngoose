@@ -4,12 +4,10 @@ import { Attribute } from '../../attribute'
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
 import { ValidationError } from '../../errors'
 import { AttributeMap, IAttributeType } from '../../interfaces'
-import { MapAttributeMetadata } from '../../metadata/attribute-types/map.metadata'
+import { MapAttributeMetadata, MapBaseValue } from '../../metadata/attribute-types/map.metadata'
 import { Table } from '../../table'
 import { AttributeType } from '../../tables/attribute-type'
 import { isTrulyEmpty } from '../../utils/truly-empty'
-
-type MapBaseValue = Record<string, any>
 
 export class MapAttributeType<Value extends MapBaseValue> extends AttributeType<Value, MapAttributeMetadata<Value>>
   implements IAttributeType<Value> {

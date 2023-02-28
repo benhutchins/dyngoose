@@ -1,6 +1,8 @@
 import { AttributeMetadata } from '../attribute'
 
-export interface StringSetAttributeMetadata extends AttributeMetadata<string[]> {
+export type StringSetValue = Set<string>
+
+export interface StringSetAttributeMetadata extends AttributeMetadata<StringSetValue> {
   trim?: boolean
   lowercase?: boolean
   uppercase?: boolean
