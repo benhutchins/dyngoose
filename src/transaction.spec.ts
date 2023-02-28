@@ -9,6 +9,7 @@ import {
   PrimaryKey as PrimaryKeyDecorator,
   Table as TableDecorator,
 } from './decorator'
+import { TransactionCanceledException } from '@aws-sdk/client-dynamodb'
 
 describe('Transaction', () => {
   @TableDecorator({ name: 'TransactionTestCardTable' })
@@ -81,7 +82,7 @@ describe('Transaction', () => {
     // add a condition
     transaction.conditionCheck(Card.primaryKey.fromKey(11, 'd'), { count: 3 }) // note: 3 is not the right number
 
-    let error: Error | undefined
+    let error: TransactionCanceledException | undefined
 
     try {
       await transaction.commit()
@@ -92,6 +93,6 @@ describe('Transaction', () => {
     expect(error).to.be.instanceOf(Error)
       .with.property('name', 'TransactionCanceledException')
 
-    should().exist((error as any).cancellationReasons)
+    should().exist(error?.CancellationReasons)
   })
 })

@@ -11,22 +11,9 @@ export async function transactWrite(
   const chunks = _chunk(requests, MAX_ITEMS)
   await Promise.all(
     chunks.map(async (chunk) => {
-      const request = await documentClient.transactWriteItems({
+      return await documentClient.transactWriteItems({
         TransactItems: [...chunk],
       })
-
-      // attempt to expose the cancellation reasons, giving the details on why the transaction failed
-      // @see https://github.com/aws/aws-sdk-js/issues/2464
-      // request.on('extractError', (response) => {
-      //   if (response.error != null) {
-      //     try {
-      //       const reasons = JSON.parse(response.httpResponse.body.toString()).CancellationReasons;
-      //       (response.error as any).cancellationReasons = reasons
-      //     } catch (ex) {}
-      //   }
-      // })
-
-      return request
     }),
   )
 
