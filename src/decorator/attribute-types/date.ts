@@ -1,4 +1,4 @@
-import { DynamoDB } from 'aws-sdk'
+import { AttributeValue } from '@aws-sdk/client-dynamodb'
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
 import { SchemaError } from '../../errors'
 import { IAttributeType } from '../../interfaces'
@@ -44,7 +44,7 @@ export class DateAttributeType extends AttributeType<Value, Metadata> implements
     return null
   }
 
-  toDynamo(dt: Value): DynamoDB.AttributeValue {
+  toDynamo(dt: Value): AttributeValue {
     if (this.metadata?.nowOnUpdate === true) {
       dt = new Date()
     }
@@ -60,7 +60,7 @@ export class DateAttributeType extends AttributeType<Value, Metadata> implements
     }
   }
 
-  fromDynamo(attributeValue: DynamoDB.AttributeValue): Value | null {
+  fromDynamo(attributeValue: AttributeValue): Value | null {
     // whenever the value is stored as a number, it must be a timestamp
     // the timestamp will have been stored in UTC
     if (attributeValue.N != null) {

@@ -1,6 +1,7 @@
-import { DynamoDB } from 'aws-sdk'
+import { QueryCommandInput, QueryCommandOutput, ScanCommandInput, ScanCommandOutput, Select } from '@aws-sdk/client-dynamodb'
 import { has } from 'lodash'
 import { HelpfulError, QueryError } from '../errors'
+import { Key } from '../interfaces/key.interface'
 import * as Metadata from '../metadata'
 import { ITable, Table } from '../table'
 import { buildQueryExpression } from './expression'
@@ -11,18 +12,18 @@ import { MagicSearch, MagicSearchInput } from './search'
 interface LocalSecondaryIndexQueryInput {
   rangeOrder?: 'ASC' | 'DESC'
   limit?: number
-  exclusiveStartKey?: DynamoDB.Key
-  consistent?: DynamoDB.ConsistentRead
+  exclusiveStartKey?: Key
+  consistent?: boolean
 }
 
 interface LocalSecondaryIndexScanInput {
   limit?: number
-  select?: DynamoDB.Select
-  totalSegments?: DynamoDB.ScanTotalSegments
-  segment?: DynamoDB.ScanSegment
-  exclusiveStartKey?: DynamoDB.Key
-  projectionExpression?: DynamoDB.ProjectionExpression
-  consistent?: DynamoDB.ConsistentRead
+  select?: Select
+  totalSegments?: number
+  segment?: number
+  exclusiveStartKey?: Key
+  projectionExpression?: string
+  consistent?: boolean
 }
 
 export class LocalSecondaryIndex<T extends Table> {
@@ -31,12 +32,12 @@ export class LocalSecondaryIndex<T extends Table> {
     readonly metadata: Metadata.Index.LocalSecondaryIndex,
   ) {}
 
-  public getQueryInput(input: LocalSecondaryIndexQueryInput = {}): DynamoDB.QueryInput {
+  public getQueryInput(input: LocalSecondaryIndexQueryInput = {}): QueryCommandInput {
     if (input.rangeOrder == null) {
       input.rangeOrder = 'ASC'
     }
     const ScanIndexForward = input.rangeOrder === 'ASC'
-    const queryInput: DynamoDB.QueryInput = {
+    const queryInput: QueryCommandInput = {
       TableName: this.tableClass.schema.name,
       IndexName: this.metadata.name,
       Limit: input.limit,
@@ -67,17 +68,17 @@ export class LocalSecondaryIndex<T extends Table> {
     queryInput.ExpressionAttributeNames = expression.ExpressionAttributeNames
     queryInput.ExpressionAttributeValues = expression.ExpressionAttributeValues
     const hasProjection = queryInput.ProjectionExpression == null
-    let output: DynamoDB.QueryOutput
+    let output: QueryCommandOutput
     try {
-      output = await this.tableClass.schema.dynamo.query(queryInput).promise()
+      output = await this.tableClass.schema.dynamo.query(queryInput)
     } catch (ex) {
       throw new HelpfulError(ex, this.tableClass, queryInput)
     }
     return QueryOutput.fromDynamoOutput(this.tableClass, output, hasProjection)
   }
 
-  public getScanInput(input: LocalSecondaryIndexScanInput = {}): DynamoDB.ScanInput {
-    const scanInput: DynamoDB.ScanInput = {
+  public getScanInput(input: LocalSecondaryIndexScanInput = {}): ScanCommandInput {
+    const scanInput: ScanCommandInput = {
       TableName: this.tableClass.schema.name,
       IndexName: this.metadata.name,
       Limit: input.limit,
@@ -100,9 +101,9 @@ export class LocalSecondaryIndex<T extends Table> {
       scanInput.ExpressionAttributeValues = expression.ExpressionAttributeValues
     }
     const hasProjection = scanInput.ProjectionExpression == null
-    let output: DynamoDB.ScanOutput
+    let output: ScanCommandOutput
     try {
-      output = await this.tableClass.schema.dynamo.scan(scanInput).promise()
+      output = await this.tableClass.schema.dynamo.scan(scanInput)
     } catch (ex) {
       throw new HelpfulError(ex, this.tableClass, scanInput)
     }

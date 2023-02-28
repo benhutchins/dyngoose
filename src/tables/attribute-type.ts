@@ -1,4 +1,4 @@
-import { DynamoDB } from 'aws-sdk'
+import { AttributeValue } from '@aws-sdk/client-dynamodb'
 import { Attribute } from '../attribute'
 import { DynamoAttributeTypes } from '../dynamo-attribute-types'
 import { IAttributeType } from '../interfaces'
@@ -36,11 +36,11 @@ export class AttributeType<Value, Metadata extends AttributeMetadata<Value>> imp
     this.schema.addAttribute(this.attribute)
   }
 
-  toDynamo(value: Value, attribute: Attribute<Value>): DynamoDB.AttributeValue {
-    return { [this.type]: value }
+  toDynamo(value: Value, attribute: Attribute<Value>): AttributeValue {
+    return { [this.type]: value } as any // TODO: should not have to use an as any here
   }
 
-  fromDynamo(attributeValue: DynamoDB.AttributeValue, attribute: Attribute<Value>): Value | null {
+  fromDynamo(attributeValue: AttributeValue, attribute: Attribute<Value>): Value | null {
     return (attributeValue as any)[this.type]
   }
 }

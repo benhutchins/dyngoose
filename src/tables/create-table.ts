@@ -1,11 +1,11 @@
-import { DynamoDB } from 'aws-sdk'
+import { TableDescription, waitUntilTableExists } from '@aws-sdk/client-dynamodb'
 import { Schema } from './schema'
 
-export async function createTable(schema: Schema, waitForReady = true): Promise<DynamoDB.TableDescription> {
-  const res = await schema.dynamo.createTable(schema.createTableInput()).promise()
+export async function createTable(schema: Schema, waitForReady = true): Promise<TableDescription> {
+  const res = await schema.dynamo.createTable(schema.createTableInput())
 
   if (waitForReady) {
-    await schema.dynamo.waitFor('tableExists', { TableName: schema.name }).promise()
+    await waitUntilTableExists({ client: schema.dynamo, maxWaitTime: 500 }, { TableName: schema.name })
 
     // TTL
     if (schema.timeToLiveAttribute != null) {
@@ -15,7 +15,7 @@ export async function createTable(schema: Schema, waitForReady = true): Promise<
           Enabled: true,
           AttributeName: schema.timeToLiveAttribute.name,
         },
-      }).promise()
+      })
     }
 
     // Point-in-Time Recovery
@@ -25,9 +25,9 @@ export async function createTable(schema: Schema, waitForReady = true): Promise<
         PointInTimeRecoverySpecification: {
           PointInTimeRecoveryEnabled: true,
         },
-      }).promise()
+      })
     }
   }
 
-  return res.TableDescription as DynamoDB.TableDescription
+  return res.TableDescription as TableDescription
 }

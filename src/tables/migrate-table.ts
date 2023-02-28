@@ -1,12 +1,19 @@
-import { DynamoDB } from 'aws-sdk'
+import {
+  CreateGlobalSecondaryIndexAction,
+  GlobalSecondaryIndexDescription,
+  GlobalSecondaryIndexUpdate,
+  TableDescription,
+  UpdateTableInput,
+  waitUntilTableExists,
+} from '@aws-sdk/client-dynamodb'
 import * as _ from 'lodash'
 import { SchemaError } from '../errors'
 import { createTable } from './create-table'
 import { describeTable } from './describe-table'
 import { Schema } from './schema'
 
-export async function migrateTable(schema: Schema, waitForReady = false): Promise<DynamoDB.TableDescription> {
-  let description: DynamoDB.TableDescription
+export async function migrateTable(schema: Schema, waitForReady = false): Promise<TableDescription> {
+  let description: TableDescription
 
   try {
     description = await describeTable(schema)
@@ -38,7 +45,7 @@ export async function migrateTable(schema: Schema, waitForReady = false): Promis
     })
   }
 
-  const deletedIndexes: DynamoDB.GlobalSecondaryIndexDescriptionList = []
+  const deletedIndexes: GlobalSecondaryIndexDescription[] = []
   let hasChanges = indexes.length < expectedIndexes.length
 
   if (!hasChanges) {
@@ -63,7 +70,7 @@ export async function migrateTable(schema: Schema, waitForReady = false): Promis
       return !_.includes(indexes, index.IndexName)
     })
 
-    const indexUpdates: DynamoDB.GlobalSecondaryIndexUpdate[] = []
+    const indexUpdates: GlobalSecondaryIndexUpdate[] = []
 
     _.forEach(deletedIndexes, (index) => {
       if (index.IndexName != null) {
@@ -72,27 +79,27 @@ export async function migrateTable(schema: Schema, waitForReady = false): Promis
     })
 
     _.forEach(newIndexes, (index) => {
-      const action: DynamoDB.CreateGlobalSecondaryIndexAction = index
+      const action: CreateGlobalSecondaryIndexAction = index
       indexUpdates.push({ Create: action })
     })
 
     // you can only update or delete a single index per request, even though the command accepts an array
     for (const indexUpdate of indexUpdates) {
-      const updateParams: DynamoDB.UpdateTableInput = {
+      const updateParams: UpdateTableInput = {
         TableName: expectedDescription.TableName,
         AttributeDefinitions: expectedDescription.AttributeDefinitions,
         GlobalSecondaryIndexUpdates: [indexUpdate],
       }
 
       // tell the table to update this index
-      await schema.dynamo.updateTable(updateParams).promise()
+      await schema.dynamo.updateTable(updateParams)
 
       // now wait for the index to be ready
-      await schema.dynamo.waitFor('tableExists', { TableName: schema.name }).promise()
+      await waitUntilTableExists({ client: schema.dynamo, maxWaitTime: 500 }, { TableName: schema.name })
     }
 
     // TTL
-    const ttl = await schema.dynamo.describeTimeToLive({ TableName: schema.name }).promise()
+    const ttl = await schema.dynamo.describeTimeToLive({ TableName: schema.name })
     if (
       // if there currently is no TTL attribute but we want one
       (ttl.TimeToLiveDescription == null && schema.timeToLiveAttribute != null) ||
@@ -106,7 +113,7 @@ export async function migrateTable(schema: Schema, waitForReady = false): Promis
           Enabled: true,
           AttributeName: schema.timeToLiveAttribute.name,
         },
-      }).promise()
+      })
     }
   }
 

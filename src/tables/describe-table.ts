@@ -1,11 +1,11 @@
-import { DynamoDB } from 'aws-sdk'
+import { DescribeTableCommandInput, TableDescription } from '@aws-sdk/client-dynamodb'
 import { Schema } from './schema'
 
-export async function describeTable(schema: Schema): Promise<DynamoDB.TableDescription> {
-  const params: DynamoDB.DescribeTableInput = {
+export async function describeTable(schema: Schema): Promise<TableDescription> {
+  const params: DescribeTableCommandInput = {
     TableName: schema.name,
   }
 
-  const result = await schema.dynamo.describeTable(params).promise()
-  return result.Table as DynamoDB.TableDescription
+  const result = await schema.dynamo.describeTable(params)
+  return result.Table as TableDescription
 }

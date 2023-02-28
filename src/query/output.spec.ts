@@ -1,7 +1,9 @@
-import { ItemList } from 'aws-sdk/clients/dynamodb'
+import { AttributeValue } from '@aws-sdk/client-dynamodb'
 import { expect } from 'chai'
 import { TestableTable } from '../setup-tests.spec'
 import { QueryOutput } from './output'
+
+type ItemList = Array<Record<string, AttributeValue>>
 
 describe('Query/Output', () => {
   const emptyItems: ItemList = []

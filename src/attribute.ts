@@ -1,4 +1,4 @@
-import { DynamoDB } from 'aws-sdk'
+import { AttributeValue } from '@aws-sdk/client-dynamodb'
 import * as _ from 'lodash'
 import { ValidationError } from './errors'
 import { IAttributeType } from './interfaces'
@@ -32,7 +32,7 @@ export class Attribute<Value> {
   /**
    * Convert the given value for this attribute to a DynamoDB AttributeValue
    */
-  toDynamo(value: Value | null): DynamoDB.AttributeValue | null {
+  toDynamo(value: Value | null): AttributeValue | null {
     // if there is no value, inject the default value for this attribute
     if (value == null || isTrulyEmpty(value)) {
       // if we have no value, allow the manipulateWrite a chance to provide a value
@@ -43,7 +43,7 @@ export class Attribute<Value> {
       }
     }
 
-    // if there is no value, do not not return an empty DynamoDB.AttributeValue
+    // if there is no value, do not not return an empty AttributeValue
     if (value == null) {
       if (this.metadata.required === true) {
         throw new ValidationError('Required value missing: ' + this.name)
@@ -64,7 +64,7 @@ export class Attribute<Value> {
     }
   }
 
-  toDynamoAssert(value: any): DynamoDB.AttributeValue {
+  toDynamoAssert(value: any): AttributeValue {
     const attributeValue = this.toDynamo(value)
 
     if (attributeValue == null) {
@@ -77,7 +77,7 @@ export class Attribute<Value> {
   /**
    * Convert DynamoDB raw response to understandable data
    */
-  fromDynamo(attributeValue: DynamoDB.AttributeValue | null): Value | null {
+  fromDynamo(attributeValue: AttributeValue | null): Value | null {
     // if there is no value, apply the default, but allow the value to become null
     if (attributeValue == null) {
       attributeValue = this.toDynamo(null)
