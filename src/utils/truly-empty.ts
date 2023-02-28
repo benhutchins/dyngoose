@@ -21,6 +21,10 @@ export function isTrulyEmpty(value: any): boolean {
     return false
   }
 
+  if (_.isSet(value)) {
+    return _.isEmpty(_.filter(Array.from(value), (v) => v != null))
+  }
+
   if (_.isArrayLike(value)) {
     return _.isEmpty(_.filter(value, (v) => v != null))
   }

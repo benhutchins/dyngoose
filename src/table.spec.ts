@@ -50,48 +50,13 @@ describe('Table', () => {
     })
   })
 
-  describe('.updateSet', () => {
-    it('should update a set', async () => {
-      const card = TestableTable.new({
-        id: 98,
-        title: '98',
-        testStringSet: [
-          '',
-          'test',
-          'strings',
-        ],
-        testNumberSet: [
-          1,
-          2,
-          3,
-        ],
-      })
-
-      expect(card.testStringSet).to.deep.eq(['', 'test', 'strings'])
-      expect(card.testNumberSet).to.deep.eq([1, 2, 3])
-
-      card.updateSet('testStringSet', ['', 'test', 'test', 'abc'])
-
-      expect(card.testStringSet).to.deep.eq(['test', 'abc'], 'set was cleaned by updateSet')
-
-      card.updateSet('testStringSet', ['abc', 'test'])
-      card.updateSet('testNumberSet', [3, 2, 1])
-
-      expect(card.testStringSet).to.deep.eq(['test', 'abc'], 'set should not have been changed')
-      expect(card.testNumberSet).to.deep.eq([1, 2, 3], 'set should not have been changed')
-
-      card.updateSet('testStringSet', ['abc'])
-      expect(card.testStringSet).to.deep.eq(['abc'], 'test should have been removed from testStringSet')
-    })
-  })
-
   it('should support update operators', async () => {
     const card = TestableTable.new({
       id: 98,
       title: '98',
       testString: 'some value',
       testNumber: 11,
-      testNumberSet: [1, 2, 3],
+      testNumberSet: new Set([1, 2, 3]),
       testAttributeNaming: 'test',
     })
     await card.save()
@@ -255,7 +220,7 @@ describe('Table', () => {
     const record = TestableTable.new()
     expect(record.id).to.eq(1)
     expect(record.defaultedString).to.eq('SomeDefault')
-    expect(record.testNumberSetWithDefaults).to.deep.eq([42, 420])
+    expect(Array.from(record.testNumberSetWithDefaults)).to.deep.eq([42, 420])
   })
 
   it('should not apply defaults when the record is loaded from DynamoDB', () => {

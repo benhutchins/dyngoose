@@ -50,7 +50,7 @@ export class TestableTable extends Dyngoose.Table {
   public testString: string
 
   @Dyngoose.Attribute.StringSet()
-  public testStringSet: string[]
+  public testStringSet: Set<string>
 
   @Dyngoose.Attribute.String({ lowercase: true })
   public lowercaseString: string
@@ -65,10 +65,10 @@ export class TestableTable extends Dyngoose.Table {
   public testNumber: number
 
   @Dyngoose.Attribute.NumberSet()
-  public testNumberSet?: Array<BigInt | number> | null
+  public testNumberSet?: Set<BigInt | number> | null
 
-  @Dyngoose.Attribute.NumberSet({ default: () => [42, 420] })
-  public testNumberSetWithDefaults: number[]
+  @Dyngoose.Attribute.NumberSet({ default: () => new Set([42, 420]) })
+  public testNumberSetWithDefaults: Set<number>
 
   @Dyngoose.Attribute.Number()
   public testBigInt: BigInt

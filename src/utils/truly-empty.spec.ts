@@ -46,6 +46,14 @@ describe('utils/empty', () => {
       expect(value).to.deep.eq({ prop: false })
     })
 
+    it('sets', () => {
+      expect(isTrulyEmpty(new Set())).to.eq(true)
+      expect(isTrulyEmpty(new Set([]))).to.eq(true)
+      expect(isTrulyEmpty(new Set([null]))).to.eq(true)
+      expect(isTrulyEmpty(new Set([true]))).to.eq(false)
+      expect(isTrulyEmpty(new Set([false]))).to.eq(false)
+    })
+
     it('arrays', () => {
       expect(isTrulyEmpty([])).to.eq(true)
       expect(isTrulyEmpty([null])).to.eq(true)

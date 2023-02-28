@@ -10,19 +10,19 @@ describe('AttributeType/NumberSet', () => {
 
   it('should store values as an array of numbers', () => {
     expect(record.testNumberSet).eq(null)
-    record.testNumberSet = [10, 100]
-    expect(record.testNumberSet).deep.eq([10, 100])
-    expect(record.get('testNumberSet')).deep.eq([10, 100])
+    record.testNumberSet = new Set([10, 100])
+    expect(Array.from(record.testNumberSet)).deep.eq([10, 100])
+    expect(Array.from(record.get('testNumberSet')!)).deep.eq([10, 100])
     expect(record.getAttributeDynamoValue('testNumberSet')).deep.eq({ NS: ['10', '100'] })
   })
 
   it('supports BigInt values', () => {
     const int = BigInt('9007199254740991')
     expect(record.testNumberSet).eq(null)
-    record.testNumberSet = [int]
-    expect(record.testNumberSet).to.deep.eq([Number(int)], 'read from record')
-    expect(record.get('testNumberSet')).deep.eq([Number(int)], 'use .get')
-    expect(record.getAttribute('testNumberSet')).deep.eq([Number(int)], 'use .getAttribute')
+    record.testNumberSet = new Set([int])
+    expect(Array.from(record.testNumberSet)).to.deep.eq([Number(int)], 'read from record')
+    expect(Array.from(record.get('testNumberSet')!)).deep.eq([Number(int)], 'use .get')
+    expect(Array.from(record.getAttribute('testNumberSet')!)).deep.eq([Number(int)], 'use .getAttribute')
     expect(record.getAttributeDynamoValue('testNumberSet')).deep.eq({ NS: [int.toString()] }, 'use .getAttributeDynamoValue')
   })
 

@@ -1,4 +1,5 @@
 import { Metadata, Table } from '../..'
+import { MapBaseValue } from '../../metadata/attribute-types/map.metadata'
 import { AnyAttributeType } from './any'
 import { BinaryAttributeType } from './binary'
 import { BinarySetAttributeType } from './binary-set'
@@ -101,7 +102,7 @@ Attribute.NumberSet = (options?: Metadata.AttributeType.NumberSet) => Attribute(
 Attribute.String = (options?: Metadata.AttributeType.String) => Attribute('String', options)
 Attribute.StringSet = (options?: Metadata.AttributeType.StringSet) => Attribute('StringSet', options)
 
-Attribute.Map = <Value>(options: Metadata.AttributeType.Map<Value>): AttributeDefinition => {
+Attribute.Map = <Value extends MapBaseValue>(options: Metadata.AttributeType.Map<Value>): AttributeDefinition => {
   const define = function (record: Table, propertyName: string): void {
     const decorator = new MapAttributeType<Value>(record, propertyName, options as any)
     decorator.decorate()
