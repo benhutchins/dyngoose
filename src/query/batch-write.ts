@@ -1,16 +1,21 @@
-import { DynamoDB } from 'aws-sdk'
-import * as _ from 'lodash'
+import { BatchWriteItemOutput, DynamoDB, WriteRequest } from '@aws-sdk/client-dynamodb'
+import { chunk } from 'lodash'
 
 // this is limit of dynamoDB
 const MAX_ITEMS = 25
 
+/**
+ * [tableName]: WriteRequests[]
+ */
+export type WriteRequestMap = Record<string, WriteRequest[]>
+
 export async function batchWrite(
   documentClient: DynamoDB,
-  requests: DynamoDB.BatchWriteItemRequestMap[],
-): Promise<DynamoDB.BatchWriteItemOutput> {
+  requests: WriteRequestMap[],
+): Promise<BatchWriteItemOutput> {
   const results = await Promise.all(
-    _.chunk(requests, MAX_ITEMS).map(async (chunk) => {
-      const mergedMap: DynamoDB.BatchWriteItemRequestMap = {}
+    chunk(requests, MAX_ITEMS).map(async (chunk) => {
+      const mergedMap: Record<string, WriteRequest[]> = {}
 
       for (const requestMap of chunk) {
         for (const tableName of Object.keys(requestMap)) {
@@ -24,13 +29,13 @@ export async function batchWrite(
         }
       }
 
-      const res: DynamoDB.BatchWriteItemOutput = await documentClient.batchWriteItem({ RequestItems: mergedMap }).promise()
+      const res: BatchWriteItemOutput = await documentClient.batchWriteItem({ RequestItems: mergedMap })
       return res
     }),
   )
 
   // merge together the outputs to unify the UnprocessedItems into a single output array
-  const output: DynamoDB.BatchWriteItemOutput = {}
+  const output: BatchWriteItemOutput = {}
 
   for (const result of results) {
     if (result.UnprocessedItems != null) {

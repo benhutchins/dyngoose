@@ -1,8 +1,9 @@
-import { DynamoDB } from 'aws-sdk'
+import { QueryCommandInput, QueryCommandOutput, ScanCommandInput, ScanCommandOutput } from '@aws-sdk/client-dynamodb'
 import { get, has, includes, isArray } from 'lodash'
 import { Attribute } from '../attribute'
 import { HelpfulError, QueryError } from '../errors'
 import { Metadata } from '../index'
+import { Key } from '../interfaces/key.interface'
 import { ITable, Table } from '../table'
 import { Condition } from './condition'
 import { buildQueryExpression, keyConditionAllowedOperators } from './expression'
@@ -17,11 +18,11 @@ type Index<T extends Table> = PrimaryKey<T, any, any> | GlobalSecondaryIndex<T> 
 
 export interface MagicSearchInput<T extends Table> {
   limit?: number
-  exclusiveStartKey?: DynamoDB.Key
+  exclusiveStartKey?: Key
   attributes?: string[]
-  projectionExpression?: DynamoDB.ProjectionExpression
+  projectionExpression?: string
   rangeOrder?: 'ASC' | 'DESC'
-  consistent?: DynamoDB.ConsistentRead
+  consistent?: boolean
   returnOnlyCount?: boolean
 
   /**
@@ -131,7 +132,7 @@ export class MagicSearch<T extends Table> {
    *
    * You can pass that object into this method to get additional results from your table.
    */
-  startAt(exclusiveStartKey?: DynamoDB.Key): this {
+  startAt(exclusiveStartKey?: Key): this {
     this.input.exclusiveStartKey = exclusiveStartKey
     return this
   }
@@ -183,7 +184,7 @@ export class MagicSearch<T extends Table> {
   /**
    * This will cause the query to run in a consistent manner as opposed to the default eventually consistent manner.
    */
-  consistent(consistent: DynamoDB.ConsistentRead = true): this {
+  consistent(consistent = true): this {
     this.input.consistent = consistent
     return this
   }
@@ -297,7 +298,7 @@ export class MagicSearch<T extends Table> {
     return QueryOutput.fromSeveralOutputs(this.tableClass, outputs)
   }
 
-  getInput(): DynamoDB.ScanInput | DynamoDB.QueryInput {
+  getInput(): ScanCommandInput | QueryCommandInput {
     let indexMetadata: Metadata.Index.GlobalSecondaryIndex | Metadata.Index.PrimaryKey | undefined
 
     if (this.input.index != null && typeof this.input.index === 'string') {
@@ -340,7 +341,7 @@ export class MagicSearch<T extends Table> {
 
     const query = buildQueryExpression(this.tableClass.schema, this.filters, indexMetadata)
 
-    const input: DynamoDB.ScanInput | DynamoDB.QueryInput = {
+    const input: ScanCommandInput | QueryCommandInput = {
       TableName: this.tableClass.schema.name,
       ConsistentRead: false,
       ExpressionAttributeValues: query.ExpressionAttributeValues,
@@ -361,7 +362,7 @@ export class MagicSearch<T extends Table> {
     }
 
     if (this.input.rangeOrder === 'DESC') {
-      (input as DynamoDB.QueryInput).ScanIndexForward = false
+      (input as QueryCommandInput).ScanIndexForward = false
     }
 
     if (this.input.limit != null) {
@@ -390,7 +391,7 @@ export class MagicSearch<T extends Table> {
     }
 
     if (query.KeyConditionExpression != null) {
-      (input as DynamoDB.QueryInput).KeyConditionExpression = query.KeyConditionExpression
+      (input as QueryCommandInput).KeyConditionExpression = query.KeyConditionExpression
     }
 
     return input
@@ -403,26 +404,26 @@ export class MagicSearch<T extends Table> {
     return await this.exec()
   }
 
-  async page(input: DynamoDB.ScanInput | DynamoDB.QueryInput): Promise<QueryOutput<T>> {
+  async page(input: ScanCommandInput | QueryCommandInput): Promise<QueryOutput<T>> {
     const hasProjection = input.ProjectionExpression == null
-    let output: DynamoDB.ScanOutput | DynamoDB.QueryOutput
+    let output: ScanCommandOutput | QueryCommandOutput
 
     // if we are filtering based on key conditions, run a query instead of a scan
-    if ((input as DynamoDB.QueryInput).KeyConditionExpression != null) {
+    if ((input as QueryCommandInput).KeyConditionExpression != null) {
       try {
-        output = await this.tableClass.schema.dynamo.query(input).promise()
+        output = await this.tableClass.schema.dynamo.query(input)
       } catch (ex) {
         throw new HelpfulError(ex, this.tableClass, input)
       }
     } else {
-      if ((input as DynamoDB.QueryInput).ScanIndexForward === false) {
+      if ((input as QueryCommandInput).ScanIndexForward === false) {
         throw new Error('Cannot specify a sort direction, range order, or use ScanIndexForward on a scan operation. Try specifying the index being used.')
       } else {
-        delete (input as DynamoDB.QueryInput).ScanIndexForward
+        delete (input as QueryCommandInput).ScanIndexForward
       }
 
       try {
-        output = await this.tableClass.schema.dynamo.scan(input).promise()
+        output = await this.tableClass.schema.dynamo.scan(input)
       } catch (ex) {
         throw new HelpfulError(ex, this.tableClass, input)
       }

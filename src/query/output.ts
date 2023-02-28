@@ -1,11 +1,12 @@
-import { DynamoDB } from 'aws-sdk'
+import { ScanOutput, QueryOutput as DynQueryOutput, ConsumedCapacity } from '@aws-sdk/client-dynamodb'
 import { Table } from '..'
+import { Key } from '../interfaces/key.interface'
 import { ITable } from '../table'
 
 export class QueryOutput<T extends Table> extends Array<T> {
   public static fromDynamoOutput<T extends Table>(
     tableClass: ITable<T>,
-    output: DynamoDB.ScanOutput | DynamoDB.QueryOutput,
+    output: ScanOutput | DynQueryOutput,
     hasProjection: boolean,
   ): QueryOutput<T> {
     const items: T[] = []
@@ -26,7 +27,7 @@ export class QueryOutput<T extends Table> extends Array<T> {
     queryOutput.count = output.Count == null ? items.length : output.Count
     queryOutput.scannedCount = output.ScannedCount as number
     queryOutput.lastEvaluatedKey = output.LastEvaluatedKey
-    queryOutput.consumedCapacity = output.ConsumedCapacity as DynamoDB.ConsumedCapacity
+    queryOutput.consumedCapacity = output.ConsumedCapacity as ConsumedCapacity
 
     return queryOutput
   }
@@ -88,8 +89,8 @@ export class QueryOutput<T extends Table> extends Array<T> {
 
   count: number
   scannedCount: number
-  lastEvaluatedKey?: DynamoDB.Key
-  consumedCapacity: DynamoDB.ConsumedCapacity
+  lastEvaluatedKey?: Key
+  consumedCapacity: ConsumedCapacity
 
   /**
    * The items returned from DynamoDB

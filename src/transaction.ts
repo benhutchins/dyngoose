@@ -1,4 +1,4 @@
-import { DynamoDB } from 'aws-sdk'
+import { Delete, DynamoDB, Put, TransactWriteItem, TransactWriteItemsOutput } from '@aws-sdk/client-dynamodb'
 import Config from './config'
 import { buildQueryExpression } from './query/expression'
 import { UpdateConditions } from './query/filters'
@@ -8,7 +8,7 @@ import { Table } from './table'
 
 export class Transaction {
   private dynamo: DynamoDB
-  private readonly list: DynamoDB.TransactWriteItemList = []
+  private readonly list: TransactWriteItem[] = []
 
   /**
    * Perform a Transaction operation.
@@ -54,7 +54,7 @@ export class Transaction {
 
   public put<T extends Table>(record: T, conditions?: UpdateConditions<T>): this {
     const tableClass = record.constructor as typeof Table
-    const put: DynamoDB.Put = {
+    const put: Put = {
       TableName: tableClass.schema.name,
       Item: record.toDynamo(),
     }
@@ -93,7 +93,7 @@ export class Transaction {
 
   public delete<T extends Table>(record: T, conditions?: UpdateConditions<T>): this {
     const tableClass = record.constructor as typeof Table
-    const del: DynamoDB.Delete = {
+    const del: Delete = {
       TableName: tableClass.schema.name,
       Key: record.getDynamoKey(),
     }
@@ -129,7 +129,7 @@ export class Transaction {
     return this
   }
 
-  public async commit(): Promise<DynamoDB.TransactWriteItemsOutput> {
+  public async commit(): Promise<TransactWriteItemsOutput> {
     return await transactWrite(this.dynamo, this.list)
   }
 }

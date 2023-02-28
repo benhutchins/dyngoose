@@ -1,6 +1,6 @@
-import { DynamoDB } from 'aws-sdk'
+import { ReturnConsumedCapacity, UpdateItemCommandInput } from '@aws-sdk/client-dynamodb'
 import * as _ from 'lodash'
-import { DynamoReturnValues } from '../interfaces'
+import { AttributeMap, DynamoReturnValues } from '../interfaces'
 import { Table } from '../table'
 import { buildQueryExpression } from './expression'
 import { UpdateConditions } from './filters'
@@ -8,16 +8,16 @@ import { UpdateConditions } from './filters'
 export interface UpdateItemInputParams<T extends Table> {
   conditions?: UpdateConditions<T>
   returnValues?: DynamoReturnValues
-  returnConsumedCapacity?: DynamoDB.ReturnConsumedCapacity
+  returnConsumedCapacity?: ReturnConsumedCapacity
 }
 
-interface UpdateItemInput extends DynamoDB.UpdateItemInput {
+interface UpdateItemInput extends UpdateItemCommandInput {
   UpdateExpression: string
 }
 
 export function getUpdateItemInput<T extends Table>(record: T, params?: UpdateItemInputParams<T>): UpdateItemInput {
   const tableClass = (record.constructor as typeof Table)
-  const input: DynamoDB.UpdateItemInput = {
+  const input: UpdateItemCommandInput = {
     TableName: tableClass.schema.name,
     Key: record.getDynamoKey(),
     ReturnValues: params?.returnValues ?? 'NONE',
@@ -29,8 +29,8 @@ export function getUpdateItemInput<T extends Table>(record: T, params?: UpdateIt
 
   const sets: string[] = []
   const removes: string[] = []
-  const attributeNameMap: DynamoDB.ExpressionAttributeNameMap = {}
-  const attributeValueMap: DynamoDB.ExpressionAttributeValueMap = {}
+  const attributeNameMap: Record<string, string> = {}
+  const attributeValueMap: AttributeMap = {}
 
   let valueCounter = 0
 

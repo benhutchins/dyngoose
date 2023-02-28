@@ -1,4 +1,4 @@
-import { AttributeValue } from 'aws-sdk/clients/dynamodb'
+import { AttributeValue } from '@aws-sdk/client-dynamodb'
 import { Attribute } from '../attribute'
 import { DynamoAttributeTypes } from '../dynamo-attribute-types'
 

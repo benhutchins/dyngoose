@@ -1,4 +1,4 @@
-import { DynamoDB } from 'aws-sdk'
+import { DynamoDB, StreamSpecification } from '@aws-sdk/client-dynamodb'
 import { IThroughput } from '../interfaces'
 
 export interface TableMetadata {
@@ -76,7 +76,7 @@ export interface TableMetadata {
    *
    * @see {@link https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html}
    */
-  readonly stream?: boolean | DynamoDB.StreamSpecification
+  readonly stream?: boolean | StreamSpecification
 
   /**
    * Whether this table should be point-in-time recovery enabled.

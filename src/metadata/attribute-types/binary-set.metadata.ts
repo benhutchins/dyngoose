@@ -1,7 +1,6 @@
-import { DynamoDB } from 'aws-sdk'
 import { AttributeMetadata } from '../attribute'
 
-type Type = DynamoDB.BinarySetAttributeValue
+type Type = Uint8Array[]
 
 export interface BinarySetAttributeMetadata extends AttributeMetadata<Type> {
 }

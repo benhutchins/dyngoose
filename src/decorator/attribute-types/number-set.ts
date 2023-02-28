@@ -1,4 +1,4 @@
-import { DynamoDB } from 'aws-sdk'
+import { AttributeValue } from '@aws-sdk/client-dynamodb'
 import { every, isArray, uniq } from 'lodash'
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
 import { ValidationError } from '../../errors'
@@ -13,7 +13,7 @@ type Metadata = NumberSetAttributeMetadata
 export class NumberSetAttributeType extends AttributeType<Value, Metadata> implements IAttributeType<Value> {
   type = DynamoAttributeType.NumberSet
 
-  toDynamo(values: Value): DynamoDB.AttributeValue {
+  toDynamo(values: Value): AttributeValue {
     if (!isArray(values) || !every(values, isNumber)) {
       throw new ValidationError(`Expected ${this.propertyName} to be an array of numbers`)
     }
@@ -24,7 +24,7 @@ export class NumberSetAttributeType extends AttributeType<Value, Metadata> imple
     }
   }
 
-  fromDynamo(value: DynamoDB.AttributeValue): Value | null {
+  fromDynamo(value: AttributeValue): Value | null {
     // this needs to return null when there is no value, so the default value can be set if necessary
     // returning an empty array means there was a value from DynamoDB with a Set containing no items
     if (value.NS == null) {

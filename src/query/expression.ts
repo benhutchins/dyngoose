@@ -1,15 +1,15 @@
-import { DynamoDB } from 'aws-sdk'
 import * as _ from 'lodash'
 import { Attribute } from '../attribute'
 import { QueryError } from '../errors'
+import { AttributeMap } from '../interfaces'
 import * as Metadata from '../metadata'
 import { Table } from '../table'
 import { Schema } from '../tables/schema'
 import { ComplexFilters, Filter, Filters } from './filters'
 
 interface Expression {
-  ExpressionAttributeNames: DynamoDB.ExpressionAttributeNameMap
-  ExpressionAttributeValues?: DynamoDB.ExpressionAttributeValueMap
+  ExpressionAttributeNames: Record<string, string>
+  ExpressionAttributeValues?: AttributeMap
   FilterExpression?: string
   KeyConditionExpression?: string
 }
@@ -60,8 +60,8 @@ interface FilterCondition {
 }
 
 class FilterExpressionQuery<T extends Table> {
-  public attrs: DynamoDB.ExpressionAttributeNameMap = {}
-  public values: DynamoDB.ExpressionAttributeValueMap = {}
+  public attrs: Record<string, string> = {}
+  public values: AttributeMap = {}
   public filterConditions: string[] = []
 
   private readonly keyConditionsMap: FilterCondition[] = []
@@ -204,8 +204,8 @@ class FilterExpressionQuery<T extends Table> {
     filter: Filter<any>,
     attrName: string,
   ): QueryFilterQuery {
-    const attrs: DynamoDB.ExpressionAttributeNameMap = {}
-    const values: DynamoDB.ExpressionAttributeValueMap = {}
+    const attrs: Record<string, string> = {}
+    const values: AttributeMap = {}
     const prefix = this.getAttributeNamePrefix(attrName)
     let query: string | undefined
     let attrNameMappedTo: string
@@ -250,22 +250,19 @@ class FilterExpressionQuery<T extends Table> {
           throw new QueryError('Cannot use beginsWith with number attributes')
         }
 
-        const strValue = attr.toDynamoAssert(filter[1])
+        let strValue = attr.toDynamoAssert(filter[1])
 
         // convert sets to single values, since contains and not contains only work on the single value
         // and sets do not support beginsWith so we don't have to be concerned with that here
         if (strValue.SS != null) {
-          strValue.S = _.isArray(strValue.SS) ? strValue.SS[0] : strValue.SS
-          delete strValue.SS
+          strValue = { S: _.isArray(strValue.SS) ? strValue.SS[0] : strValue.SS }
         } else if (strValue.NS != null) {
-          strValue.N = _.isArray(strValue.NS) ? strValue.NS[0] : strValue.NS
-          delete strValue.NS
+          strValue = { N: _.isArray(strValue.NS) ? strValue.NS[0] : strValue.NS }
         } else if (strValue.BS != null) {
-          strValue.B = _.isArray(strValue.BS) ? strValue.BS[0] : strValue.BS
-          delete strValue.BS
+          strValue = { B: _.isArray(strValue.BS) ? strValue.BS[0] : strValue.BS }
         }
 
-        const queryOperator = operator === 'beginsWith' ? 'begins_with' : operator.replace(' ', '_')
+        const queryOperator = operator === 'beginsWith' ? 'begins_with' : operator.replace(/ /g, '_')
         query = `${queryOperator}(${attrNameMappedTo}, ${variableName})`
         values[variableName] = strValue
         break
@@ -362,7 +359,7 @@ class FilterExpressionQuery<T extends Table> {
 }
 
 interface QueryFilterQuery {
-  attrs: DynamoDB.ExpressionAttributeNameMap
-  values: DynamoDB.ExpressionAttributeValueMap
+  attrs: Record<string, string>
+  values: AttributeMap
   query?: string
 }

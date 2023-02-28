@@ -1,8 +1,8 @@
-import { DynamoDB } from 'aws-sdk'
+import { CreateTableInput, DynamoDB } from '@aws-sdk/client-dynamodb'
 import { Attribute } from '../attribute'
 import { MapAttributeType } from '../decorator/attribute-types/map'
 import { SchemaError } from '../errors'
-import { IThroughput } from '../interfaces'
+import { AttributeMap, IThroughput } from '../interfaces'
 import * as Metadata from '../metadata'
 import * as Query from '../query'
 import { ITable, Table } from '../table'
@@ -254,7 +254,7 @@ export class Schema {
     }
   }
 
-  public createTableInput(forCloudFormation = false): DynamoDB.CreateTableInput {
+  public createTableInput(forCloudFormation = false): CreateTableInput {
     return createTableInput(this, forCloudFormation)
   }
 
@@ -262,8 +262,8 @@ export class Schema {
     return this.createTableInput(true)
   }
 
-  public toDynamo(record: Table | Map<string, any>): DynamoDB.AttributeMap {
-    const attributeMap: DynamoDB.AttributeMap = {}
+  public toDynamo(record: Table | Map<string, any>): AttributeMap {
+    const attributeMap: AttributeMap = {}
 
     for (const [attributeName, attribute] of this.attributes.entries()) {
       // there is a quirk with the typing of Table.get, where we exclude all the default Table properties and therefore

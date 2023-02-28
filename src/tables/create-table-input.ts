@@ -1,11 +1,11 @@
-import { DynamoDB } from 'aws-sdk'
+import { CreateTableCommandInput, GlobalSecondaryIndex, KeySchemaElement, LocalSecondaryIndex } from '@aws-sdk/client-dynamodb'
 import { uniqBy } from 'lodash'
 import { Attribute } from '../attribute'
 import { SchemaError } from '../errors'
 import { Schema } from './schema'
 
-export function createTableInput(schema: Schema, forCloudFormation = false): DynamoDB.CreateTableInput {
-  const params: DynamoDB.CreateTableInput = {
+export function createTableInput(schema: Schema, forCloudFormation = false): CreateTableCommandInput {
+  const params: CreateTableCommandInput = {
     TableName: schema.name,
     AttributeDefinitions: [
       {
@@ -31,12 +31,12 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Dyn
   }
 
   if (schema.primaryKey.range != null) {
-    params.AttributeDefinitions.push({
+    params.AttributeDefinitions!.push({
       AttributeName: schema.primaryKey.range.name,
       AttributeType: schema.primaryKey.range.type.type,
     })
 
-    params.KeySchema.push({
+    params.KeySchema!.push({
       AttributeName: schema.primaryKey.range.name,
       KeyType: 'RANGE',
     })
@@ -79,7 +79,7 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Dyn
 
   if (schema.localSecondaryIndexes.length > 0) {
     params.LocalSecondaryIndexes = schema.localSecondaryIndexes.map((indexMetadata) => {
-      const KeySchema: DynamoDB.KeySchema = [
+      const KeySchema: KeySchemaElement[] = [
         {
           AttributeName: schema.primaryKey.hash.name,
           KeyType: 'HASH',
@@ -91,14 +91,14 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Dyn
       ]
 
       // make sure this attribute is defined in the AttributeDefinitions
-      if (params.AttributeDefinitions.find((ad) => indexMetadata.range.name === ad.AttributeName) == null) {
-        params.AttributeDefinitions.push({
+      if (params.AttributeDefinitions!.find((ad) => indexMetadata.range.name === ad.AttributeName) == null) {
+        params.AttributeDefinitions!.push({
           AttributeName: indexMetadata.range.name,
           AttributeType: indexMetadata.range.type.type,
         })
       }
 
-      const index: DynamoDB.LocalSecondaryIndex = {
+      const index: LocalSecondaryIndex = {
         IndexName: indexMetadata.name,
         KeySchema,
         Projection: {
@@ -112,7 +112,7 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Dyn
           throw new SchemaError(`Invalid configuration for LocalSecondaryIndex ${schema.name}/${indexMetadata.name}. nonKeyAttributes can only be used with projection INCLUDE.`)
         }
 
-        index.Projection.NonKeyAttributes = indexMetadata.nonKeyAttributes
+        index.Projection!.NonKeyAttributes = indexMetadata.nonKeyAttributes
       }
 
       return index
@@ -121,14 +121,14 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Dyn
 
   if (schema.globalSecondaryIndexes.length > 0) {
     params.GlobalSecondaryIndexes = schema.globalSecondaryIndexes.map((indexMetadata) => {
-      const KeySchema: DynamoDB.KeySchema = [{
+      const KeySchema: KeySchemaElement[] = [{
         AttributeName: indexMetadata.hash.name,
         KeyType: 'HASH',
       }]
 
       // make sure this attribute is defined in the AttributeDefinitions
-      if (params.AttributeDefinitions.find((ad) => indexMetadata.hash.name === ad.AttributeName) == null) {
-        params.AttributeDefinitions.push({
+      if (params.AttributeDefinitions!.find((ad) => indexMetadata.hash.name === ad.AttributeName) == null) {
+        params.AttributeDefinitions!.push({
           AttributeName: indexMetadata.hash.name,
           AttributeType: indexMetadata.hash.type.type,
         })
@@ -136,8 +136,8 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Dyn
 
       if (indexMetadata.range != null) {
         // make sure the rangeKey is defined in the AttributeDefinitions
-        if (params.AttributeDefinitions.find((ad) => (indexMetadata.range as Attribute<any>).name === ad.AttributeName) == null) {
-          params.AttributeDefinitions.push({
+        if (params.AttributeDefinitions!.find((ad) => (indexMetadata.range as Attribute<any>).name === ad.AttributeName) == null) {
+          params.AttributeDefinitions!.push({
             AttributeName: indexMetadata.range.name,
             AttributeType: indexMetadata.range.type.type,
           })
@@ -152,7 +152,7 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Dyn
       // by default, indexes will share the same throughput as the table
       const throughput = indexMetadata.throughput == null ? schema.throughput : indexMetadata.throughput
 
-      const index: DynamoDB.GlobalSecondaryIndex = {
+      const index: GlobalSecondaryIndex = {
         IndexName: indexMetadata.name,
         KeySchema,
         Projection: {
@@ -172,7 +172,7 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Dyn
           throw new SchemaError(`Invalid configuration for GlobalSecondaryIndex ${schema.name}/${indexMetadata.name}. nonKeyAttributes can only be used with projection INCLUDE.`)
         }
 
-        index.Projection.NonKeyAttributes = indexMetadata.nonKeyAttributes
+        index.Projection!.NonKeyAttributes = indexMetadata.nonKeyAttributes
       }
 
       return index

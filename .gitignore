@@ -3,6 +3,9 @@ dist.zip
 
 .env
 
+# Snyk
+.dccache
+
 # Logs
 logs
 *.log

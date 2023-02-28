@@ -1,16 +1,18 @@
-import { DynamoDB } from 'aws-sdk'
+import { BatchWriteItemOutput, DynamoDB, WriteRequest } from '@aws-sdk/client-dynamodb'
 import { RateLimit } from 'async-sema'
 import * as _ from 'lodash'
 import Config from './config'
 import { Table } from './table'
 import { BatchError, HelpfulError } from './errors'
 
+type BatchWriteItemRequestMap = Record<string, WriteRequest[]>
+
 export class BatchWrite {
   public static readonly MAX_BATCH_ITEMS = 25 // limit imposed by DynamoDB
   public static readonly MAX_PARALLEL_WRITES = 25 // 25 concurrent writes of 25 records is a lot…
 
   private dynamo: DynamoDB
-  private readonly list: DynamoDB.BatchWriteItemRequestMap[] = []
+  private readonly list: BatchWriteItemRequestMap[] = []
 
   /**
    * Perform a BatchWrite operation.
@@ -64,7 +66,7 @@ export class BatchWrite {
   public put<T extends Table>(...records: T[]): this {
     for (const record of records) {
       const tableClass = record.constructor as typeof Table
-      const requestMap: DynamoDB.BatchWriteItemRequestMap = {
+      const requestMap: BatchWriteItemRequestMap = {
         [tableClass.schema.name]: [
           {
             PutRequest: {
@@ -83,7 +85,7 @@ export class BatchWrite {
   public delete<T extends Table>(...records: T[]): this {
     for (const record of records) {
       const tableClass = record.constructor as typeof Table
-      const requestMap: DynamoDB.BatchWriteItemRequestMap = {
+      const requestMap: BatchWriteItemRequestMap = {
         [tableClass.schema.name]: [
           {
             DeleteRequest: {
@@ -99,7 +101,7 @@ export class BatchWrite {
     return this
   }
 
-  public async commit(): Promise<DynamoDB.BatchWriteItemOutput> {
+  public async commit(): Promise<BatchWriteItemOutput> {
     const limit = RateLimit(this.options.maxParallelWrites == null ? BatchWrite.MAX_PARALLEL_WRITES : this.options.maxParallelWrites)
     const chunks = _.chunk(this.list, this.options.maxItemsPerBatch == null ? BatchWrite.MAX_BATCH_ITEMS : this.options.maxItemsPerBatch)
     const exceptions: HelpfulError[] = []
@@ -113,7 +115,7 @@ export class BatchWrite {
         return
       }
 
-      const mergedMap: DynamoDB.BatchWriteItemRequestMap = {}
+      const mergedMap: BatchWriteItemRequestMap = {}
 
       for (const requestMap of chunk) {
         for (const tableName of Object.keys(requestMap)) {
@@ -128,7 +130,7 @@ export class BatchWrite {
       }
 
       try {
-        return await this.dynamo.batchWriteItem({ RequestItems: mergedMap }).promise()
+        return await this.dynamo.batchWriteItem({ RequestItems: mergedMap })
       } catch (ex) {
         // save the exception to stop all future chunks, because without this the other chunks would continue
         // this is not perfect, because operations that are in-progress will still continue, although they
@@ -137,10 +139,10 @@ export class BatchWrite {
       }
     })
 
-    const results = _.filter(await Promise.all(promises)) as DynamoDB.BatchWriteItemOutput[]
+    const results = _.filter(await Promise.all(promises)) as BatchWriteItemOutput[]
 
     // merge together the outputs to unify the UnprocessedItems into a single output array
-    const output: DynamoDB.BatchWriteItemOutput = {}
+    const output: BatchWriteItemOutput = {}
 
     for (const result of results) {
       if (result.UnprocessedItems != null) {

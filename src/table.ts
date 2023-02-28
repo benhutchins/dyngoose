@@ -1,9 +1,17 @@
-import { DynamoDB } from 'aws-sdk'
+import {
+  AttributeValue,
+  PutItemOutput,
+  UpdateItemOutput,
+  TableDescription,
+  PutItemCommandOutput,
+  UpdateItemCommandOutput,
+  DeleteItemCommandOutput,
+} from '@aws-sdk/client-dynamodb'
 import * as _ from 'lodash'
 import { Attribute } from './attribute'
 import { DocumentClient } from './document-client'
 import * as Events from './events'
-import { SetPropParams, UpdateOperator } from './interfaces'
+import { AttributeMap, SetPropParams, UpdateOperator } from './interfaces'
 import { Filters } from './query/filters'
 import { MagicSearch, MagicSearchInput } from './query/search'
 import { createTable } from './tables/create-table'
@@ -62,13 +70,13 @@ export class Table {
   }
 
   /**
-   * Creates a new instance of Table with values from a given `DynamoDB.AttributeMap`.
+   * Creates a new instance of Table with values from a given `AttributeMap`.
    *
    * This assumes the record exists in DynamoDB and saving this record will
    * default to using an `UpdateItem` operation rather than a `PutItem` operation
    * upon being saved.
    */
-  public static fromDynamo<T extends Table>(this: StaticThis<T>, attributes: DynamoDB.AttributeMap, entireDocument = true): T {
+  public static fromDynamo<T extends Table>(this: StaticThis<T>, attributes: AttributeMap, entireDocument = true): T {
     return new this().fromDynamo(attributes, entireDocument)
   }
 
@@ -112,7 +120,7 @@ export class Table {
    * You can also use {@link Table.migrateTable} to create and automatically
    * migrate and indexes that need changes.
    */
-  public static async createTable(waitForReady = true): Promise<DynamoDB.TableDescription> {
+  public static async createTable(waitForReady = true): Promise<TableDescription> {
     return await createTable(this.schema, waitForReady)
   }
 
@@ -121,7 +129,7 @@ export class Table {
    *
    * This will create new indexes and delete legacy indexes.
    */
-  public static async migrateTable(): Promise<DynamoDB.TableDescription> {
+  public static async migrateTable(): Promise<TableDescription> {
     return await migrateTable(this.schema)
   }
 
@@ -130,11 +138,11 @@ export class Table {
    *
    * Be a bit careful with this in production.
    */
-  public static async deleteTable(): Promise<DynamoDB.TableDescription | undefined> {
+  public static async deleteTable(): Promise<TableDescription | undefined> {
     return await deleteTable(this.schema)
   }
 
-  public static async describeTable(): Promise<DynamoDB.TableDescription> {
+  public static async describeTable(): Promise<TableDescription> {
     return await describeTable(this.schema)
   }
   // #endregion static methods
@@ -146,8 +154,8 @@ export class Table {
   }
 
   // raw storage for all attributes this record (instance) has
-  private __attributes: DynamoDB.AttributeMap = {}
-  private __original: DynamoDB.AttributeMap = {}
+  private __attributes: AttributeMap = {}
+  private __original: AttributeMap = {}
   private __updatedAttributes: string[] = []
   private __removedAttributes: string[] = []
   private __updateOperators: { [key: string]: UpdateOperator } = {}
@@ -162,7 +170,7 @@ export class Table {
    */
   constructor(values?: { [key: string]: any }) {
     if (values != null) {
-      for (const key of _.keys(values)) {
+      for (const key of Object.keys(values)) {
         this.setAttribute(key, values[key])
       }
     }
@@ -186,13 +194,13 @@ export class Table {
   }
 
   /**
-   * Load values from an a DynamoDB.AttributeMap into this Table record.
+   * Load values from an a AttributeMap into this Table record.
    *
    * This assumes the values are loaded directly from DynamoDB, and after
    * setting the attributes it resets the attributes pending update and
    * deletion.
    */
-  public fromDynamo(values: DynamoDB.AttributeMap, entireDocument = true): this {
+  public fromDynamo(values: AttributeMap, entireDocument = true): this {
     this.__attributes = values
 
     // this is an existing record in the database, so when we save it, we need to update
@@ -205,11 +213,11 @@ export class Table {
   }
 
   /**
-   * Converts the current attribute values into a DynamoDB.AttributeMap which
+   * Converts the current attribute values into a AttributeMap which
    * can be sent directly to DynamoDB within a PutItem, UpdateItem, or similar
    * request.
   */
-  public toDynamo(): DynamoDB.AttributeMap {
+  public toDynamo(): AttributeMap {
     // anytime toDynamo is called, it can generate new default values or manipulate values
     // this keeps the record in sync, so the instance can be used after the record is saved
     const attributeMap = this.table.schema.toDynamo(this)
@@ -227,9 +235,9 @@ export class Table {
   /**
    * Get the DynamoDB.Key for this record.
    */
-  public getDynamoKey(): DynamoDB.Key {
+  public getDynamoKey(): AttributeMap {
     const hash = this.getAttribute(this.table.schema.primaryKey.hash.name)
-    const key: DynamoDB.Key = {
+    const key: AttributeMap = {
       [this.table.schema.primaryKey.hash.name]: this.table.schema.primaryKey.hash.toDynamoAssert(hash),
     }
 
@@ -314,11 +322,11 @@ export class Table {
   }
 
   /**
-   * Returns the DynamoDB.AttributeValue value for an attribute.
+   * Returns the AttributeValue value for an attribute.
    *
    * To get the transformed value, use {@link Table.getAttribute}
    */
-  public getAttributeDynamoValue(attributeName: string): DynamoDB.AttributeValue {
+  public getAttributeDynamoValue(attributeName: string): AttributeValue {
     return this.__attributes[attributeName]
   }
 
@@ -351,11 +359,11 @@ export class Table {
   }
 
   /**
-   * Sets the DynamoDB.AttributeValue for an attribute.
+   * Sets the AttributeValue for an attribute.
    *
    * To set the value from a JavaScript object, use {@link Table.setAttribute}
   */
-  public setAttributeDynamoValue(attributeName: string, attributeValue: DynamoDB.AttributeValue): this {
+  public setAttributeDynamoValue(attributeName: string, attributeValue: AttributeValue): this {
     // save the original value before we update the attributes value
     if (!_.isUndefined(this.__attributes[attributeName]) && _.isUndefined(this.__original[attributeName])) {
       this.__original[attributeName] = this.getAttributeDynamoValue(attributeName)
@@ -547,7 +555,7 @@ export class Table {
   /**
    * Return the original values for the record, if it was loaded from DynamoDB.
    */
-  public getOriginalValues(): DynamoDB.AttributeMap {
+  public getOriginalValues(): AttributeMap {
     return this.__original
   }
 
@@ -563,9 +571,9 @@ export class Table {
    * Automatically determines if the the save should use a PutItem or UpdateItem request.
    */
   public async save(event?: undefined | { returnOutput?: false } & Events.SaveEvent<this>): Promise<void>
-  public async save(event: { returnOutput: true, operator?: undefined } & Events.SaveEvent<this>): Promise<DynamoDB.PutItemOutput | DynamoDB.UpdateItemOutput>
-  public async save(event: { returnOutput: true, operator: 'put' } & Events.SaveEvent<this>): Promise<DynamoDB.PutItemOutput>
-  public async save(event: { returnOutput: true, operator: 'update' } & Events.SaveEvent<this>): Promise<DynamoDB.UpdateItemOutput>
+  public async save(event: { returnOutput: true, operator?: undefined } & Events.SaveEvent<this>): Promise<PutItemOutput | UpdateItemOutput>
+  public async save(event: { returnOutput: true, operator: 'put' } & Events.SaveEvent<this>): Promise<PutItemOutput>
+  public async save(event: { returnOutput: true, operator: 'update' } & Events.SaveEvent<this>): Promise<UpdateItemOutput>
   public async save(event?: Events.SaveEvent<this>): Promise<any> {
     const operator = event?.operator ?? this.getSaveOperation()
     const beforeSaveEvent: Events.BeforeSaveEvent<this> = {
@@ -575,7 +583,7 @@ export class Table {
     const allowSave = await this.beforeSave(beforeSaveEvent)
 
     if (beforeSaveEvent.force === true || (allowSave !== false && this.hasChanges())) {
-      let output: DynamoDB.PutItemOutput | DynamoDB.UpdateItemOutput
+      let output: PutItemCommandOutput | UpdateItemCommandOutput
       if (beforeSaveEvent.operator === 'put') {
         output = await this.table.documentClient.put(this, beforeSaveEvent)
         this.__putRequired = false
@@ -632,7 +640,7 @@ export class Table {
    * After deleting, {@link Table.afterDelete} will be called.
    */
   public async delete(event?: { returnOutput?: false } & Events.DeleteEvent<this>): Promise<void>
-  public async delete(event: { returnOutput: true } & Events.DeleteEvent<this>): Promise<DynamoDB.DeleteItemOutput>
+  public async delete(event: { returnOutput: true } & Events.DeleteEvent<this>): Promise<DeleteItemCommandOutput>
   public async delete(event?: Events.DeleteEvent<this>): Promise<any> {
     const beforeDeleteEvent = { ...event }
     const allowDeletion = await this.beforeDelete(beforeDeleteEvent)
@@ -755,5 +763,5 @@ export interface ITable<T extends Table> {
   schema: Schema
   documentClient: DocumentClient<T>
   new(): T
-  fromDynamo: (attributes: DynamoDB.AttributeMap, entireDocument?: boolean) => T
+  fromDynamo: (attributes: AttributeMap, entireDocument?: boolean) => T
 }

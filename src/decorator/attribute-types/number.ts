@@ -1,4 +1,4 @@
-import { DynamoDB } from 'aws-sdk'
+import { AttributeValue } from '@aws-sdk/client-dynamodb'
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
 import { ValidationError } from '../../errors'
 import { IAttributeType } from '../../interfaces'
@@ -12,7 +12,7 @@ type Metadata = NumberAttributeMetadata
 export class NumberAttributeType extends AttributeType<Value, Metadata> implements IAttributeType<Value> {
   type = DynamoAttributeType.Number
 
-  toDynamo(value: Value): DynamoDB.AttributeValue {
+  toDynamo(value: Value): AttributeValue {
     if (!isNumber(value)) {
       throw new ValidationError(`Expected ${this.propertyName} to be a number`)
     }
@@ -22,7 +22,7 @@ export class NumberAttributeType extends AttributeType<Value, Metadata> implemen
     }
   }
 
-  fromDynamo(value: DynamoDB.AttributeValue): Value | null {
+  fromDynamo(value: AttributeValue): Value | null {
     if (value.N == null) {
       return null
     } else {
