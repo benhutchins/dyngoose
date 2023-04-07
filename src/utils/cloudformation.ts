@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { readdirSync } from 'fs'
+import { readdir } from 'fs/promises'
 import * as _ from 'lodash'
 import { join } from 'path'
 import { Table } from '../table'
 import { MigrateTablesInput } from './migrate'
 
 export default async function createCloudFormationResources(input: MigrateTablesInput): Promise<any> {
-  const tableFiles = readdirSync(input.tablesDirectory)
+  const tableFiles = await readdir(input.tablesDirectory)
   const tables: Array<typeof Table> = []
   const resources: any = {}
   const log = input.log == null ? console.log : input.log

@@ -1,4 +1,6 @@
 import { CreateTableInput, DynamoDB } from '@aws-sdk/client-dynamodb'
+import { Table as CDKTable } from '@aws-cdk/aws-dynamodb'
+import { Construct } from 'constructs'
 import { Attribute } from '../attribute'
 import { MapAttributeType } from '../decorator/attribute-types/map'
 import { SchemaError } from '../errors'
@@ -7,6 +9,7 @@ import * as Metadata from '../metadata'
 import * as Query from '../query'
 import { ITable, Table } from '../table'
 import { createTableInput } from './create-table-input'
+import { createCDKTable } from './create-cdk-table'
 
 export class Schema {
   public isDyngoose = true
@@ -260,6 +263,10 @@ export class Schema {
 
   public createCloudFormationResource(): any {
     return this.createTableInput(true)
+  }
+
+  public createCDKResource(construct: Construct): CDKTable {
+    return createCDKTable(construct, this)
   }
 
   public toDynamo(record: Table | Map<string, any>): AttributeMap {

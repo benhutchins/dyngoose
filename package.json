@@ -85,5 +85,8 @@
   },
   "peerDependencies": {
     "@aws-sdk/client-dynamodb": "^3.279.0"
+  },
+  "optionalDependencies": {
+    "@aws-cdk/aws-dynamodb": "^1.198.1"
   }
 }
