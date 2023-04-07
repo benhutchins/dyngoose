@@ -1,3 +1,5 @@
+import { TableDescription } from '@aws-sdk/client-dynamodb'
+
 import { BatchGet } from './batch-get'
 import { BatchWrite } from './batch-write'
 import * as Config from './config'
@@ -17,8 +19,8 @@ import { Filters } from './query/filters'
 import { QueryOutput } from './query/output'
 
 export const TableOperations = {
-  createTable: async (table: ITable<any>) => await createTable(table.schema),
-  deleteTable: async (table: ITable<any>) => await deleteTable(table.schema),
+  createTable: async (table: ITable<any>): Promise<TableDescription> => await createTable(table.schema),
+  deleteTable: async (table: ITable<any>): Promise<TableDescription | undefined> => await deleteTable(table.schema),
 }
 
 export {

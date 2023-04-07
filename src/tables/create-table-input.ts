@@ -23,7 +23,7 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Cre
 
   if (schema.options.billingMode === 'PAY_PER_REQUEST') {
     params.BillingMode = 'PAY_PER_REQUEST'
-  } else {
+  } else if (schema.options.billingMode === 'PROVISIONED') {
     params.ProvisionedThroughput = {
       ReadCapacityUnits: schema.throughput.read,
       WriteCapacityUnits: schema.throughput.write,
