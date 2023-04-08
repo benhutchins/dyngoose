@@ -1,3 +1,34 @@
+# [4.0.0](https://github.com/benhutchins/dyngoose/compare/v3.1.3...v4.0.0) (2023-04-08)
+
+
+### Bug Fixes
+
+* assign a default value for range key ([3f3de65](https://github.com/benhutchins/dyngoose/commit/3f3de65f1a4e278679f75722765dfa791a09d9fe)), closes [#569](https://github.com/benhutchins/dyngoose/issues/569)
+* **ci:** dynamodb port needs to be exposed ([d54a548](https://github.com/benhutchins/dyngoose/commit/d54a548dd6b8c8d4b3e621f0ed32b2f8bb370f12))
+* **ci:** running in container is breaking semantic-release ([424d8d5](https://github.com/benhutchins/dyngoose/commit/424d8d5c392b1eadc320904b99ed99f6bd805dcb))
+* conditions when using a transaction ([95d4cdd](https://github.com/benhutchins/dyngoose/commit/95d4cdd37f8c8e09bf28e26e5fcc1a39d2786c69)), closes [#609](https://github.com/benhutchins/dyngoose/issues/609)
+* ensure date attribute with nowOnUpdate update on partial updates ([374d02e](https://github.com/benhutchins/dyngoose/commit/374d02ed6510e6d00d32c139aed5fdf22e41d32a)), closes [#613](https://github.com/benhutchins/dyngoose/issues/613)
+* passing undefined to Table.new clears default values ([ea33dd3](https://github.com/benhutchins/dyngoose/commit/ea33dd3462d0d285d640e735a5e0eaf97590d1ee)), closes [#602](https://github.com/benhutchins/dyngoose/issues/602)
+
+
+### Features
+
+* add support for List attributes ([4abf8f4](https://github.com/benhutchins/dyngoose/commit/4abf8f4c42727b249f772c74dfef079fe733486a)), closes [#608](https://github.com/benhutchins/dyngoose/issues/608)
+* convert sets to use Set types ([f35ace4](https://github.com/benhutchins/dyngoose/commit/f35ace4ff61f00197468a1027060fe9bfba36dd3))
+* generate CDK table ([1162d6e](https://github.com/benhutchins/dyngoose/commit/1162d6e653e5b8a083e00b91e0b98dc62bc3f67f))
+* improve autoscaling support and interfaces ([2f80f0b](https://github.com/benhutchins/dyngoose/commit/2f80f0b787c1d7ded372eee29738b40c1a6b7868)), closes [#544](https://github.com/benhutchins/dyngoose/issues/544)
+* upgrade to aws-sdk v3 ([e4fca19](https://github.com/benhutchins/dyngoose/commit/e4fca19bf4dd545b42e87f02f54fab324bb466e4))
+
+
+### BREAKING CHANGES
+
+* this converts StringSet, NumberSet, and BinarySet to
+use a Set type in TypeScript, which provides better typing and ensures
+values are unique. This will later help with processing the changes to
+sets only, rather than having to re-save the entire set of values which
+is inefficient for larger sets.
+* Very necessary.
+
 ## [3.1.3](https://github.com/benhutchins/dyngoose/compare/v3.1.2...v3.1.3) (2022-07-28)
 
 
