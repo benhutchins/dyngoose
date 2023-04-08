@@ -75,7 +75,7 @@ export class Transaction {
 
   public update<T extends Table>(record: T, conditions?: UpdateConditions<T>): this {
     const tableClass = record.constructor as typeof Table
-    const updateInput = getUpdateItemInput(record, conditions)
+    const updateInput = getUpdateItemInput(record, { conditions })
 
     this.list.push({
       Update: {
