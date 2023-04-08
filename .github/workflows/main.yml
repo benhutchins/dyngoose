@@ -13,7 +13,7 @@ jobs:
           --health-cmd "curl --fail http://127.0.0.1:8000/shell/ || exit 1" --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
       - uses: actions/checkout@v3
-      - name: Setup node 16
+      - name: Setup node
         uses: actions/setup-node@v3
         with:
           node-version: '18.x' # @node-upgrade
