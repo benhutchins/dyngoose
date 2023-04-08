@@ -64,7 +64,7 @@ export class Table {
   public static new<T extends Table>(this: StaticThis<T>, values?: TableProperties<T>): T {
     const record = new this().applyDefaults()
     if (values != null) {
-      record.setValues(values)
+      record.setValues(_.omitBy(values, (v) => v === undefined) as any)
     }
     return record
   }
