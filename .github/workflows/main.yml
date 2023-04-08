@@ -7,6 +7,8 @@ jobs:
     services:
       dynamodb:
         image: amazon/dynamodb-local:1.16.0
+        ports:
+          - 8000:8000
         # @note Github overwrites WORKDIR to repository path, so overwrite that again
         options: >-
           --workdir /home/dynamodblocal
@@ -25,7 +27,7 @@ jobs:
       - name: Test
         run: npm test
         env:
-          DYNAMO_ENDPOINT: http://dynamodb:8000
+          DYNAMO_ENDPOINT: http://localhost:8000
       - name: Publish
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         # npm will not execute `prepublisnOnly` lifecycle hook if user is root.
