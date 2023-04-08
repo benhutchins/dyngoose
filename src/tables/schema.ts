@@ -30,7 +30,7 @@ export class Schema {
   /**
    * The desired Throughput for this table in DynamoDB
    */
-  public throughput: IThroughput
+  public throughput?: IThroughput
 
   /**
    * Holds the DynamoDB Client for the table
@@ -49,17 +49,9 @@ export class Schema {
       backup: true,
     }, metadata)
 
-    this.setThroughput(this.options.throughput != null
-      ? this.options.throughput
-      : {
-          read: 5,
-          write: 5,
-          autoScaling: {
-            targetUtilization: 70,
-            minCapacity: 5,
-            maxCapacity: 40000,
-          },
-        })
+    if (this.options.throughput != null) {
+      this.setThroughput(this.options.throughput)
+    }
   }
 
   public defineAttributeProperties(): void {
@@ -141,14 +133,6 @@ export class Schema {
       }
     } else {
       this.throughput = throughput
-
-      if (this.throughput.autoScaling === true) {
-        this.throughput.autoScaling = {
-          targetUtilization: 70,
-          minCapacity: 5,
-          maxCapacity: 40000,
-        }
-      }
     }
 
     if (this.throughput.read == null || this.throughput.write == null) {
