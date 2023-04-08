@@ -223,6 +223,13 @@ describe('Table', () => {
     expect(Array.from(record.testNumberSetWithDefaults)).to.deep.eq([42, 420])
   })
 
+  it('should apply default values even when undefined is given', () => {
+    const record = TestableTable.new({ defaultedString: undefined })
+    expect(record.id).to.eq(1)
+    expect(record.defaultedString).to.eq('SomeDefault')
+    expect(Array.from(record.testNumberSetWithDefaults)).to.deep.eq([42, 420])
+  })
+
   it('should not apply defaults when the record is loaded from DynamoDB', () => {
     const record = TestableTable.fromDynamo({})
     expect(record.id).to.eq(null)
