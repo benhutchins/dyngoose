@@ -1,4 +1,4 @@
-import { AttributeValue } from '@aws-sdk/client-dynamodb'
+import { type AttributeValue } from '@aws-sdk/client-dynamodb'
 import { expect } from 'chai'
 import { TestableTable } from '../setup-tests.spec'
 import { QueryOutput } from './output'

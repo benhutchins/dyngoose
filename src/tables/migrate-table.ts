@@ -1,16 +1,16 @@
 import {
-  CreateGlobalSecondaryIndexAction,
-  GlobalSecondaryIndexDescription,
-  GlobalSecondaryIndexUpdate,
-  TableDescription,
-  UpdateTableInput,
+  type CreateGlobalSecondaryIndexAction,
+  type GlobalSecondaryIndexDescription,
+  type GlobalSecondaryIndexUpdate,
+  type TableDescription,
+  type UpdateTableInput,
   waitUntilTableExists,
 } from '@aws-sdk/client-dynamodb'
 import * as _ from 'lodash'
 import { SchemaError } from '../errors'
 import { createTable } from './create-table'
 import { describeTable } from './describe-table'
-import { Schema } from './schema'
+import { type Schema } from './schema'
 
 export async function migrateTable(schema: Schema, waitForReady = false): Promise<TableDescription> {
   let description: TableDescription

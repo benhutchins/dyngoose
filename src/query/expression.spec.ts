@@ -8,7 +8,7 @@ describe('query/expression', () => {
     second: string
   }
 
-  @Dyngoose.$Table({ name: 'QueryExpressionDummyTable' })
+  @Dyngoose.$Table({ name: 'QueryExpressionDummyTable', backup: false })
   class DummyTable extends Dyngoose.Table {
     @Dyngoose.$PrimaryKey('id', 'customer')
     public static readonly primaryKey: Dyngoose.Query.PrimaryKey<DummyTable, string, string>
@@ -60,7 +60,7 @@ describe('query/expression', () => {
     }
 
     @Dyngoose.Attribute.String()
-    someNonExistAttr: string
+      someNonExistAttr: string
   }
 
   const schema = DummyTable.schema

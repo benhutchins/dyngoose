@@ -1,4 +1,4 @@
-import { AttributeMetadata } from '../attribute'
+import { type AttributeMetadata } from '../attribute'
 
 type Type = Uint8Array
 

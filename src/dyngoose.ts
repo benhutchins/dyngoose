@@ -1,4 +1,4 @@
-import { TableDescription } from '@aws-sdk/client-dynamodb'
+import { type TableDescription } from '@aws-sdk/client-dynamodb'
 
 import { BatchGet } from './batch-get'
 import { BatchWrite } from './batch-write'
@@ -10,12 +10,12 @@ import * as Errors from './errors'
 import * as Events from './events'
 import * as Metadata from './metadata'
 import * as Query from './query'
-import { ITable, Table } from './table'
+import { type ITable, Table } from './table'
 import { AttributeType } from './tables/attribute-type'
 import { createTable } from './tables/create-table'
 import { deleteTable } from './tables/delete-table'
 import { Transaction } from './transaction'
-import { Filters } from './query/filters'
+import { type Filters } from './query/filters'
 import { QueryOutput } from './query/output'
 
 export const TableOperations = {
@@ -33,7 +33,7 @@ export {
   DynamoAttributeType,
   Errors,
   Events,
-  Filters,
+  type Filters,
   Metadata,
   Query,
   QueryOutput,
@@ -44,7 +44,7 @@ export {
 // export decorators prefixed with $ for convenience
 export { Decorator as $ }
 export { DocumentClient as $DocumentClient } from './decorator/document-client'
-export { GlobalSecondaryIndex as $GlobalSecondaryIndex, GlobalSecondaryIndexOptions } from './decorator/global-secondary-index'
+export { GlobalSecondaryIndex as $GlobalSecondaryIndex, type GlobalSecondaryIndexOptions } from './decorator/global-secondary-index'
 export { LocalSecondaryIndex as $LocalSecondaryIndex } from './decorator/local-secondary-index'
 export { PrimaryKey as $PrimaryKey } from './decorator/primary-key'
 export { Table as $Table } from './decorator/table'

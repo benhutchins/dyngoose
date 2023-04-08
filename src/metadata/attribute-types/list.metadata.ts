@@ -1,6 +1,6 @@
-import { AttributeDefinition } from '../../decorator/attribute-types'
-import { AttributeMetadata } from '../attribute'
+import { type AttributeDefinition } from '../../decorator/attribute-types'
+import { type AttributeMetadata } from '../attribute'
 
 export interface ListAttributeMetadata<Value> extends AttributeMetadata<Value> {
-  attributes: { [propertyName: string]: AttributeDefinition }
+  attributes: Record<string, AttributeDefinition>
 }

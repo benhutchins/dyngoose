@@ -1,10 +1,10 @@
 import { flatten, filter, isArray, isEqual, chunk } from 'lodash'
-import { BatchGetItemOutput, DynamoDB, Get, KeysAndAttributes, TransactGetItem, TransactGetItemsOutput } from '@aws-sdk/client-dynamodb'
+import { type BatchGetItemOutput, type DynamoDB, type Get, type KeysAndAttributes, type TransactGetItem, type TransactGetItemsOutput } from '@aws-sdk/client-dynamodb'
 import Config from './config'
-import { Table } from './table'
+import { type Table } from './table'
 import { buildProjectionExpression } from './query/projection-expression'
 import { HelpfulError } from './errors'
-import { AttributeMap } from './interfaces'
+import { type AttributeMap } from './interfaces'
 
 export class BatchGet<T extends Table> {
   public static readonly MAX_BATCH_ITEMS = 100
@@ -12,7 +12,7 @@ export class BatchGet<T extends Table> {
 
   private dynamo: DynamoDB
   private readonly items: T[] = []
-  private readonly projectionMap: Map<typeof Table, string[]> = new Map()
+  private readonly projectionMap = new Map<typeof Table, string[]>()
   private atomicity = false
 
   /**
@@ -183,7 +183,7 @@ export class BatchGet<T extends Table> {
 
   public async retrieveMapped(): Promise<Map<typeof Table, T[]>> {
     const items = await this.retrieve()
-    const map: Map<typeof Table, T[]> = new Map()
+    const map = new Map<typeof Table, T[]>()
 
     for (const item of items) {
       const tableClass = item.constructor as typeof Table

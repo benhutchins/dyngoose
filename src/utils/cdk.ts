@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { Construct } from 'constructs'
+import type { Construct } from 'constructs'
 import { readdir } from 'fs/promises'
 import * as _ from 'lodash'
 import { join } from 'path'
-import { Table as CDKTable } from 'aws-cdk-lib/aws-dynamodb'
+import type { Table as CDKTable } from 'aws-cdk-lib/aws-dynamodb'
 import { Table } from '../table'
 import { createCDKTable } from '../tables/create-cdk-table'
 
@@ -16,7 +16,7 @@ export interface CreateCDKTablesInput {
   tableFileSuffix: string // maybe .table.js or .model.js
 
   // you can optionally override the log function called
-  log?: Function
+  log?: (message: string) => any
 }
 
 export async function createCDKTables(input: CreateCDKTablesInput): Promise<CDKTable> {

@@ -1,11 +1,11 @@
-import { CreateTableInput, DynamoDB } from '@aws-sdk/client-dynamodb'
-import { Attribute } from '../attribute'
-import { MapAttributeType } from '../decorator/attribute-types/map'
+import { type CreateTableInput, type DynamoDB } from '@aws-sdk/client-dynamodb'
+import { type Attribute } from '../attribute'
+import { type MapAttributeType } from '../decorator/attribute-types/map'
 import { SchemaError } from '../errors'
-import { AttributeMap, IThroughput } from '../interfaces'
-import * as Metadata from '../metadata'
+import { type AttributeMap, type IThroughput } from '../interfaces'
+import type * as Metadata from '../metadata'
 import * as Query from '../query'
-import { ITable, Table } from '../table'
+import { type ITable, type Table } from '../table'
 import { createTableInput } from './create-table-input'
 
 export class Schema {
@@ -38,22 +38,28 @@ export class Schema {
   public dynamo: DynamoDB
 
   // List of attributes this table has
-  private readonly attributes: Map<string, Attribute<any>> = new Map()
+  private readonly attributes = new Map<string, Attribute<any>>()
 
   constructor(private readonly table: ITable<any>) {}
 
   public setMetadata(metadata: Metadata.Table): void {
-    this.options = metadata
+    this.options = Object.assign({
+      // default options for a table
+      billingMode: 'PAY_PER_REQUEST',
+      backup: true,
+    }, metadata)
 
-    this.setThroughput(this.options.throughput != null ? this.options.throughput : {
-      read: 5,
-      write: 5,
-      autoScaling: {
-        targetUtilization: 70,
-        minCapacity: 5,
-        maxCapacity: 40000,
-      },
-    })
+    this.setThroughput(this.options.throughput != null
+      ? this.options.throughput
+      : {
+          read: 5,
+          write: 5,
+          autoScaling: {
+            targetUtilization: 70,
+            minCapacity: 5,
+            maxCapacity: 40000,
+          },
+        })
   }
 
   public defineAttributeProperties(): void {

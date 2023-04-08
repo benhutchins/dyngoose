@@ -1,5 +1,5 @@
-import { BatchWriteItemOutput, DynamoDBServiceException } from '@aws-sdk/client-dynamodb'
-import { ITable } from './table'
+import { type BatchWriteItemOutput, type DynamoDBServiceException } from '@aws-sdk/client-dynamodb'
+import { type ITable } from './table'
 
 export class DyngooseError extends Error {
   constructor(message: string) {

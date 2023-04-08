@@ -6,7 +6,7 @@ export function stringToNumber(number: number | string): number {
   }
 }
 
-export function numberToString(number: number | BigInt): string {
+export function numberToString(number: number | bigint): string {
   return number.toString()
 }
 

@@ -24,6 +24,7 @@ interface ITestContactMap {
 
 @Dyngoose.$Table({
   name: `MapTest-${Math.random()}`,
+  backup: false,
 })
 export class MapTestTable extends Dyngoose.Table {
   @Dyngoose.$PrimaryKey('id')
@@ -33,7 +34,7 @@ export class MapTestTable extends Dyngoose.Table {
   public static readonly documentClient: Dyngoose.DocumentClient<MapTestTable>
 
   @Dyngoose.Attribute.Number()
-  id: number
+    id: number
 
   @Dyngoose.Attribute.Map({
     attributes: {

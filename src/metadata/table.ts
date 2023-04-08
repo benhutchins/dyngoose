@@ -1,5 +1,5 @@
-import { DynamoDB, StreamSpecification } from '@aws-sdk/client-dynamodb'
-import { IThroughput } from '../interfaces'
+import { type DynamoDB, type StreamSpecification } from '@aws-sdk/client-dynamodb'
+import { type IThroughput } from '../interfaces'
 
 export interface TableMetadata {
   /**
@@ -50,18 +50,28 @@ export interface TableMetadata {
    * Define your table's billing mode.
    *
    * Available options are: `PROVISIONED` or `PAY_PER_REQUEST`.
-   * Defaults to `PROVISIONED`.
    *
    * The `throughput` option only matters when using `PROVISIONED`.
+   *
+   * @see {@link https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/EncryptionAtRest.html}
+   * @default PAY_PER_REQUEST
    */
   readonly billingMode?: 'PROVISIONED' | 'PAY_PER_REQUEST'
 
   /**
-   * Whether this table data should be encrypted at rest.
+   * All user data stored in Amazon DynamoDB is fully encrypted at rest.
+   *
+   * By default AWS owns and manages the key used for encryption (provided at no
+   * additional cost).
+   *
+   * When this property is set to true, DynamoDB uses an AWS-managed KMS key for
+   * at-rest encryption (AWS KMS charges apply).
    *
    * At this time, encryption can only be enabled using the AWS managed and owned keys.
    * There is no support for specifying KMS keys. Please make a ticket on if someone
    * wants to use that. {@link https://github.com/benhutchins/dyngoose/issues}
+   *
+   * @default false
    */
   readonly encrypted?: boolean
 
@@ -75,6 +85,7 @@ export interface TableMetadata {
    * can optionally specify a custom stream specification.
    *
    * @see {@link https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html}
+   * @default false
    */
   readonly stream?: boolean | StreamSpecification
 
@@ -88,6 +99,7 @@ export interface TableMetadata {
    * table to any point in time during the last 35 days.
    *
    * @see {@link https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/PointInTimeRecovery.html}
+   * @default true
    */
   readonly backup?: boolean
 }

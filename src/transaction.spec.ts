@@ -9,10 +9,10 @@ import {
   PrimaryKey as PrimaryKeyDecorator,
   Table as TableDecorator,
 } from './decorator'
-import { TransactionCanceledException } from '@aws-sdk/client-dynamodb'
+import { type TransactionCanceledException } from '@aws-sdk/client-dynamodb'
 
 describe('Transaction', () => {
-  @TableDecorator({ name: 'TransactionTestCardTable' })
+  @TableDecorator({ name: 'TransactionTestCardTable', backup: false })
   class Card extends Table {
     @PrimaryKeyDecorator('id', 'title')
     public static readonly primaryKey: PrimaryKey<Card, number, string>

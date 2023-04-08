@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { DynamoDB } from '@aws-sdk/client-dynamodb'
-import { Connection } from './connection'
+import { type DynamoDB } from '@aws-sdk/client-dynamodb'
+import { type Connection } from './connection'
 
 export class DAXConnection implements Connection {
   private readonly __client: DynamoDB

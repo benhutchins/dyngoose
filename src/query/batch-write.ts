@@ -1,4 +1,4 @@
-import { BatchWriteItemOutput, DynamoDB, WriteRequest } from '@aws-sdk/client-dynamodb'
+import { type BatchWriteItemOutput, type DynamoDB, type WriteRequest } from '@aws-sdk/client-dynamodb'
 import { chunk } from 'lodash'
 
 // this is limit of dynamoDB

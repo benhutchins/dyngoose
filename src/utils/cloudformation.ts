@@ -3,7 +3,7 @@ import { readdir } from 'fs/promises'
 import * as _ from 'lodash'
 import { join } from 'path'
 import { Table } from '../table'
-import { MigrateTablesInput } from './migrate'
+import type { MigrateTablesInput } from './migrate'
 
 export default async function createCloudFormationResources(input: MigrateTablesInput): Promise<any> {
   const tableFiles = await readdir(input.tablesDirectory)

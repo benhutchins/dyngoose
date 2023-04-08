@@ -1,5 +1,5 @@
-import { Attribute } from '../attribute'
-import { IThroughput } from '../interfaces'
+import { type Attribute } from '../attribute'
+import { type IThroughput } from '../interfaces'
 
 export interface PrimaryKey {
   readonly propertyName: string

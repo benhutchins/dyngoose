@@ -3,6 +3,7 @@ import * as Dyngoose from '.'
 
 @Dyngoose.$Table({
   name: `missing-table-${Math.random()}`,
+  backup: false,
 })
 export class MissingTable extends Dyngoose.Table {
   @Dyngoose.$PrimaryKey('id', 'title')

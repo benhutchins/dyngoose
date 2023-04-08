@@ -1,7 +1,7 @@
-import { AttributeValue } from '@aws-sdk/client-dynamodb'
+import { type AttributeValue } from '@aws-sdk/client-dynamodb'
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
-import { IAttributeType } from '../../interfaces'
-import { AnyAttributeMetadata } from '../../metadata/attribute-types/any.metadata'
+import { type IAttributeType } from '../../interfaces'
+import { type AnyAttributeMetadata } from '../../metadata/attribute-types/any.metadata'
 import { AttributeType } from '../../tables/attribute-type'
 
 type Value = any

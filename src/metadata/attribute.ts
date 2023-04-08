@@ -1,5 +1,5 @@
-import { AttributeValue } from '@aws-sdk/client-dynamodb'
-import { Attribute } from '../attribute'
+import { type AttributeValue } from '@aws-sdk/client-dynamodb'
+import { type Attribute } from '../attribute'
 
 export interface AttributeMetadata<Value> {
   /**

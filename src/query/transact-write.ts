@@ -1,4 +1,4 @@
-import { DynamoDB, TransactWriteItemsOutput, TransactWriteItem } from '@aws-sdk/client-dynamodb'
+import { type DynamoDB, type TransactWriteItemsOutput, type TransactWriteItem } from '@aws-sdk/client-dynamodb'
 import { chunk } from 'lodash'
 
 // this is limit of dynamoDB

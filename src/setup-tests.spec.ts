@@ -2,6 +2,7 @@ import { Dyngoose } from '.'
 
 @Dyngoose.$Table({
   name: `testable-${Math.random()}`,
+  backup: false,
 })
 export class TestableTable extends Dyngoose.Table {
   @Dyngoose.$PrimaryKey('id', 'title')
@@ -65,13 +66,13 @@ export class TestableTable extends Dyngoose.Table {
   public testNumber: number
 
   @Dyngoose.Attribute.NumberSet()
-  public testNumberSet?: Set<BigInt | number> | null
+  public testNumberSet?: Set<bigint | number> | null
 
   @Dyngoose.Attribute.NumberSet({ default: () => new Set([42, 420]) })
   public testNumberSetWithDefaults: Set<number>
 
   @Dyngoose.Attribute.Number()
-  public testBigInt: BigInt
+  public testBigInt: bigint
 
   @Dyngoose.Attribute.String({ name: 'testAttributeNameNotMatchingPropertyName' })
   public testAttributeNaming: string

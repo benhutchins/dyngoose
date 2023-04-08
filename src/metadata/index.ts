@@ -1,11 +1,11 @@
-import { AttributeMetadata as Attribute } from './attribute'
+import { type AttributeMetadata as Attribute } from './attribute'
 import * as AttributeType from './attribute-types'
 import * as Index from './indexes'
-import { TableMetadata as Table } from './table'
+import { type TableMetadata as Table } from './table'
 
 export {
-  Attribute,
+  type Attribute,
   AttributeType,
-  Table,
+  type Table,
   Index,
 }

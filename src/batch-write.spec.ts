@@ -11,7 +11,7 @@ import {
 import { BatchError } from './errors'
 
 describe('BatchWrite', () => {
-  @TableDecorator({ name: 'BatchWriteTestCardTable' })
+  @TableDecorator({ name: 'BatchWriteTestCardTable', backup: false })
   class Card extends Table {
     @PrimaryKeyDecorator('id', 'title')
     public static readonly primaryKey: PrimaryKey<Card, number, string>

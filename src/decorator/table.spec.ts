@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import * as Dyngoose from '..'
 
-@Dyngoose.$Table({ name: 'prod-Card1' })
+@Dyngoose.$Table({ name: 'prod-Card1', backup: false })
 class Card extends Dyngoose.Table {
   @Dyngoose.$PrimaryKey('id', 'title')
   public static readonly primaryKey: Dyngoose.Query.PrimaryKey<Card, number, string>

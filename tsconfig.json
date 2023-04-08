@@ -5,13 +5,14 @@
     "noImplicitAny": true,
     "sourceMap": true,
     "declaration": true,
-    "rootDir": "src",
-    "outDir": "dist",
+    "outDir": "lib",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "strictNullChecks": true
+    "esModuleInterop": true,
+    "strictNullChecks": true,
+    "moduleResolution": "node"
   },
   "include": [
-    "src/**/*"
+    "src"
   ]
 }

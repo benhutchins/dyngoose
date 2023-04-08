@@ -9,7 +9,7 @@ import {
 } from '../decorator'
 
 describe('Query/PrimaryKey', () => {
-  @TableDecorator({ name: 'QueryPrimaryKeyCardTable' })
+  @TableDecorator({ name: 'QueryPrimaryKeyCardTable', backup: false })
   class Card extends Table {
     @PrimaryKeyDecorator('id', 'title')
     public static readonly primaryKey: PrimaryKey<Card, number, string>
@@ -24,7 +24,7 @@ describe('Query/PrimaryKey', () => {
     public count: number
   }
 
-  @TableDecorator({ name: 'QueryPrimaryKeyTableWithDateRange' })
+  @TableDecorator({ name: 'QueryPrimaryKeyTableWithDateRange', backup: false })
   class TableWithDateRange extends Table {
     @PrimaryKeyDecorator('id', 'date')
     public static readonly primaryKey: PrimaryKey<TableWithDateRange, number, Date>

@@ -1,8 +1,8 @@
-import { AttributeValue } from '@aws-sdk/client-dynamodb'
+import { type AttributeValue } from '@aws-sdk/client-dynamodb'
 import * as _ from 'lodash'
 import { ValidationError } from './errors'
-import { IAttributeType } from './interfaces'
-import { AttributeMetadata } from './metadata/attribute'
+import { type IAttributeType } from './interfaces'
+import { type AttributeMetadata } from './metadata/attribute'
 import { isTrulyEmpty } from './utils/truly-empty'
 
 export class Attribute<Value> {

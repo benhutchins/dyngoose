@@ -1,10 +1,10 @@
-import { Delete, DynamoDB, Put, TransactWriteItem, TransactWriteItemsOutput } from '@aws-sdk/client-dynamodb'
+import { type Delete, type DynamoDB, type Put, type TransactWriteItem, type TransactWriteItemsOutput } from '@aws-sdk/client-dynamodb'
 import Config from './config'
 import { buildQueryExpression } from './query/expression'
-import { UpdateConditions } from './query/filters'
+import { type UpdateConditions } from './query/filters'
 import { transactWrite } from './query/transact-write'
 import { getUpdateItemInput } from './query/update-item-input'
-import { Table } from './table'
+import { type Table } from './table'
 
 export class Transaction {
   private dynamo: DynamoDB

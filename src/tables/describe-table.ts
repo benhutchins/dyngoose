@@ -1,5 +1,5 @@
-import { DescribeTableCommandInput, TableDescription } from '@aws-sdk/client-dynamodb'
-import { Schema } from './schema'
+import { type DescribeTableCommandInput, type TableDescription } from '@aws-sdk/client-dynamodb'
+import { type Schema } from './schema'
 
 export async function describeTable(schema: Schema): Promise<TableDescription> {
   const params: DescribeTableCommandInput = {

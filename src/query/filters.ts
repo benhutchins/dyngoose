@@ -1,6 +1,6 @@
-import { Table } from '../table'
+import { type Table } from '../table'
 
-export type AttributeNames<T extends Table> = Exclude<Exclude<keyof T, keyof Table>, Function>
+export type AttributeNames<T extends Table> = Exclude<Exclude<keyof T, keyof Table>, () => any>
 
 export type Filter<Type> =
   ['=', Type] |

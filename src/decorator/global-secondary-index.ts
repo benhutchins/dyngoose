@@ -1,8 +1,8 @@
 import { uniq } from 'lodash'
 import { SchemaError } from '../errors'
-import { IThroughput } from '../interfaces'
-import * as Metadata from '../metadata'
-import { ITable } from '../table'
+import { type IThroughput } from '../interfaces'
+import type * as Metadata from '../metadata'
+import { type ITable } from '../table'
 
 export interface GlobalSecondaryIndexOptions {
   hashKey: string

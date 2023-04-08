@@ -1,7 +1,7 @@
 import * as _ from 'lodash'
 
 export function isTrulyEmpty(value: any): boolean {
-  if (_.isBoolean(value)) {
+  if (typeof value === 'boolean') {
     return false
   }
 
@@ -9,15 +9,15 @@ export function isTrulyEmpty(value: any): boolean {
     return false
   }
 
-  if (_.isNil(value) || value === '') {
+  if (value == null || value === '') {
     return true
   }
 
-  if (_.isString(value) && _.trim(value).length === 0) {
+  if (typeof value === 'string' && value.trim().length === 0) {
     return true
   }
 
-  if (_.isNumber(value)) {
+  if (typeof value === 'number') {
     return false
   }
 
