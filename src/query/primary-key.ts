@@ -64,7 +64,7 @@ function isKeyValue(range: any): boolean {
   return type === 'string' || type === 'boolean' || type === 'number' || type === 'bigint' || isDate(range)
 }
 
-export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, RangeKeyType extends RangePrimaryKeyType> {
+export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, RangeKeyType extends RangePrimaryKeyType = void> {
   constructor(
     readonly table: ITable<T>,
     readonly metadata: Metadata.Index.PrimaryKey,
