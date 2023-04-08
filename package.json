@@ -59,6 +59,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
+    "@aws-sdk/util-dynamodb": "^3.309.0",
     "amazon-dax-client": "^1.2.9",
     "async-sema": "^3.1.1",
     "aws-xray-sdk-core": "^3.5.0",
