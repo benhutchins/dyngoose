@@ -35,7 +35,7 @@ export function getUpdateItemInput<T extends Table>(record: T, params?: UpdateIt
   let valueCounter = 0
 
   // we call toDynamo to have the record self-check for any dynamic attributes
-  record.toDynamo()
+  record.toDynamo(true)
 
   _.each(_.uniq(record.getUpdatedAttributes()), (attributeName, i) => {
     const attribute = tableClass.schema.getAttributeByName(attributeName)
