@@ -10,7 +10,7 @@ Dyngoose provides a utility to generate the CloudFormation resources for all you
 
 ```typescript
 import { join } from 'path'
-import { createCloudFormationResources } from 'dyngoose/utilities/cloudformation'
+import { createCloudFormationResources } from 'dyngoose/lib/utils/cloudformation'
 
 export default async function () {
   // this resources part of the Resources you can add to an existing CloudFormation template
@@ -62,6 +62,26 @@ saveFileSync('tables.yml', yaml.safeDump(resources))
 ```yml
 resources:
   - ${file(./tables.yml)}
+```
+
+## Deploy using CDK
+
+For convenience, there is a utility to convert your Dyngoose table into a CDK
+table available at `dyngoose/lib/utils/cdk`.
+
+```typescript
+// CDK
+import { createCDKTable } from 'dyngoose/lib/utils/cdk'
+import { User } from './tables/user'
+
+createCDKTable(scope, User.schema)
+
+// SST
+export function DB({ app, stack }: StackContext) {
+  createCDKTable(stack, User.schema, {
+    tableName: app.logicalPrefixedName(User.schema.name),
+  })
+}
 ```
 
 ## From your Application
