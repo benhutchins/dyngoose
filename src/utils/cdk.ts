@@ -13,7 +13,7 @@ import {
   DEFAULT_WRITE_CAPACITY,
 } from '../tables/defaults'
 import { Table } from '../table'
-import { Schema } from '../tables/schema'
+import { type Schema } from '../tables/schema'
 
 export interface CreateCDKTablesInput {
   scope: Construct
@@ -26,8 +26,6 @@ export interface CreateCDKTablesInput {
   // you can optionally override the log function called
   log?: (message: string) => any
 }
-
-
 
 type MutableTableProps = {
   -readonly [key in keyof dynamodb.TableProps]: dynamodb.TableProps[key]
@@ -137,10 +135,7 @@ export function createCDKTable(scope: Construct, schema: Schema, tableProps: Par
         },
         sortKey: indexMetadata.range == null
           ? undefined
-          : {
-            name: indexMetadata.range.name,
-            type: indexMetadata.range.type.type as any,
-          },
+          : { name: indexMetadata.range.name, type: indexMetadata.range.type.type as any },
         nonKeyAttributes: indexMetadata.nonKeyAttributes,
         projectionType: indexMetadata.projection as any,
         readCapacity: indexMetadata.throughput == null ? tableProps.readCapacity : indexMetadata.throughput.read,
