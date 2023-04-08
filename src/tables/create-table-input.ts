@@ -3,6 +3,7 @@ import { uniqBy } from 'lodash'
 import { type Attribute } from '../attribute'
 import { SchemaError } from '../errors'
 import { type Schema } from './schema'
+import { DEFAULT_READ_CAPACITY, DEFAULT_WRITE_CAPACITY } from './defaults'
 
 export function createTableInput(schema: Schema, forCloudFormation = false): CreateTableCommandInput {
   const params: CreateTableCommandInput = {
@@ -25,8 +26,8 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Cre
     params.BillingMode = 'PAY_PER_REQUEST'
   } else if (schema.options.billingMode === 'PROVISIONED') {
     params.ProvisionedThroughput = {
-      ReadCapacityUnits: schema.throughput.read,
-      WriteCapacityUnits: schema.throughput.write,
+      ReadCapacityUnits: schema.throughput?.read ?? DEFAULT_READ_CAPACITY,
+      WriteCapacityUnits: schema.throughput?.write ?? DEFAULT_WRITE_CAPACITY,
     }
   }
 
@@ -162,8 +163,8 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Cre
 
       if (schema.options.billingMode !== 'PAY_PER_REQUEST') {
         index.ProvisionedThroughput = {
-          ReadCapacityUnits: throughput.read,
-          WriteCapacityUnits: throughput.write,
+          ReadCapacityUnits: throughput?.read ?? DEFAULT_READ_CAPACITY,
+          WriteCapacityUnits: throughput?.write ?? DEFAULT_WRITE_CAPACITY,
         }
       }
 

@@ -16,7 +16,7 @@ export class ListTestTable extends Dyngoose.Table {
   public id: number
 
   @Dyngoose.Attribute.List()
-  public list: { a: number, b: boolean }[]
+  public list: Array<{ a: number, b: boolean }>
 }
 
 describe('AttributeType/List', () => {

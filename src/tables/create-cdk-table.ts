@@ -1,6 +1,9 @@
 import { type Construct } from 'constructs'
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
 import { type Schema } from './schema'
+import { type IThroughputAutoScalingCapacity } from '../interfaces'
+import { DEFAULT_AUTOSCALING_MAX_CAPACITY, DEFAULT_AUTOSCALING_MIN_CAPACITY, DEFAULT_AUTOSCALING_TARGET_UTILIZATION, DEFAULT_READ_CAPACITY, DEFAULT_WRITE_CAPACITY } from './defaults'
+import { isNil } from 'lodash'
 
 type MutableTableProps = {
   -readonly [key in keyof dynamodb.TableProps]: dynamodb.TableProps[key]
@@ -30,8 +33,8 @@ export function createCDKTable(scope: Construct, schema: Schema, tableProps: Par
       tableProps.billingMode = dynamodb.BillingMode.PAY_PER_REQUEST
     } else if (schema.options.billingMode === 'PROVISIONED') {
       tableProps.billingMode = dynamodb.BillingMode.PROVISIONED
-      tableProps.readCapacity = schema.throughput.read
-      tableProps.writeCapacity = schema.throughput.write
+      tableProps.readCapacity = schema.throughput?.read ?? DEFAULT_READ_CAPACITY
+      tableProps.writeCapacity = schema.throughput?.write ?? DEFAULT_WRITE_CAPACITY
     }
   }
 
@@ -58,11 +61,31 @@ export function createCDKTable(scope: Construct, schema: Schema, tableProps: Par
   const table = new dynamodb.Table(scope, 'Table', tableProps as any)
 
   if (schema.options.billingMode === 'PROVISIONED') {
-    if (schema.throughput.autoScaling === true) {
+    let autoScaling = schema.throughput?.autoScaling
+
+    if (autoScaling === true) {
+      // default values will be applied automatically below
+      autoScaling = {}
+    }
+
+    if (autoScaling != null) {
+      const autoScalingAny = autoScaling as any
+      const read: IThroughputAutoScalingCapacity = isNil(autoScalingAny.read) ? autoScalingAny : autoScalingAny.read
+      const write: IThroughputAutoScalingCapacity = isNil(autoScalingAny.write) ? autoScalingAny : autoScalingAny.write
+
+      table.autoScaleReadCapacity({
+        minCapacity: read.minCapacity ?? DEFAULT_AUTOSCALING_MIN_CAPACITY,
+        maxCapacity: read.maxCapacity ?? DEFAULT_AUTOSCALING_MAX_CAPACITY,
+      }).scaleOnUtilization({
+        targetUtilizationPercent: read.targetUtilization ?? DEFAULT_AUTOSCALING_TARGET_UTILIZATION,
+      })
+
       table.autoScaleWriteCapacity({
-        minCapacity: 1,
-        maxCapacity: 10,
-      }).scaleOnUtilization({ targetUtilizationPercent: 75 })
+        minCapacity: write.minCapacity ?? DEFAULT_AUTOSCALING_MIN_CAPACITY,
+        maxCapacity: write.maxCapacity ?? DEFAULT_AUTOSCALING_MIN_CAPACITY,
+      }).scaleOnUtilization({
+        targetUtilizationPercent: write.targetUtilization ?? DEFAULT_AUTOSCALING_TARGET_UTILIZATION,
+      })
     }
   }
 
