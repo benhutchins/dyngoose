@@ -30,11 +30,6 @@ import * as uuid from 'uuid/v4'
 
 @Dyngoose.$Table({
   name: 'User',
-  throughput: {
-    autoScaling: true,
-  },
-  encrypted: true,
-  stream: true,
 })
 class User extends Dyngoose.Table {
   @Dyngoose.Attribute.String({ default: () => uuid() })
@@ -44,10 +39,10 @@ class User extends Dyngoose.Table {
   public email: string
 
   @Dyngoose.$PrimaryKey('id')
-  static readonly primaryKey: Dyngoose.Query.PrimaryKey<Card, string>
+  static readonly primaryKey: Dyngoose.Query.PrimaryKey<User, string>
 
   @Dyngoose.$GlobalSecondaryIndex({ hashKey: 'email' })
-  static readonly emailIndex: Dyngoose.Query.GlobalSecondaryIndex<Card>
+  static readonly emailIndex: Dyngoose.Query.GlobalSecondaryIndex<User>
 }
 ```
 
@@ -56,15 +51,10 @@ Now, let's look at what is happening.
 ```typescript
 @Dyngoose.$Table({
   name: 'User',
-  throughput: {
-    autoScaling: true,
-  },
-  encrypted: true,
-  stream: true,
 })
 ```
 
-`@Dyngoose.$Table` is the table decorator. Here you pass your configuration for the table you are defining. You can read about all the options for a table on the [Table documentation page](Table.md). Here, I am setting the table's name to `User`, specifying that I want the table to be created with default auto-scaling throughput, that I want to have the table records [encrypted at rest](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/EncryptionAtRest.html), and that I want to enable a [DynamoDB Stream](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html).
+`@Dyngoose.$Table` is the table decorator. Here you pass your configuration for the table you are defining. You can read about all the options for a table on the [Table documentation page](Table.md). Here, I am setting the table's name to `User`. You can also specify the billing mode, throughput, enable auto-scaling, enable a [DynamoDB Stream](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html) and more.
 
 Let's continue on!
 
