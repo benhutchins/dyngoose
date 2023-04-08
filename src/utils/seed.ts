@@ -2,10 +2,10 @@
 import { readdir, readFile } from 'fs/promises'
 import * as _ from 'lodash'
 import { join } from 'path'
-import { PrimaryKey } from '../query'
-import { Table } from '../table'
+import type { PrimaryKey } from '../query'
+import type { Table } from '../table'
 import { isDyngooseTableClass } from './is'
-import { MigrateTablesInput } from './migrate'
+import type { MigrateTablesInput } from './migrate'
 
 export interface SeedTablesInput extends MigrateTablesInput {
   seedsDirectory: string
@@ -24,7 +24,7 @@ export default async function seedTables(input: SeedTablesInput): Promise<void> 
     if (file.endsWith('.seed.json')) {
       records = JSON.parse(await readFile(filePath, 'utf8'))
     } else if (file.endsWith('.seed.js')) {
-      const seedModule: Promise<any> | Function | any[] = require(filePath)
+      const seedModule: Promise<any> | (() => any) | any[] = require(filePath)
 
       if (typeof seedModule === 'function') {
         const seedModuleReturn = seedModule()

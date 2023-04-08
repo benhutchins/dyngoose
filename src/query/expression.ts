@@ -1,11 +1,11 @@
 import * as _ from 'lodash'
-import { Attribute } from '../attribute'
+import { type Attribute } from '../attribute'
 import { QueryError } from '../errors'
-import { AttributeMap } from '../interfaces'
-import * as Metadata from '../metadata'
-import { Table } from '../table'
-import { Schema } from '../tables/schema'
-import { ComplexFilters, Filter, Filters } from './filters'
+import { type AttributeMap } from '../interfaces'
+import type * as Metadata from '../metadata'
+import { type Table } from '../table'
+import { type Schema } from '../tables/schema'
+import { type ComplexFilters, type Filter, type Filters } from './filters'
 
 interface Expression {
   ExpressionAttributeNames: Record<string, string>

@@ -1,24 +1,24 @@
 import {
-  AttributeValue,
-  PutItemOutput,
-  UpdateItemOutput,
-  TableDescription,
-  PutItemCommandOutput,
-  UpdateItemCommandOutput,
-  DeleteItemCommandOutput,
+  type AttributeValue,
+  type PutItemOutput,
+  type UpdateItemOutput,
+  type TableDescription,
+  type PutItemCommandOutput,
+  type UpdateItemCommandOutput,
+  type DeleteItemCommandOutput,
 } from '@aws-sdk/client-dynamodb'
 import * as _ from 'lodash'
-import { Attribute } from './attribute'
+import { type Attribute } from './attribute'
 import { DocumentClient } from './document-client'
-import * as Events from './events'
-import { AttributeMap, SetPropParams, UpdateOperator } from './interfaces'
-import { Filters } from './query/filters'
-import { MagicSearch, MagicSearchInput } from './query/search'
+import type * as Events from './events'
+import { type AttributeMap, type SetPropParams, type UpdateOperator } from './interfaces'
+import { type Filters } from './query/filters'
+import { MagicSearch, type MagicSearchInput } from './query/search'
 import { createTable } from './tables/create-table'
 import { deleteTable } from './tables/delete-table'
 import { describeTable } from './tables/describe-table'
 import { migrateTable } from './tables/migrate-table'
-import { TableProperties, TableProperty } from './tables/properties'
+import { type TableProperties, type TableProperty } from './tables/properties'
 import { Schema } from './tables/schema'
 import { isTrulyEmpty } from './utils/truly-empty'
 
@@ -92,7 +92,7 @@ export class Table {
    * Each attribute can optionally define additional validation logic or sanitization
    * of the user input, @see {@link https://github.com/benhutchins/dyngoose/blob/master/docs/Attributes}.
    */
-  public static fromJSON<T extends Table>(this: StaticThis<T>, json: { [attribute: string]: any }): T {
+  public static fromJSON<T extends Table>(this: StaticThis<T>, json: Record<string, any>): T {
     return new this().applyDefaults().fromJSON(json)
   }
 
@@ -158,7 +158,7 @@ export class Table {
   private __original: AttributeMap = {}
   private __updatedAttributes: string[] = []
   private __removedAttributes: string[] = []
-  private __updateOperators: { [key: string]: UpdateOperator } = {}
+  private __updateOperators: Record<string, UpdateOperator> = {}
   private __putRequired = true // true when this is a new record and a putItem is required, false when updateItem can be used
   private __entireDocumentIsKnown = true
   // #endregion properties
@@ -168,7 +168,7 @@ export class Table {
    *
    * @see {@link Table.new} To create a strongly-typed record by property names.
    */
-  constructor(values?: { [key: string]: any }) {
+  constructor(values?: Record<string, any>) {
     if (values != null) {
       for (const key of Object.keys(values)) {
         this.setAttribute(key, values[key])
@@ -283,7 +283,7 @@ export class Table {
    *        passing in raw request body objects or dealing with user input.
    *        Defaults to false.
    */
-  public fromJSON(json: { [attribute: string]: any }, ignoreArbitrary = false): this {
+  public fromJSON(json: Record<string, any>, ignoreArbitrary = false): this {
     const blacklist: string[] = this.table.getBlacklist()
 
     _.each(json, (value: any, propertyName: string) => {
@@ -401,7 +401,7 @@ export class Table {
    * @param {object} values An object, where the keys are the attribute names,
    *                        and the values are the values you'd like to set.
   */
-  public setAttributes(values: { [name: string]: any }): this {
+  public setAttributes(values: Record<string, any>): this {
     _.forEach(values, (value, attributeName) => {
       this.setAttribute(attributeName, value)
     })
@@ -643,8 +643,8 @@ export class Table {
    * Each attribute type can define a custom toJSON and fromJSON method,
    * @see {@link https://github.com/benhutchins/dyngoose/blog/master/docs/Attributes.md#custom-attribute-types}.
    */
-  public toJSON(): { [key: string]: any } {
-    const json: { [key: string]: any } = {}
+  public toJSON(): Record<string, any> {
+    const json: Record<string, any> = {}
 
     for (const [attributeName, attribute] of this.table.schema.getAttributes()) {
       const propertyName = attribute.propertyName

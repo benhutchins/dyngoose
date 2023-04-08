@@ -1,5 +1,5 @@
 import { SchemaError } from '../errors'
-import { ITable } from '../table'
+import { type ITable } from '../table'
 
 export function LocalSecondaryIndex(rangeKeyName: string, options: { name?: string } = {}) {
   return (tableClass: ITable<any>, propertyName: string) => {

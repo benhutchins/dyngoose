@@ -1,14 +1,14 @@
-import { QueryCommandInput, QueryCommandOutput, ScanCommandInput, ScanCommandOutput } from '@aws-sdk/client-dynamodb'
+import { type QueryCommandInput, type QueryCommandOutput, type ScanCommandInput, type ScanCommandOutput } from '@aws-sdk/client-dynamodb'
 import { get, has, isArray } from 'lodash'
 import { HelpfulError, QueryError } from '../errors'
-import { Key } from '../interfaces/key.interface'
-import * as Metadata from '../metadata'
-import { ITable, Table } from '../table'
+import { type Key } from '../interfaces/key.interface'
+import type * as Metadata from '../metadata'
+import { type ITable, type Table } from '../table'
 import { buildQueryExpression } from './expression'
-import { Filters as QueryFilters } from './filters'
+import { type Filters as QueryFilters } from './filters'
 import { QueryOutput } from './output'
 import { buildProjectionExpression } from './projection-expression'
-import { MagicSearch, MagicSearchInput } from './search'
+import { MagicSearch, type MagicSearchInput } from './search'
 
 interface GlobalSecondaryIndexGetInput {
   /**

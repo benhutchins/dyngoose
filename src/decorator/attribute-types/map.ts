@@ -1,18 +1,18 @@
-import { AttributeValue } from '@aws-sdk/client-dynamodb'
+import { type AttributeValue } from '@aws-sdk/client-dynamodb'
 import { each, find, get, isFunction, isObject } from 'lodash'
-import { Attribute } from '../../attribute'
+import { type Attribute } from '../../attribute'
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
 import { ValidationError } from '../../errors'
-import { AttributeMap, IAttributeType } from '../../interfaces'
-import { MapAttributeMetadata, MapBaseValue } from '../../metadata/attribute-types/map.metadata'
-import { Table } from '../../table'
+import { type AttributeMap, type IAttributeType } from '../../interfaces'
+import { type MapAttributeMetadata, type MapBaseValue } from '../../metadata/attribute-types/map.metadata'
+import { type Table } from '../../table'
 import { AttributeType } from '../../tables/attribute-type'
 import { isTrulyEmpty } from '../../utils/truly-empty'
 
 export class MapAttributeType<Value extends MapBaseValue> extends AttributeType<Value, MapAttributeMetadata<Value>>
   implements IAttributeType<Value> {
   type = DynamoAttributeType.Map
-  attributes: { [key: string]: Attribute<any> }
+  attributes: Record<string, Attribute<any>>
 
   constructor(record: Table, propertyName: string, protected metadata: MapAttributeMetadata<Value>) {
     super(record, propertyName, metadata)

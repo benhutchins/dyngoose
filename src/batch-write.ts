@@ -1,8 +1,8 @@
-import { BatchWriteItemOutput, DynamoDB, WriteRequest } from '@aws-sdk/client-dynamodb'
+import { type BatchWriteItemOutput, type DynamoDB, type WriteRequest } from '@aws-sdk/client-dynamodb'
 import { RateLimit } from 'async-sema'
 import * as _ from 'lodash'
 import Config from './config'
-import { Table } from './table'
+import { type Table } from './table'
 import { BatchError, HelpfulError } from './errors'
 
 type BatchWriteItemRequestMap = Record<string, WriteRequest[]>

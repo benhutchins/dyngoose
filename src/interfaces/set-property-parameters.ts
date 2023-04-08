@@ -1,4 +1,4 @@
-import { UpdateOperator } from './update-operator.interface'
+import { type UpdateOperator } from './update-operator.interface'
 
 export interface SetPropParams {
   /**

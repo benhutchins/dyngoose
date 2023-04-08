@@ -1,7 +1,7 @@
-import { ScanOutput, QueryOutput as DynQueryOutput, ConsumedCapacity } from '@aws-sdk/client-dynamodb'
-import { Table } from '..'
-import { Key } from '../interfaces/key.interface'
-import { ITable } from '../table'
+import { type ScanOutput, type QueryOutput as DynQueryOutput, type ConsumedCapacity } from '@aws-sdk/client-dynamodb'
+import { type Table } from '..'
+import { type Key } from '../interfaces/key.interface'
+import { type ITable } from '../table'
 
 export class QueryOutput<T extends Table> extends Array<T> {
   public static fromDynamoOutput<T extends Table>(

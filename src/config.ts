@@ -1,4 +1,4 @@
-import { Connection, DynamoDBConnection } from './connections'
+import { type Connection, DynamoDBConnection } from './connections'
 
 export default class Config {
   private static __defaultConnection: Connection

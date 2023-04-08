@@ -2,7 +2,7 @@
 import { readdirSync } from 'fs'
 import * as _ from 'lodash'
 import { join } from 'path'
-import { Table } from '../table'
+import { type Table } from '../table'
 import { isDyngooseTableClass } from './is'
 
 export interface MigrateTablesInput {
@@ -16,7 +16,7 @@ export interface MigrateTablesInput {
   tableNameSuffix?: string
 
   // you can optionally override the log function called
-  log?: Function
+  log?: (message: string) => any
 }
 
 export default async function migrateTables(input: MigrateTablesInput): Promise<void> {

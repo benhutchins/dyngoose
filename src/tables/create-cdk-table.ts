@@ -1,6 +1,6 @@
-import { Construct } from 'constructs'
+import { type Construct } from 'constructs'
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
-import { Schema } from './schema'
+import { type Schema } from './schema'
 
 type MutableTableProps = {
   -readonly [key in keyof dynamodb.TableProps]: dynamodb.TableProps[key]
@@ -88,10 +88,12 @@ export function createCDKTable(scope: Construct, schema: Schema, tableProps: Par
           name: indexMetadata.hash.name,
           type: indexMetadata.hash.type.type as any,
         },
-        sortKey: indexMetadata.range == null ? undefined : {
-          name: indexMetadata.range.name,
-          type: indexMetadata.range.type.type as any,
-        },
+        sortKey: indexMetadata.range == null
+          ? undefined
+          : {
+              name: indexMetadata.range.name,
+              type: indexMetadata.range.type.type as any,
+            },
         nonKeyAttributes: indexMetadata.nonKeyAttributes,
         projectionType: indexMetadata.projection as any,
         readCapacity: indexMetadata.throughput == null ? tableProps.readCapacity : indexMetadata.throughput.read,

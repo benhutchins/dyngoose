@@ -1,4 +1,4 @@
-import { AttributeMetadata } from '../attribute'
+import { type AttributeMetadata } from '../attribute'
 
 export type BinarySetValue = Set<Uint8Array>
 

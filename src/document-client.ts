@@ -1,21 +1,21 @@
 import {
-  DeleteItemInput,
-  TransactWriteItem,
-  TransactWriteItemsOutput,
-  BatchWriteItemOutput,
-  UpdateItemInput,
-  PutItemInput,
-  UpdateItemCommandOutput,
-  PutItemCommandOutput,
-  DeleteItemCommandOutput,
+  type DeleteItemInput,
+  type TransactWriteItem,
+  type TransactWriteItemsOutput,
+  type BatchWriteItemOutput,
+  type UpdateItemInput,
+  type PutItemInput,
+  type UpdateItemCommandOutput,
+  type PutItemCommandOutput,
+  type DeleteItemCommandOutput,
 } from '@aws-sdk/client-dynamodb'
 import { HelpfulError } from './errors'
-import { batchWrite, WriteRequestMap } from './query/batch-write'
+import { batchWrite, type WriteRequestMap } from './query/batch-write'
 import { buildQueryExpression } from './query/expression'
-import { UpdateConditions } from './query/filters'
+import { type UpdateConditions } from './query/filters'
 import { transactWrite } from './query/transact-write'
-import { getUpdateItemInput, UpdateItemInputParams } from './query/update-item-input'
-import { ITable, Table } from './table'
+import { getUpdateItemInput, type UpdateItemInputParams } from './query/update-item-input'
+import { type ITable, type Table } from './table'
 
 interface PutItemInputParams<T extends Table> extends UpdateItemInputParams<T> {
 }

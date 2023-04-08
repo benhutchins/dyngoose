@@ -1,9 +1,9 @@
-import { AttributeValue } from '@aws-sdk/client-dynamodb'
+import { type AttributeValue } from '@aws-sdk/client-dynamodb'
 import { isArray, isSet } from 'lodash'
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
 import { ValidationError } from '../../errors'
-import { IAttributeType } from '../../interfaces'
-import { BinarySetAttributeMetadata, BinarySetValue } from '../../metadata/attribute-types/binary-set.metadata'
+import { type IAttributeType } from '../../interfaces'
+import { type BinarySetAttributeMetadata, type BinarySetValue } from '../../metadata/attribute-types/binary-set.metadata'
 import { AttributeType } from '../../tables/attribute-type'
 
 type Metadata = BinarySetAttributeMetadata

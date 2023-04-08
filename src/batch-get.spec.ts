@@ -11,7 +11,7 @@ import {
 } from './decorator'
 
 describe('BatchGet', () => {
-  @TableDecorator({ name: 'BatchGetTestCardTable1' })
+  @TableDecorator({ name: 'BatchGetTestCardTable1', backup: false })
   class TestTable1 extends Table {
     @PrimaryKeyDecorator('id')
     public static readonly primaryKey: PrimaryKey<TestTable1, number, void>
@@ -23,7 +23,7 @@ describe('BatchGet', () => {
     public status: string
   }
 
-  @TableDecorator({ name: 'BatchGetTestCardTable2' })
+  @TableDecorator({ name: 'BatchGetTestCardTable2', backup: false })
   class TestTable2 extends Table {
     @PrimaryKeyDecorator('id')
     public static readonly primaryKey: PrimaryKey<TestTable2, number, void>

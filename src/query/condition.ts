@@ -1,6 +1,6 @@
-import { Table } from '../dyngoose'
-import { Filter } from './filters'
-import { MagicSearch } from './search'
+import { type Table } from '../dyngoose'
+import { type Filter } from './filters'
+import { type MagicSearch } from './search'
 
 export class Condition<T extends Table, Attr, AttributeValueType> {
   private readonly key: Attr | string

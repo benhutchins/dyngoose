@@ -4,7 +4,7 @@ import { DocumentClient } from '../document-client'
 import { Table } from '../table'
 import * as Query from './index'
 
-@Decorator.Table({ name: 'QueryLocalSecondaryIndexCardTable' })
+@Decorator.Table({ name: 'QueryLocalSecondaryIndexCardTable', backup: false })
 class Card extends Table {
   @Decorator.PrimaryKey('id', 'title')
   public static readonly primaryKey: Query.PrimaryKey<Card, number, string>

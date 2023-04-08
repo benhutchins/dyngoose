@@ -4,7 +4,7 @@ import { QueryError } from '../errors'
 import { Table } from '../table'
 import * as Query from './index'
 
-@Decorator.Table({ name: 'QueryGlobalSecondaryIndexCardTable' })
+@Decorator.Table({ name: 'QueryGlobalSecondaryIndexCardTable', backup: false })
 class Card extends Table {
   @Decorator.PrimaryKey('id', 'title')
   public static readonly primaryKey: Query.PrimaryKey<Card, number, string>

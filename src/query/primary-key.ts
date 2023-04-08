@@ -1,19 +1,19 @@
-import { BatchWriteItemOutput, DeleteItemInput, DeleteItemOutput, DeleteRequest, GetItemInput, GetItemOutput, QueryCommandInput, QueryCommandOutput, ReturnConsumedCapacity, ScanCommandInput, ScanCommandOutput, WriteRequest } from '@aws-sdk/client-dynamodb'
+import { type BatchWriteItemOutput, type DeleteItemInput, type DeleteItemOutput, type DeleteRequest, type GetItemInput, type GetItemOutput, type QueryCommandInput, type QueryCommandOutput, type ReturnConsumedCapacity, type ScanCommandInput, type ScanCommandOutput, type WriteRequest } from '@aws-sdk/client-dynamodb'
 import { get, has, isArray, isDate, isObject } from 'lodash'
 import { BatchGet } from '../batch-get'
 import { HelpfulError, QueryError } from '../errors'
-import { AttributeMap } from '../interfaces'
-import { Key } from '../interfaces/key.interface'
-import * as Metadata from '../metadata'
-import { ITable, Table } from '../table'
-import { TableProperties } from '../tables/properties'
+import { type AttributeMap } from '../interfaces'
+import { type Key } from '../interfaces/key.interface'
+import type * as Metadata from '../metadata'
+import { type ITable, type Table } from '../table'
+import { type TableProperties } from '../tables/properties'
 import { isDyngooseTableInstance } from '../utils/is'
-import { batchWrite, WriteRequestMap } from './batch-write'
+import { batchWrite, type WriteRequestMap } from './batch-write'
 import { buildQueryExpression } from './expression'
-import { Filters as QueryFilters, UpdateConditions } from './filters'
+import { type Filters as QueryFilters, type UpdateConditions } from './filters'
 import { QueryOutput } from './output'
 import { buildProjectionExpression } from './projection-expression'
-import { MagicSearch, MagicSearchInput } from './search'
+import { MagicSearch, type MagicSearchInput } from './search'
 
 type PrimaryKeyType = string | number | Date
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
@@ -382,6 +382,6 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
    * It then has the Table.Schema build the DynamoDB.UpdateItemInput with all the requested changes.
    */
   public async update(input: PrimaryKeyUpdateItem<T, HashKeyType, RangeKeyType>): Promise<void> {
-    return await this.fromKey(input.hash, input.range).fromJSON(input.changes).save(input.conditions)
+    await this.fromKey(input.hash, input.range).fromJSON(input.changes).save(input.conditions)
   }
 }

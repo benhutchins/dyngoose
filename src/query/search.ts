@@ -1,17 +1,17 @@
-import { QueryCommandInput, QueryCommandOutput, ScanCommandInput, ScanCommandOutput } from '@aws-sdk/client-dynamodb'
+import { type QueryCommandInput, type QueryCommandOutput, type ScanCommandInput, type ScanCommandOutput } from '@aws-sdk/client-dynamodb'
 import { get, has, includes, isArray } from 'lodash'
-import { Attribute } from '../attribute'
+import { type Attribute } from '../attribute'
 import { HelpfulError, QueryError } from '../errors'
-import { Metadata } from '../index'
-import { Key } from '../interfaces/key.interface'
-import { ITable, Table } from '../table'
+import { type Metadata } from '../index'
+import { type Key } from '../interfaces/key.interface'
+import { type ITable, type Table } from '../table'
 import { Condition } from './condition'
 import { buildQueryExpression, keyConditionAllowedOperators } from './expression'
-import { AttributeNames, ComplexFilters, Filter, Filters } from './filters'
-import { GlobalSecondaryIndex } from './global-secondary-index'
-import { LocalSecondaryIndex } from './local-secondary-index'
+import { type AttributeNames, type ComplexFilters, type Filter, type Filters } from './filters'
+import { type GlobalSecondaryIndex } from './global-secondary-index'
+import { type LocalSecondaryIndex } from './local-secondary-index'
 import { QueryOutput } from './output'
-import { PrimaryKey } from './primary-key'
+import { type PrimaryKey } from './primary-key'
 import { buildProjectionExpression } from './projection-expression'
 
 type Index<T extends Table> = PrimaryKey<T, any, any> | GlobalSecondaryIndex<T> | LocalSecondaryIndex<T> | string
@@ -39,7 +39,7 @@ export type SearchGroupFunction<T extends Table> = (condition: MagicSearch<T>) =
 export class MagicSearch<T extends Table> {
   private filters: ComplexFilters<T> = []
 
-  constructor(private readonly tableClass: ITable<T>, filters?: Filters<T>, private input: MagicSearchInput<T> = {}) {
+  constructor(private readonly tableClass: ITable<T>, filters?: Filters<T>, private readonly input: MagicSearchInput<T> = {}) {
     if (filters != null) {
       this.addFilterGroup([filters])
     }
@@ -62,45 +62,45 @@ export class MagicSearch<T extends Table> {
   }
 
   filter<
-    K1 extends AttributeNames<T>
-  >(a1: K1): Condition<T, Attr, NonNullable<T[K1]>>;
+    K1 extends AttributeNames<T>,
+  >(a1: K1): Condition<T, Attr, NonNullable<T[K1]>>
   filter<
     K1 extends NonNullable<AttributeNames<T>>,
-    K2 extends keyof NonNullable<T[K1]>
-  >(a1: K1, a2: K2): Condition<T, Attr, NonNullable<NonNullable<T[K1]>[K2]>>;
-  filter<
-    K1 extends AttributeNames<T>,
     K2 extends keyof NonNullable<T[K1]>,
-    K3 extends keyof NonNullable<NonNullable<T[K1]>[K2]>
-  >(a1: K1, a2: K2, a3: K3): Condition<T, Attr, NonNullable<NonNullable<NonNullable<T[K1]>[K2]>[K3]>>;
+  >(a1: K1, a2: K2): Condition<T, Attr, NonNullable<NonNullable<T[K1]>[K2]>>
   filter<
     K1 extends AttributeNames<T>,
     K2 extends keyof NonNullable<T[K1]>,
     K3 extends keyof NonNullable<NonNullable<T[K1]>[K2]>,
-    K4 extends keyof NonNullable<NonNullable<NonNullable<T[K1]>[K2]>[K3]>
-  >(a1: K1, a2: K2, a3: K3, a4: K4): Condition<T, Attr, NonNullable<NonNullable<NonNullable<NonNullable<T[K1]>[K2]>[K3]>[K4]>>;
+  >(a1: K1, a2: K2, a3: K3): Condition<T, Attr, NonNullable<NonNullable<NonNullable<T[K1]>[K2]>[K3]>>
+  filter<
+    K1 extends AttributeNames<T>,
+    K2 extends keyof NonNullable<T[K1]>,
+    K3 extends keyof NonNullable<NonNullable<T[K1]>[K2]>,
+    K4 extends keyof NonNullable<NonNullable<NonNullable<T[K1]>[K2]>[K3]>,
+  >(a1: K1, a2: K2, a3: K3, a4: K4): Condition<T, Attr, NonNullable<NonNullable<NonNullable<NonNullable<T[K1]>[K2]>[K3]>[K4]>>
   filter<Attr extends AttributeNames<T>>(...attributePropertyPath: any): Condition<T, Attr, T[Attr]> {
     return new Condition<T, Attr, T[Attr]>(this, attributePropertyPath.join('.'))
   }
 
   where<
-    K1 extends AttributeNames<T>
-  >(a1: K1): Condition<T, Attr, NonNullable<T[K1]>>;
+    K1 extends AttributeNames<T>,
+  >(a1: K1): Condition<T, Attr, NonNullable<T[K1]>>
   where<
     K1 extends NonNullable<AttributeNames<T>>,
-    K2 extends keyof NonNullable<T[K1]>
-  >(a1: K1, a2: K2): Condition<T, Attr, NonNullable<NonNullable<T[K1]>[K2]>>;
-  where<
-    K1 extends AttributeNames<T>,
     K2 extends keyof NonNullable<T[K1]>,
-    K3 extends keyof NonNullable<NonNullable<T[K1]>[K2]>
-  >(a1: K1, a2: K2, a3: K3): Condition<T, Attr, NonNullable<NonNullable<NonNullable<T[K1]>[K2]>[K3]>>;
+  >(a1: K1, a2: K2): Condition<T, Attr, NonNullable<NonNullable<T[K1]>[K2]>>
   where<
     K1 extends AttributeNames<T>,
     K2 extends keyof NonNullable<T[K1]>,
     K3 extends keyof NonNullable<NonNullable<T[K1]>[K2]>,
-    K4 extends keyof NonNullable<NonNullable<NonNullable<T[K1]>[K2]>[K3]>
-  >(a1: K1, a2: K2, a3: K3, a4: K4): Condition<T, Attr, NonNullable<NonNullable<NonNullable<NonNullable<T[K1]>[K2]>[K3]>[K4]>>;
+  >(a1: K1, a2: K2, a3: K3): Condition<T, Attr, NonNullable<NonNullable<NonNullable<T[K1]>[K2]>[K3]>>
+  where<
+    K1 extends AttributeNames<T>,
+    K2 extends keyof NonNullable<T[K1]>,
+    K3 extends keyof NonNullable<NonNullable<T[K1]>[K2]>,
+    K4 extends keyof NonNullable<NonNullable<NonNullable<T[K1]>[K2]>[K3]>,
+  >(a1: K1, a2: K2, a3: K3, a4: K4): Condition<T, Attr, NonNullable<NonNullable<NonNullable<NonNullable<T[K1]>[K2]>[K3]>[K4]>>
   where<Attr extends AttributeNames<T>>(...attributePropertyPath: any): Condition<T, Attr, T[Attr]> {
     return new Condition<T, Attr, T[Attr]>(this, attributePropertyPath.join('.'))
   }

@@ -162,7 +162,7 @@ describe('Table', () => {
       await newRecord.save()
 
       // load the record we just created
-      const record = await TestableTable.primaryKey.fromKey({
+      const record = TestableTable.primaryKey.fromKey({
         id: 99,
         title: 'new record',
       })

@@ -1,8 +1,8 @@
-import { CreateTableCommandInput, GlobalSecondaryIndex, KeySchemaElement, LocalSecondaryIndex } from '@aws-sdk/client-dynamodb'
+import { type CreateTableCommandInput, type GlobalSecondaryIndex, type KeySchemaElement, type LocalSecondaryIndex } from '@aws-sdk/client-dynamodb'
 import { uniqBy } from 'lodash'
-import { Attribute } from '../attribute'
+import { type Attribute } from '../attribute'
 import { SchemaError } from '../errors'
-import { Schema } from './schema'
+import { type Schema } from './schema'
 
 export function createTableInput(schema: Schema, forCloudFormation = false): CreateTableCommandInput {
   const params: CreateTableCommandInput = {

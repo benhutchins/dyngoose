@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { DynamoDB, DynamoDBClientConfig } from '@aws-sdk/client-dynamodb'
-import { Connection } from './connection'
+import { DynamoDB, type DynamoDBClientConfig } from '@aws-sdk/client-dynamodb'
+import { type Connection } from './connection'
 
 interface DyngooseDynamoDBConnectionOptions extends DynamoDBClientConfig {
   enableAWSXray?: boolean

@@ -1,4 +1,4 @@
-import { ITable } from '../table'
+import { type ITable } from '../table'
 
 export function DocumentClient() {
   return (tableClass: ITable<any>, propertyKey: string) => {

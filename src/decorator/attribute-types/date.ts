@@ -1,9 +1,9 @@
-import { AttributeValue } from '@aws-sdk/client-dynamodb'
+import { type AttributeValue } from '@aws-sdk/client-dynamodb'
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
 import { SchemaError } from '../../errors'
-import { IAttributeType } from '../../interfaces'
-import { DateAttributeMetadata } from '../../metadata/attribute-types/date.metadata'
-import { Table } from '../../table'
+import { type IAttributeType } from '../../interfaces'
+import { type DateAttributeMetadata } from '../../metadata/attribute-types/date.metadata'
+import { type Table } from '../../table'
 import { AttributeType } from '../../tables/attribute-type'
 import { stringToNumber } from './utils'
 

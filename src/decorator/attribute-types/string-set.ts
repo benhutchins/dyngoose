@@ -1,9 +1,9 @@
-import { AttributeValue } from '@aws-sdk/client-dynamodb'
+import { type AttributeValue } from '@aws-sdk/client-dynamodb'
 import { every, isArray, isSet, isString, uniq } from 'lodash'
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
 import { ValidationError } from '../../errors'
-import { IAttributeType } from '../../interfaces'
-import { StringSetAttributeMetadata, StringSetValue } from '../../metadata/attribute-types/string-set.metadata'
+import { type IAttributeType } from '../../interfaces'
+import { type StringSetAttributeMetadata, type StringSetValue } from '../../metadata/attribute-types/string-set.metadata'
 import { AttributeType } from '../../tables/attribute-type'
 
 type Metadata = StringSetAttributeMetadata
