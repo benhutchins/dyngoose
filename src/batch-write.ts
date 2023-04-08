@@ -70,7 +70,7 @@ export class BatchWrite {
         [tableClass.schema.name]: [
           {
             PutRequest: {
-              Item: record.toDynamo(),
+              Item: record.toDynamo(true),
             },
           },
         ],

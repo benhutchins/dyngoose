@@ -27,7 +27,7 @@ export class DocumentClient<T extends Table> {
   public getPutInput(record: T, params?: PutItemInputParams<T>): PutItemInput {
     const input: PutItemInput = {
       TableName: this.tableClass.schema.name,
-      Item: record.toDynamo(),
+      Item: record.toDynamo(true),
     }
 
     if (params?.returnValues != null) {

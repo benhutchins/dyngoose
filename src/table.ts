@@ -216,8 +216,14 @@ export class Table {
    * Converts the current attribute values into a AttributeMap which
    * can be sent directly to DynamoDB within a PutItem, UpdateItem, or similar
    * request.
-  */
-  public toDynamo(): AttributeMap {
+   *
+   * @param {boolean} updateOnSaveAttributes If true, update all attributes that have logic to update with every save.
+   */
+  public toDynamo(updateOnSaveAttributes = false): AttributeMap {
+    if (updateOnSaveAttributes) {
+      this.updateOnSaveAttributes()
+    }
+
     // anytime toDynamo is called, it can generate new default values or manipulate values
     // this keeps the record in sync, so the instance can be used after the record is saved
     const attributeMap = this.table.schema.toDynamo(this)
@@ -688,6 +694,19 @@ export class Table {
    */
   protected async afterDelete(event: Events.AfterDeleteEvent<this>): Promise<void> {
     return undefined
+  }
+
+  /**
+   * Ensures Date attributes with nowOnUpdate are updated whenever the record is
+   * being saved.
+   */
+  protected updateOnSaveAttributes(): void {
+    // ensure now on update is updated whenever the record is being saved
+    for (const [attributeName, attribute] of this.table.schema.getAttributes()) {
+      if ((attribute.metadata as any).nowOnUpdate === true) {
+        this.setAttribute(attributeName, new Date())
+      }
+    }
   }
 
   protected setByAttribute(attribute: Attribute<any>, value: any, params: SetPropParams = {}): this {
