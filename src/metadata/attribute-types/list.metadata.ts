@@ -1,6 +1,8 @@
-import { type AttributeDefinition } from '../../decorator/attribute-types'
+import { type marshallOptions, type unmarshallOptions } from '@aws-sdk/util-dynamodb'
+
 import { type AttributeMetadata } from '../attribute'
 
-export interface ListAttributeMetadata<Value> extends AttributeMetadata<Value> {
-  attributes: Record<string, AttributeDefinition>
+export interface ListAttributeMetadata extends AttributeMetadata<any[]> {
+  marshallOptions?: marshallOptions
+  unmarshallOptions?: unmarshallOptions
 }

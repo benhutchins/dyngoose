@@ -5,6 +5,7 @@ import { BinaryAttributeType } from './binary'
 import { BinarySetAttributeType } from './binary-set'
 import { BooleanAttributeType } from './boolean'
 import { DateAttributeType } from './date'
+import { ListAttributeType } from './list'
 import { MapAttributeType } from './map'
 import { NumberAttributeType } from './number'
 import { NumberSetAttributeType } from './number-set'
@@ -17,6 +18,7 @@ interface AttributeTypeMap {
   BinarySet: BinarySetAttributeType
   Boolean: BooleanAttributeType
   Date: DateAttributeType
+  List: ListAttributeType
   Number: NumberAttributeType
   NumberSet: NumberSetAttributeType
   String: StringAttributeType
@@ -29,6 +31,7 @@ interface AttributeMetadataMap {
   BinarySet: Metadata.AttributeType.BinarySet
   Boolean: Metadata.AttributeType.Boolean
   Date: Metadata.AttributeType.Date
+  List: Metadata.AttributeType.List
   Number: Metadata.AttributeType.Number
   NumberSet: Metadata.AttributeType.NumberSet
   String: Metadata.AttributeType.String
@@ -41,6 +44,7 @@ const AttributeTypes = {
   BinarySet: BinarySetAttributeType,
   Boolean: BooleanAttributeType,
   Date: DateAttributeType,
+  List: ListAttributeType,
   Number: NumberAttributeType,
   NumberSet: NumberSetAttributeType,
   String: StringAttributeType,
@@ -88,6 +92,8 @@ Attribute.Boolean = (options?: Metadata.AttributeType.Boolean) => Attribute('Boo
  * Use metadata options to store values as timestamps or dates without the time.
  */
 Attribute.Date = (options?: Metadata.AttributeType.Date) => Attribute('Date', options)
+
+Attribute.List = (options?: Metadata.AttributeType.List) => Attribute('List', options)
 
 /**
  * For all your numbers needs.
