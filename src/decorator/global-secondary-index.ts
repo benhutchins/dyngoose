@@ -4,17 +4,33 @@ import { type IThroughput } from '../interfaces'
 import type * as Metadata from '../metadata'
 import { type ITable } from '../table'
 
-export interface GlobalSecondaryIndexOptions {
-  hashKey: string
-  rangeKey?: string
+interface GlobalSecondaryIndexOptionsBase {
   name?: string
   projection?: Metadata.Index.GlobalSecondaryIndexProjection
   nonKeyAttributes?: string[]
   throughput?: IThroughput | number
 }
 
+interface GlobalSecondaryIndexOptionsLegacy extends GlobalSecondaryIndexOptionsBase {
+  hashKey: string
+  rangeKey?: string
+}
+
+interface GlobalSecondaryIndexOptionsModern extends GlobalSecondaryIndexOptionsBase {
+  primaryKey: string
+  sortKey?: string
+
+  hashKey?: undefined
+  rangeKey?: undefined
+}
+
+export type GlobalSecondaryIndexOptions = GlobalSecondaryIndexOptionsLegacy | GlobalSecondaryIndexOptionsModern
+
 export function GlobalSecondaryIndex(options: GlobalSecondaryIndexOptions) {
   return (table: ITable<any>, propertyName: string) => {
+    const primaryKey: string = (options as any).primaryKey ?? (options as any).hashKey
+    const sortKey: string | undefined = (options as any).sortKey ?? (options as any).rangeKey
+
     let throughput: IThroughput | undefined
 
     if (typeof options.throughput === 'number') {
@@ -39,15 +55,15 @@ export function GlobalSecondaryIndex(options: GlobalSecondaryIndexOptions) {
         table.schema.getAttributeByName(attributeName)
 
         // remove the attribute if it is a key attribute, as it is not necessary to be specified
-        return !(attributeName === options.hashKey || attributeName === options.rangeKey)
+        return !(attributeName === primaryKey || attributeName === sortKey)
       }))
     }
 
     const index: Metadata.Index.GlobalSecondaryIndex = {
       propertyName,
       name: options.name == null ? propertyName : options.name,
-      hash: table.schema.getAttributeByName(options.hashKey),
-      range: options.rangeKey == null ? undefined : table.schema.getAttributeByName(options.rangeKey),
+      hash: table.schema.getAttributeByName(primaryKey),
+      range: sortKey == null ? undefined : table.schema.getAttributeByName(sortKey),
       projection: options.projection,
       nonKeyAttributes: options.nonKeyAttributes,
       throughput,

@@ -9,7 +9,7 @@ class Card extends Table {
   @Decorator.PrimaryKey('id', 'title')
   public static readonly primaryKey: Query.PrimaryKey<Card, number, string>
 
-  @Decorator.GlobalSecondaryIndex({ hashKey: 'title' })
+  @Decorator.GlobalSecondaryIndex({ primaryKey: 'title' })
   public static readonly hashTitleIndex: Query.GlobalSecondaryIndex<Card>
 
   @Decorator.GlobalSecondaryIndex({ hashKey: 'title', rangeKey: 'id' })

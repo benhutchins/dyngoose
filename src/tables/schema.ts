@@ -221,19 +221,19 @@ export class Schema {
     return attribute
   }
 
-  public setPrimaryKey(hashKey: string, rangeKey: string | undefined, propertyName: string): void {
-    const hash = this.getAttributeByName(hashKey)
+  public setPrimaryKey(primaryKey: string, sortKey: string | undefined, propertyName: string): void {
+    const hash = this.getAttributeByName(primaryKey)
     if (hash == null) {
-      throw new SchemaError(`Specified hashKey ${hashKey} attribute for the PrimaryKey for table ${this.name} does not exist`)
+      throw new SchemaError(`Specified primaryKey ${primaryKey} attribute for the PrimaryKey for table ${this.name} does not exist`)
     }
 
     let range: Attribute<any> | undefined
 
-    if (rangeKey != null) {
-      range = this.getAttributeByName(rangeKey)
+    if (sortKey != null) {
+      range = this.getAttributeByName(sortKey)
 
       if (range == null) {
-        throw new SchemaError(`Specified rangeKey ${rangeKey} attribute for the PrimaryKey for table ${this.name} does not exist`)
+        throw new SchemaError(`Specified sortKey ${sortKey} attribute for the PrimaryKey for table ${this.name} does not exist`)
       }
     }
 
