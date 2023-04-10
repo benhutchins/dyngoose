@@ -50,7 +50,7 @@ export class MapAttributeType<Value extends MapBaseValue> extends AttributeType<
       if (attribute != null) {
         const attributeValue = attribute.toDynamo(value)
         if (attributeValue != null) {
-          map[attribute.propertyName] = attributeValue
+          map[attribute.name] = attributeValue
         }
       } else if (this.metadata.ignoreUnknownProperties !== true) {
         throw new ValidationError(`Unknown property set on Map, ${propertyName}`)
@@ -62,7 +62,7 @@ export class MapAttributeType<Value extends MapBaseValue> extends AttributeType<
 
   fromDynamo(attributeValue: AttributeValue): Value {
     const mapValue: AttributeMap = attributeValue.M == null ? {} : attributeValue.M
-    const map: any = mapValue
+    const map: any = {}
 
     for (const attributeName of Object.keys(mapValue)) {
       const value = mapValue[attributeName]
