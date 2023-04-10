@@ -94,7 +94,7 @@ The `Date` attribute supports additional settings:
 
 #### Dyngoose.Attribute.List
 
-The `List` attribute supports relies on AWS's marshall utility, to convert any
+The `List` attribute supports relies on AWS' marshall utility, to convert any
 JavaScript object into a DynamoDB attribute.
 
 ```

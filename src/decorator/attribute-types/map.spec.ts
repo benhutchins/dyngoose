@@ -68,6 +68,15 @@ export class MapTestTable extends Dyngoose.Table {
     },
   })
   public contact: ITestContactMap
+
+  @Dyngoose.Attribute.Map({
+    attributes: {},
+    arbitraryAttributes: 'marshall',
+  })
+  public dynamicMap: {
+    dynamicAttribute: string
+    emptyAttribute?: string
+  }
 }
 
 describe('AttributeType/Map', () => {
@@ -317,6 +326,27 @@ describe('AttributeType/Map', () => {
         last: 'Smith',
         level: 1,
         gender: 'MALE',
+      },
+    })
+  })
+
+  it('maps should support dynamic properties', async () => {
+    const record = MapTestTable.new({
+      id: 7,
+      dynamicMap: {
+        dynamicAttribute: 'test',
+        emptyAttribute: undefined,
+      },
+    })
+
+    await record.save()
+
+    const loaded = await MapTestTable.primaryKey.get(record.id)
+
+    // Should be able to change name of string attribute in map
+    expect(loaded?.getAttributeDynamoValue('dynamicMap')).to.deep.eq({
+      M: {
+        dynamicAttribute: { S: 'test' },
       },
     })
   })

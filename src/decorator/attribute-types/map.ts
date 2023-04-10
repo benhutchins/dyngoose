@@ -8,6 +8,7 @@ import { type MapAttributeMetadata, type MapBaseValue } from '../../metadata/att
 import { type Table } from '../../table'
 import { AttributeType } from '../../tables/attribute-type'
 import { isTrulyEmpty } from '../../utils/truly-empty'
+import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
 
 export class MapAttributeType<Value extends MapBaseValue> extends AttributeType<Value, MapAttributeMetadata<Value>>
   implements IAttributeType<Value> {
@@ -17,6 +18,11 @@ export class MapAttributeType<Value extends MapBaseValue> extends AttributeType<
   constructor(record: Table, propertyName: string, protected metadata: MapAttributeMetadata<Value>) {
     super(record, propertyName, metadata)
     this.attributes = {}
+
+    // backwards compatibility to accept 'ignoreUnknownProperties'
+    if (this.metadata.arbitraryAttributes == null && this.metadata.ignoreUnknownProperties === true) {
+      this.metadata.arbitraryAttributes = 'ignore'
+    }
 
     // convert attributes from ChildAttributeMetadata types to
     for (const childAttributePropertyName of Object.keys(this.metadata.attributes)) {
@@ -42,6 +48,7 @@ export class MapAttributeType<Value extends MapBaseValue> extends AttributeType<
     }
 
     const map: AttributeMap = {}
+    const marshallOptions = this.metadata.marshallOptions ?? { convertEmptyValues: true, removeUndefinedValues: true }
 
     for (const propertyName of Object.keys(mapValue)) {
       const attribute = find(this.attributes, (attr) => attr.propertyName === propertyName)
@@ -52,7 +59,11 @@ export class MapAttributeType<Value extends MapBaseValue> extends AttributeType<
         if (attributeValue != null) {
           map[attribute.name] = attributeValue
         }
-      } else if (this.metadata.ignoreUnknownProperties !== true) {
+      } else if (this.metadata.arbitraryAttributes === 'marshall') {
+        if (value != null) {
+          map[propertyName] = marshall({ value }, marshallOptions).value
+        }
+      } else if (this.metadata.arbitraryAttributes !== 'ignore') {
         throw new ValidationError(`Unknown property set on Map, ${propertyName}`)
       }
     }
@@ -70,7 +81,9 @@ export class MapAttributeType<Value extends MapBaseValue> extends AttributeType<
 
       if (attribute != null) {
         map[attribute.propertyName] = attribute.fromDynamo(value)
-      } else if (this.metadata.ignoreUnknownProperties !== true) {
+      } else if (this.metadata.arbitraryAttributes === 'marshall') {
+        map[attributeName] = unmarshall({ value }, this.metadata.unmarshallOptions).value
+      } else if (this.metadata.arbitraryAttributes !== 'ignore') {
         throw new ValidationError(`Unknown attribute seen on Map, ${attributeName}`)
       }
     }
@@ -112,8 +125,10 @@ export class MapAttributeType<Value extends MapBaseValue> extends AttributeType<
             json[propertyName] = value
           }
         }
-      } else if (this.metadata.ignoreUnknownProperties !== true) {
-        throw new ValidationError(`Unknown property set on Map, ${propertyName}`)
+      } else if (this.metadata.arbitraryAttributes === 'marshall') {
+        json[propertyName] = value
+      } else if (this.metadata.arbitraryAttributes !== 'ignore') {
+        throw new ValidationError(`Unknown property set on Map during toJSON, ${propertyName}`)
       }
     }
 
