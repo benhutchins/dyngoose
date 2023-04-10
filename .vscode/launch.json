@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Local Mocha Tests",
+      "console": "integratedTerminal",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceRoot}/node_modules/.bin/mocha",
+      "stopOnEntry": false,
+      "args": ["--no-timeouts", "--colors", "--recursive", "lib"],
+      "cwd": "${workspaceRoot}",
+      "runtimeExecutable": null,
+      "env": {
+        "NODE_ENV": "testing",
+        "DYNAMO_ENDPOINT": "http://127.0.0.1:8000",
+        "AWS_REGION": "us-east-1",
+        "AWS_ACCESS_KEY_ID": "abcde",
+        "AWS_SECRET_ACCESS_KEY": "abcde"
+      }
+    }
+  ]
+}
