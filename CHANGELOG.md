@@ -1,3 +1,16 @@
+# [4.1.0](https://github.com/benhutchins/dyngoose/compare/v4.0.0...v4.1.0) (2023-04-10)
+
+
+### Bug Fixes
+
+* map attributes using independent property names ([57a0132](https://github.com/benhutchins/dyngoose/commit/57a0132bedcbd8ce1dcafc3d9596a20a2169547e))
+
+
+### Features
+
+* arbitrary attributes on maps ([c6fce9d](https://github.com/benhutchins/dyngoose/commit/c6fce9dbfac2202d859dca619d92f974bbbc4776))
+* standardize to primary key nomenclature ([b03b26a](https://github.com/benhutchins/dyngoose/commit/b03b26a0c6d1b4b2a1c7a8b94a39707fed300218))
+
 # [4.0.0](https://github.com/benhutchins/dyngoose/compare/v3.1.3...v4.0.0) (2023-04-08)
 
 
