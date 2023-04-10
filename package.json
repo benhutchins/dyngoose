@@ -48,7 +48,7 @@
     "@types/chai": "4.2.22",
     "@types/lodash": "^4.14.192",
     "@types/mocha": "9.0.0",
-    "@types/node": "^16.18.23",
+    "@types/node": "^18.15.11",
     "aws-cdk-lib": "^2.73.0",
     "chai": "4.3.4",
     "check-engine": "1.10.1",
