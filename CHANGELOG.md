@@ -1,3 +1,11 @@
+## [4.1.1](https://github.com/benhutchins/dyngoose/compare/v4.1.0...v4.1.1) (2023-08-15)
+
+
+### Bug Fixes
+
+* clear update operators after saving ([cc97567](https://github.com/benhutchins/dyngoose/commit/cc97567fda91badeba8db1ed57559e3f55c45927))
+* compatibility with TypeScript 5.1 ([a634d68](https://github.com/benhutchins/dyngoose/commit/a634d684f54bc5b250336401fee4b0f1720dea04))
+
 # [4.1.0](https://github.com/benhutchins/dyngoose/compare/v4.0.0...v4.1.0) (2023-04-10)
 
 
