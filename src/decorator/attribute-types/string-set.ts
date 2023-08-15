@@ -25,7 +25,7 @@ export class StringSetAttributeType extends AttributeType<StringSetValue, Metada
     }
   }
 
-  fromDynamo(value: AttributeValue.SSMember): StringSetValue | null {
+  fromDynamo(value: AttributeValue): StringSetValue | null {
     // this needs to return null when there is no value, so the default value can be set if necessary
     // returning an empty array means there was a value from DynamoDB with a Set containing no items
     if (value.SS == null) {

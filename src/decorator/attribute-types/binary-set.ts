@@ -21,7 +21,7 @@ export class BinarySetAttributeType extends AttributeType<BinarySetValue, Metada
     }
   }
 
-  fromDynamo(value: AttributeValue.BSMember): BinarySetValue | null {
+  fromDynamo(value: AttributeValue): BinarySetValue | null {
     // this needs to return null when there is no value, so the default value can be set if necessary
     // returning an empty array means there was a value from DynamoDB with a Set containing no items
     if (value.BS == null) {

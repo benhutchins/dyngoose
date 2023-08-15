@@ -27,7 +27,7 @@ export class NumberSetAttributeType extends AttributeType<NumberSetValue, Metada
     }
   }
 
-  fromDynamo(value: AttributeValue.NSMember): NumberSetValue | null {
+  fromDynamo(value: AttributeValue): NumberSetValue | null {
     // this needs to return null when there is no value, so the default value can be set if necessary
     // returning an empty array means there was a value from DynamoDB with a Set containing no items
     if (value.NS == null) {
