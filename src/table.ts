@@ -580,6 +580,7 @@ export class Table {
       // reset internal tracking of changes attributes
       this.__removedAttributes = []
       this.__updatedAttributes = []
+      this.__updateOperators = {}
 
       if (beforeSaveEvent.returnOutput === true) {
         return output
