@@ -1,7 +1,6 @@
 [![Build Status](https://github.com/benhutchins/dyngoose/workflows/workflow/badge.svg)](https://github.com/benhutchins/dyngoose/actions)
 [![npm version](https://badge.fury.io/js/dyngoose.svg)](https://badge.fury.io/js/dyngoose)
 [![Semantic Release enabled](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
-[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=benhutchins/dyngoose)](https://dependabot.com)
 
 
 # Dyngoose
@@ -68,26 +67,32 @@ const card2 = Card.new({
 // Save a record
 await card.save()
 
-// Batch Put
-await Card.documentClient.batchPut([
+// Batch Write
+const batchWrite = new Dyngoose.BatchWrite()
+batchWrite.put(
   Card.new(…),
   Card.new(…)
-])
+)
+await batchWrite.commit()
 
 // Get record by the primary key
 await Card.primaryKey.get({ id: 100, title: 'Title' })
 
-// BatchGet
-// This array is strongly typed such as Array<[number, string]> so don't worry.
-await Card.primaryKey.batchGet([
-  [100, 'Title'],
-  [200, 'Title2']
-])
+// Batch Get
+const batchGet = new Dyngoose.BatchGet()
+
+batchGet.get(
+  Card.primaryKey.fromKey({ id: 100, title: 'Title' }),
+  Card.primaryKey.fromKey({ id: 100, title: 'Title' })
+)
+
+await batchGet.retrieve()
 
 // Searching and Advanced Querying
 // Your values will be strictly typed based on the attribute being filtered
 await Card.search()
   .filter('id').eq(100)
+  .and()
   .filter('title').gte('Title')
   .exec()
 
