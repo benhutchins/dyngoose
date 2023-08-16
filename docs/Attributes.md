@@ -10,9 +10,9 @@ You can also [define custom types](#custom-attribute-types).
 | `@Dyngoose.Attribute.Number` | `N` | `number` or `BigInt` | Stores number values. |
 | `@Dyngoose.Attribute.Boolean` | `BOOL` | `boolean` | Stores boolean values. |
 | `@Dyngoose.Attribute.Binary` | `B` | `Buffer` | Stores binary values. |
-| `@Dyngoose.Attribute.StringSet` | `SS` | `string[]` | Stores an array of string values. |
-| `@Dyngoose.Attribute.NumberSet` | `NS` | `number[]` | Stores an array of number values. |
-| `@Dyngoose.Attribute.BinarySet` | `BS` | `Buffer[]` | Stores an array of binary values. |
+| `@Dyngoose.Attribute.StringSet` | `SS` | `Set<string>` | Stores a set of string values. |
+| `@Dyngoose.Attribute.NumberSet` | `NS` | `Set<number>` | Stores a set of number values. |
+| `@Dyngoose.Attribute.BinarySet` | `BS` | `Set<Buffer>` | Stores a set of binary values. |
 | `@Dyngoose.Attribute.List` | `L` | `undefined` | Not implemented. |
 | `@Dyngoose.Attribute.Map` | `M` | `Object` | Stores an object as a DynamoDB Map, allowing for querying and filtering of values within the map. |
 | [`@Dyngoose.Attribute.Any`](dyngooseattributeany) | `S` | `Object` | Stores an object as a JSON-encoded string in DynamoDB, does not allow querying or filtering of child attributes. |
