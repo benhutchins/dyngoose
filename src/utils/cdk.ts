@@ -80,7 +80,7 @@ export function createCDKTable(scope: Construct, schema: Schema, tableProps: Par
     }
   }
 
-  const table = new dynamodb.Table(scope, 'Table', tableProps as any)
+  const table = new dynamodb.Table(scope, `${schema.name}Table`, tableProps as any)
 
   if (schema.options.billingMode === 'PROVISIONED') {
     let autoScaling = schema.throughput?.autoScaling
