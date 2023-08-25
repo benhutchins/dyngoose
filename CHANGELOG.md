@@ -1,3 +1,10 @@
+## [4.1.2](https://github.com/benhutchins/dyngoose/compare/v4.1.1...v4.1.2) (2023-08-25)
+
+
+### Bug Fixes
+
+* cdk utility needs to use unique resource id for every table ([c8c6f0b](https://github.com/benhutchins/dyngoose/commit/c8c6f0b63d63e17be31baaefa39ffd27ebce411e))
+
 ## [4.1.1](https://github.com/benhutchins/dyngoose/compare/v4.1.0...v4.1.1) (2023-08-15)
 
 
