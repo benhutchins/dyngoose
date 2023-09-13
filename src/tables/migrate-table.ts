@@ -55,7 +55,11 @@ export async function migrateTable(schema: Schema, waitForReady = false): Promis
       if (newIndex == null) {
         deletedIndexes.push(oldIndex)
         hasChanges = true
-      } else if (!_.isEqual(oldIndex.KeySchema, newIndex.KeySchema) || !_.isEqual(oldIndex.Projection, newIndex.Projection)) {
+      } else if (
+        !_.isEqual(oldIndex.KeySchema, newIndex.KeySchema) ||
+        // assign a default value for NonKeyAttributes to prevent comparison issues, fixes #645
+        !_.isEqual({ NonKeyAttributes: undefined, ...oldIndex.Projection }, { NonKeyAttributes: undefined, ...newIndex.Projection })
+      ) {
         const oldIndexName = oldIndex.IndexName == null ? '' : oldIndex.IndexName
         // you can only updated ProvisionedThroughput, which is useless to do on the DynamoDB development server
         // so really we want to verify we're not attempting to change an index's KeySchema or Projection, if we
