@@ -42,10 +42,14 @@ export class NumberSetAttributeType extends AttributeType<NumberSetValue, Metada
   }
 
   fromJSON(values: Array<string | number>): NumberSetValue {
-    const numberSet: NumberSetValue = new Set()
-    values.forEach((item) => {
-      numberSet.add(stringToNumber(item))
-    })
-    return numberSet
+    if (this.metadata?.array === true) {
+      return values.map((item) => stringToNumber(item))
+    } else {
+      const numberSet: NumberSetValue = new Set()
+      values.forEach((item) => {
+        numberSet.add(stringToNumber(item))
+      })
+      return numberSet
+    }
   }
 }

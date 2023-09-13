@@ -26,6 +26,8 @@ export class BinarySetAttributeType extends AttributeType<BinarySetValue, Metada
     // returning an empty array means there was a value from DynamoDB with a Set containing no items
     if (value.BS == null) {
       return null
+    } else if (this.metadata?.array === true) {
+      return value.BS
     } else {
       const binarySet: BinarySetValue = new Set()
       value.BS.forEach((item) => {

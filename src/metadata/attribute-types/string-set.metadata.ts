@@ -1,9 +1,10 @@
 import { type AttributeMetadata } from '../attribute'
 
-export type StringSetValue = Set<string>
+export type StringSetValue = Set<string> | string[]
 
 export interface StringSetAttributeMetadata extends AttributeMetadata<StringSetValue> {
-  trim?: boolean
-  lowercase?: boolean
-  uppercase?: boolean
+  /**
+   * Return a native JavaScript array, rather than a Set.
+   */
+  array?: boolean
 }

@@ -30,6 +30,8 @@ export class StringSetAttributeType extends AttributeType<StringSetValue, Metada
     // returning an empty array means there was a value from DynamoDB with a Set containing no items
     if (value.SS == null) {
       return null
+    } else if (this.metadata?.array === true) {
+      return value.SS
     } else {
       const stringSet: StringSetValue = new Set()
       value.SS.forEach((item) => {
