@@ -28,6 +28,8 @@ export function getUpdateItemInput<T extends Table>(record: T, params?: UpdateIt
   }
 
   const sets: string[] = []
+  const adds: string[] = []
+  const deletes: string[] = []
   const removes: string[] = []
   const attributeNameMap: Record<string, string> = {}
   const attributeValueMap: AttributeMap = {}
@@ -40,7 +42,7 @@ export function getUpdateItemInput<T extends Table>(record: T, params?: UpdateIt
   _.each(_.uniq(record.getUpdatedAttributes()), (attributeName, i) => {
     const attribute = tableClass.schema.getAttributeByName(attributeName)
     const value = attribute.toDynamo(record.getAttribute(attributeName))
-    const operator = record.getUpdateOperator(attributeName)
+    const operator = record.getAttributeUpdateOperator(attributeName)
     const slug = `#UA${valueCounter}`
 
     if (value != null) {
@@ -55,6 +57,10 @@ export function getUpdateItemInput<T extends Table>(record: T, params?: UpdateIt
         // List attribute operators
         case 'append': sets.push(`${slug} = list_append(${slug}, :u${valueCounter})`); break
         case 'if_not_exists': sets.push(`${slug} = if_not_exists(${slug}, :u${valueCounter})`); break
+
+        // Set attribute operators
+        case 'add': adds.push(`${slug} :u${valueCounter}`); break
+        case 'delete': deletes.push(`${slug} :u${valueCounter}`); break
 
         case 'set':
         default: sets.push(`${slug} = :u${valueCounter}`); break
@@ -75,6 +81,22 @@ export function getUpdateItemInput<T extends Table>(record: T, params?: UpdateIt
 
   if (sets.length > 0) {
     updateExpression += 'SET ' + sets.join(', ')
+  }
+
+  if (adds.length > 0) {
+    if (updateExpression.length > 0) {
+      updateExpression += ' '
+    }
+
+    updateExpression += 'ADD ' + adds.join(', ')
+  }
+
+  if (removes.length > 0) {
+    if (updateExpression.length > 0) {
+      updateExpression += ' '
+    }
+
+    updateExpression += 'REMOVE ' + removes.join(', ')
   }
 
   if (removes.length > 0) {

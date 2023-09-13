@@ -352,8 +352,21 @@ export class Table {
   /**
    * Get the update operator for an attribute.
    */
-  public getUpdateOperator(attributeName: string): UpdateOperator {
+  public getUpdateOperator<P extends TableProperty<this>>(propertyName: P | string): UpdateOperator {
+    const attribute = this.table.schema.getAttributeByPropertyName(propertyName as string)
+    return this.getAttributeUpdateOperator(attribute.name)
+  }
+
+  public getAttributeUpdateOperator(attributeName: string): UpdateOperator {
     return this.__updateOperators[attributeName] ?? 'set'
+  }
+
+  /**
+   * Set the update operator for a property.
+   */
+  public setUpdateOperator<P extends TableProperty<this>>(propertyName: P | string, operator: UpdateOperator): this {
+    const attribute = this.table.schema.getAttributeByPropertyName(propertyName as string)
+    return this.setAttributeUpdateOperator(attribute.name, operator)
   }
 
   /**
@@ -564,10 +577,15 @@ export class Table {
       let output: PutItemCommandOutput | UpdateItemCommandOutput
       if (beforeSaveEvent.operator === 'put') {
         output = await this.table.documentClient.put(this, beforeSaveEvent)
-        this.__putRequired = false
       } else {
         output = await this.table.documentClient.update(this, beforeSaveEvent)
       }
+
+      // reset internal tracking of changes attributes
+      this.__putRequired = false
+      this.__removedAttributes = []
+      this.__updatedAttributes = []
+      this.__updateOperators = {}
 
       // trigger afterSave before clearing values, so the hook can determine what has been changed
       await this.afterSave({
@@ -576,11 +594,6 @@ export class Table {
         deletedAttributes: this.__removedAttributes,
         updatedAttributes: this.__updatedAttributes,
       })
-
-      // reset internal tracking of changes attributes
-      this.__removedAttributes = []
-      this.__updatedAttributes = []
-      this.__updateOperators = {}
 
       if (beforeSaveEvent.returnOutput === true) {
         return output
