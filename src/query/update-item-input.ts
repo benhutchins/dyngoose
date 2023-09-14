@@ -91,12 +91,12 @@ export function getUpdateItemInput<T extends Table>(record: T, params?: UpdateIt
     updateExpression += 'ADD ' + adds.join(', ')
   }
 
-  if (removes.length > 0) {
+  if (deletes.length > 0) {
     if (updateExpression.length > 0) {
       updateExpression += ' '
     }
 
-    updateExpression += 'REMOVE ' + removes.join(', ')
+    updateExpression += 'DELETE ' + deletes.join(', ')
   }
 
   if (removes.length > 0) {
