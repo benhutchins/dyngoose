@@ -1,3 +1,10 @@
+# [4.3.0](https://github.com/benhutchins/dyngoose/compare/v4.2.0...v4.3.0) (2023-09-14)
+
+
+### Features
+
+* improve searching using contains operator for sets ([7ae830b](https://github.com/benhutchins/dyngoose/commit/7ae830b41c5092f8594c85f1b065c3a2cf2d41db)), closes [#667](https://github.com/benhutchins/dyngoose/issues/667)
+
 # [4.2.0](https://github.com/benhutchins/dyngoose/compare/v4.1.2...v4.2.0) (2023-09-14)
 
 
