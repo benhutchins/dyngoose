@@ -20,6 +20,9 @@ export class TestableTable extends Dyngoose.Table {
   @Dyngoose.Attribute.Number({ default: 1 })
   public id: number
 
+  @Dyngoose.Attribute()
+  public dynamic: number | string
+
   @Dyngoose.Attribute.String()
   public title: string
 

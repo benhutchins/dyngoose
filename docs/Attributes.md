@@ -6,6 +6,7 @@ You can also [define custom types](#custom-attribute-types).
 
 | Dyngoose Attribute | DynamoDB type | JavaScript type | Description |
 |-|-|-|-|
+| `@Dyngoose.Attribute` | `S` | `string` | Converts any JavaScript object into a DynamoDB attribute value. |
 | [`@Dyngoose.Attribute.String`](#dyngooseattributestring) | `S` | `string` | Stores string values. |
 | `@Dyngoose.Attribute.Number` | `N` | `number` or `BigInt` | Stores number values. |
 | `@Dyngoose.Attribute.Boolean` | `BOOL` | `boolean` | Stores boolean values. |
@@ -30,13 +31,42 @@ There are several types of Set attributes, `StringSet`, `NumberSet`, and `Binary
 
 ### Dyngoose Attribute Types
 
+#### Dyngoose.Attribute or Dyngoose.Attribute.Dynamic
+
+> [dynamic.metadata.ts](https://github.com/benhutchins/dyngoose/blob/master/src/metadata/attribute-types/dynamic.metadata.ts)
+
+The `Dynamic` attribute relies on AWS's official [AWS.DynamoDB.Converter](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/Converter.html)
+utility. The additional options available from the converter are exposed on the attribute:
+
+```typescript
+@Dyngoose.Attribute.Dynamic({
+  marshallOptions: {},
+  unmarshallOptions: {},
+})
+```
+
+##### Limitations of Dynamic Attributes
+
+Dynamic attributes have many limitations. When possible, it is recommended you use to explicit attribute types but it is useful to have the flexibility.
+
+1. Arrays are always converted to a `List` (`L`) in DynamoDB.
+
+   When your array contains only strings or numbers, a `Set` is often better as it offers additional query and update operators.
+
+2. Cannot use a Dynamic attribute with an attribute in the table's Primary Key or an Index.
+
+   To build indexes properly, the attribute type must be set and the attribute
+   value must be that defined type consistently. Dyngoose defaults the type for
+   Dynamic attributes to a `String` (`S`) in DynamoDB but this is often
+   incorrect and it'll be better to use a specific attribute type class.
+
 #### Dyngoose.Attribute.String
 
 > [string.metadata.ts](https://github.com/benhutchins/dyngoose/blob/master/src/metadata/attribute-types/string.metadata.ts)
 
 The `String` attribute supports additional settings:
 
-```
+```typescript
 @Dyngoose.Attribute.String({
   // trims the value before saving
   trim: true,
@@ -70,7 +100,7 @@ By default, the `Date` attributes stores values in an [ISO 8601](https://en.wiki
 
 The `Date` attribute supports additional settings:
 
-```
+```typescript
 @Dyngoose.Attribute.Date({
   // store value as a Unix timestamp number value
   unixTmestamp: true,
@@ -97,7 +127,7 @@ The `Date` attribute supports additional settings:
 The `List` attribute supports relies on AWS' marshall utility, to convert any
 JavaScript object into a DynamoDB attribute.
 
-```
+```typescript
 @Dyngoose.Attribute.List({
   marshallOptions: {},
   unmarshallOptions: {},

@@ -33,11 +33,20 @@ class Card extends Dyngoose.Table {
   @Dyngoose.Attribute.Number()
   public id: number
 
-  @Dyngoose.Attribute.String()
+  // Dyngoose supports inferring the attribute types based on the object types
+  // of your values, however, you can also specify strict attribute types,
+  // which offers more utilities
+  @Dyngoose.Attribute()
   public title: string
 
-  @Dyngoose.Attribute.Number()
+  @Dyngoose.Attribute()
   public number: number
+
+  @Dyngoose.Attribute.String({ trim: true })
+  public description: string
+
+  @Dyngoose.Attribute.StringSet()
+  public owners: Set<string>
 
   @Dyngoose.Attribute.Date({ timeToLive: true })
   public expiresAt: Date
@@ -106,18 +115,21 @@ const cards = await Card.primaryKey.query({
   title: ['>=', 'Title']
 })
 
-// you can loop through outputs, which is a native JavaScript array
+// You can loop through outputs, which is a native JavaScript array
 for (const card of cards) {
   console.log(card.id, card.title)
 }
 
-// the output contains additional properties
+// The output contains additional properties
 console.log(`Your query returned ${cards.count} and scanned ${cards.scannedCount} documents`)
 
 // Atomic counters, advanced update expressions
 // Increment or decrement automatically, based on the current value in DynamoDB
 card.set('number', 2, { operator: 'increment' }) // if the current value had been 5, it would now be 7
 card.set('number', 2, { operator: 'decrement' }) // if the current value had been 5, it would now be 3
+
+// Use the add or remove operator on Sets to only partially change an attribute
+card.set('owners', ['some value'], { operator: 'add' })
 ```
 
 ### TS Compiler Setting
