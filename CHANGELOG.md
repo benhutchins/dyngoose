@@ -1,3 +1,17 @@
+# [4.2.0](https://github.com/benhutchins/dyngoose/compare/v4.1.2...v4.2.0) (2023-09-14)
+
+
+### Bug Fixes
+
+* creation of update expression duplicated remove segment ([d21bfe4](https://github.com/benhutchins/dyngoose/commit/d21bfe4b6352800236fc9de9f9c33adef5485947))
+* migrateTable comparison of indexes ([e1599c7](https://github.com/benhutchins/dyngoose/commit/e1599c7814a11e74148f1baf06d38fad45de4613)), closes [#645](https://github.com/benhutchins/dyngoose/issues/645)
+
+
+### Features
+
+* add support for using add and remove update operators with sets ([33bf76e](https://github.com/benhutchins/dyngoose/commit/33bf76ed0bad8f0059296d57331ec1ff63a7000e))
+* allow sets to continue to be native javascript arrays ([c137a74](https://github.com/benhutchins/dyngoose/commit/c137a74879e370be13ae7c4970381c4a1b2d4d20)), closes [#667](https://github.com/benhutchins/dyngoose/issues/667)
+
 ## [4.1.2](https://github.com/benhutchins/dyngoose/compare/v4.1.1...v4.1.2) (2023-08-25)
 
 
