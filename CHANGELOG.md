@@ -1,3 +1,10 @@
+# [4.6.0](https://github.com/benhutchins/dyngoose/compare/v4.5.0...v4.6.0) (2023-09-14)
+
+
+### Features
+
+* add support for dynamic attributes ([423cbd0](https://github.com/benhutchins/dyngoose/commit/423cbd0b5dd134f858846ff39a72395ec2b33bf3)), closes [#669](https://github.com/benhutchins/dyngoose/issues/669) [#628](https://github.com/benhutchins/dyngoose/issues/628) [#638](https://github.com/benhutchins/dyngoose/issues/638)
+
 # [4.5.0](https://github.com/benhutchins/dyngoose/compare/v4.4.0...v4.5.0) (2023-09-14)
 
 
