@@ -24,7 +24,7 @@ describe('AttributeType/StringSet', () => {
 
     it('should allow values to be an Array', () => {
       expect(record.testStringSet).eq(null)
-      record.testStringSet = ['some value'] as any
+      record.set('testStringSet', ['some value'])
       expect(Array.from(record.testStringSet)).deep.eq(['some value'])
     })
   })

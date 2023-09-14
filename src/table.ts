@@ -484,7 +484,7 @@ export class Table {
    * @see {@link Table.setAttribute} To set an attribute value by an attribute name.
    * @see {@link Table.setAttributes} To set several attribute values by attribute names.
    */
-  public set<P extends TableProperty<this>>(propertyName: P | string, value: this[P], params?: SetPropParams): this {
+  public set<P extends TableProperty<this>>(propertyName: P | string, value: this[P] extends Set<infer E> ? Set<E> | E[] : this[P], params?: SetPropParams): this {
     const attribute = this.table.schema.getAttributeByPropertyName(propertyName as string)
     return this.setByAttribute(attribute, value, params)
   }
