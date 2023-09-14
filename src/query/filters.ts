@@ -2,6 +2,10 @@ import { type Table } from '../table'
 
 export type AttributeNames<T extends Table> = Exclude<Exclude<keyof T, keyof Table>, () => any>
 
+export type ContainsType<Type> = Type extends Array<infer E>
+  ? E
+  : Type extends Set<infer E> ? E : Type
+
 export type Filter<Type> =
   ['=', Type] |
   ['<>', Type] | // not equals
@@ -13,8 +17,8 @@ export type Filter<Type> =
   ['between', Type, Type] |
   ['includes', Type[]] |
   ['excludes', Type[]] |
-  ['contains', Type] | // contains can be used on a list or a string attribute
-  ['not contains', Type] | // not contains can be used on a list or a string attribute
+  ['contains', ContainsType<Type>] | // contains can be used on a list, string, or set attributes
+  ['not contains', ContainsType<Type>] | // not contains can be used on a list, string, or set attributes
   ['null'] |
   ['not null'] |
   ['exists'] |

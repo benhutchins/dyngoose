@@ -4,10 +4,11 @@ import { MagicSearch } from './search'
 
 describe('Query/Search', () => {
   before(async () => {
+    const sets = { testStringSet: new Set(['search']), testStringSetArray: ['search'] }
     await TestableTable.documentClient.batchPut([
-      TestableTable.new({ id: 500, title: 'Table.search 0', lowercaseString: 'table search 0' }),
-      TestableTable.new({ id: 501, title: 'Table.search 1', lowercaseString: 'table search 1' }),
-      TestableTable.new({ id: 502, title: 'Table.search 2', lowercaseString: 'table search 2' }),
+      TestableTable.new({ id: 500, title: 'Table.search 0', lowercaseString: 'table search 0', ...sets }),
+      TestableTable.new({ id: 501, title: 'Table.search 1', lowercaseString: 'table search 1', ...sets }),
+      TestableTable.new({ id: 502, title: 'Table.search 2', lowercaseString: 'table search 2', ...sets }),
       TestableTable.new({ id: 503, title: 'Table.search 3', lowercaseString: 'table search 3' }),
       TestableTable.new({ id: 504, title: 'Table.search 4', lowercaseString: 'reject the search 4' }),
       TestableTable.new({ id: 504, title: 'Table.search 5', lowercaseString: 'magic' }),
@@ -87,6 +88,18 @@ describe('Query/Search', () => {
     const input = search.getInput()
     expect(input.IndexName).to.be.a('undefined')
     expect(input.FilterExpression).to.eq('contains(#a0, :v0) AND (#a1 = :v1 OR #a1 = :v2)')
+    const result = await search.exec()
+    expect(result.count).to.eq(3)
+  })
+
+  it('should support filtering on sets', async () => {
+    const search = new MagicSearch<TestableTable>(TestableTable)
+      .filter('testStringSet').contains('search')
+      .and()
+      .filter('testStringSetArray').contains('search')
+    const input = search.getInput()
+    expect(input.IndexName).to.be.a('undefined')
+    expect(input.FilterExpression).to.eq('contains(#a0, :v0) AND contains(#a1, :v0)')
     const result = await search.exec()
     expect(result.count).to.eq(3)
   })
