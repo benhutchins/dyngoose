@@ -26,7 +26,9 @@ describe('Table', () => {
 
   describe('.remove', () => {
     it('should allow attributes to be removed', async () => {
-      const card = TestableTable.new()
+      const card = TestableTable.new({
+        testNumberSet: [1, 2, 3],
+      })
       card.id = 101
       card.title = '101'
       card.generic = 'something'
@@ -46,6 +48,7 @@ describe('Table', () => {
         expect(reloadedCard.generic).to.eq(null)
         expect(reloadedCard.defaultedString).to.eq('SomeDefault')
         expect(reloadedCard.testString).to.eq('value is set')
+        expect(reloadedCard.testNumberSet).to.deep.eq(new Set([1, 2, 3]))
       }
     })
   })
@@ -57,6 +60,7 @@ describe('Table', () => {
       testString: 'some value',
       testNumber: 11,
       testNumberSet: new Set([1, 2, 3]),
+      testStringSet: ['1', '2', '3'],
       testAttributeNaming: 'test',
     })
     await card.save()

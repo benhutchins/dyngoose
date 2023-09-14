@@ -8,10 +8,17 @@ describe('AttributeType/NumberSet', () => {
     record = new TestableTable()
   })
 
-  it('should store values as an array of numbers', () => {
+  it('should accept setting values as a Set', () => {
     expect(record.testNumberSet).eq(null)
     record.testNumberSet = new Set([10, 100])
     expect(Array.from(record.testNumberSet)).deep.eq([10, 100])
+    expect(Array.from(record.get('testNumberSet')!)).deep.eq([10, 100])
+    expect(record.getAttributeDynamoValue('testNumberSet')).deep.eq({ NS: ['10', '100'] })
+  })
+
+  it('should support setting values as an Array using Table.set', () => {
+    record.set('testNumberSet', [10, 100])
+    expect(Array.from(record.testNumberSet!)).deep.eq([10, 100])
     expect(Array.from(record.get('testNumberSet')!)).deep.eq([10, 100])
     expect(record.getAttributeDynamoValue('testNumberSet')).deep.eq({ NS: ['10', '100'] })
   })
