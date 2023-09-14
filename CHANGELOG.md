@@ -1,3 +1,15 @@
+# [4.5.0](https://github.com/benhutchins/dyngoose/compare/v4.4.0...v4.5.0) (2023-09-14)
+
+
+### Bug Fixes
+
+* expose proper typing for isTrulyEmpty ([ae04049](https://github.com/benhutchins/dyngoose/commit/ae0404929c4295f5a828d65594baf53bffee1e04))
+
+
+### Features
+
+* accept number and string arrays on set properties ([72b57cc](https://github.com/benhutchins/dyngoose/commit/72b57cc75ab0aefcb18f54af31835dbd7159890d))
+
 # [4.4.0](https://github.com/benhutchins/dyngoose/compare/v4.3.1...v4.4.0) (2023-09-14)
 
 
