@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { TestableTable } from '../../setup-tests.spec'
-import { isArray, toArray } from 'lodash'
+import { isArray } from 'lodash'
 
 describe('AttributeType/StringSet', () => {
   let record: TestableTable
@@ -19,13 +19,13 @@ describe('AttributeType/StringSet', () => {
     it('should allow values to be a Set', () => {
       expect(record.testStringSet).eq(null)
       record.testStringSet = new Set<string>(['some value'])
-      expect(toArray(record.testStringSet)).deep.eq(['some value'])
+      expect(Array.from(record.testStringSet)).deep.eq(['some value'])
     })
 
     it('should allow values to be an Array', () => {
       expect(record.testStringSet).eq(null)
       record.testStringSet = ['some value'] as any
-      expect(toArray(record.testStringSet)).deep.eq(['some value'])
+      expect(Array.from(record.testStringSet)).deep.eq(['some value'])
     })
   })
 
@@ -40,6 +40,14 @@ describe('AttributeType/StringSet', () => {
       expect(record.testStringSetArray).eq(null)
       record.testStringSetArray = ['some value']
       expect(isArray(record.testStringSetArray)).eq(true)
+    })
+  })
+
+  describe('json', () => {
+    it('should allow values to read as a Set', () => {
+      record.testStringSet = new Set<string>(['some value'])
+      const data = JSON.parse(JSON.stringify(record.toJSON()))
+      expect(data.testStringSet).to.deep.eq(['some value'])
     })
   })
 
@@ -63,7 +71,7 @@ describe('AttributeType/StringSet', () => {
       await record.save()
 
       const reloaded = await TestableTable.primaryKey.get({ id: 10, title: 'add to set' })
-      expect(toArray(reloaded?.testStringSet)).to.deep.eq(['some new value', 'some value'])
+      expect(Array.from(reloaded!.testStringSet)).to.deep.eq(['some new value', 'some value'])
     })
   })
 })

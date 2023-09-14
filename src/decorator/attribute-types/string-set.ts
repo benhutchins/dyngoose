@@ -40,4 +40,12 @@ export class StringSetAttributeType extends AttributeType<StringSetValue, Metada
       return stringSet
     }
   }
+
+  toJSON(value: StringSetValue): any {
+    if (isSet(value)) {
+      return Array.from(value)
+    } else {
+      return value
+    }
+  }
 }

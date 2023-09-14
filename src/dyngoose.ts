@@ -41,6 +41,10 @@ export {
   Transaction,
 }
 
+export type {
+  ITable,
+}
+
 // export decorators prefixed with $ for convenience
 export { Decorator as $ }
 export { DocumentClient as $DocumentClient } from './decorator/document-client'
