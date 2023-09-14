@@ -1,3 +1,10 @@
+## [4.3.1](https://github.com/benhutchins/dyngoose/compare/v4.3.0...v4.3.1) (2023-09-14)
+
+
+### Bug Fixes
+
+* convert string sets to an array when outputting to JSON ([6258812](https://github.com/benhutchins/dyngoose/commit/62588126af305cb21d33f07f667b499803c0863c))
+
 # [4.3.0](https://github.com/benhutchins/dyngoose/compare/v4.2.0...v4.3.0) (2023-09-14)
 
 
