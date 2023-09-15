@@ -20,9 +20,11 @@ Let's face it, all good databases need good model casting. DynamoDB is powerful 
 1. Intelligent and powerful querying syntax, see [Querying](./docs/Querying.md) and [MagicSearch](./docs/MagicSearch.md).
 1. Selectively update item attributes, prevents wasteful uploading of unchanged values.
 1. Data serialization, cast any JavaScript value into a DynamoDB attribute value.
-1. DynamoDB Accelerator (DAX) and Amazon X-Ray support, see [Connections](./docs/Connections.md).
+1. Amazon X-Ray support, see [Connections](./docs/Connections.md).
 1. Incredibly easy [local development](./docs/Development.md), with support for seeding a local database.
 1. Supports [conditional writes](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithItems.html#WorkingWithItems.ConditionalUpdate), see [Saving](./docs/Saving.md#saveconditions).
+
+NOTE: DynamoDB Accelerator (DAX) support has been dropped as DAX is not yet supported by aws-sdk v3, see [aws-sdk-js-v3#4263](https://github.com/aws/aws-sdk-js-v3/issues/4263).
 
 ## Example Usage
 ```typescript

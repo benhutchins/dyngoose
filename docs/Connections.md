@@ -81,7 +81,11 @@ AWS X-Ray is a serverless distributed tracing service. In order to log DynamoDB 
 
 ### DynamoDB Accelerator (DAX)
 
-Dyngoose supports connecting to a [DynamoDB Accelerator](https://aws.amazon.com/dynamodb/dax/). DynamoDB Accelerator (DAX) is a fully managed, highly available, in-memory cache for DynamoDB that delivers great performance.
+[DynamoDB Accelerator (DAX)](https://aws.amazon.com/dynamodb/dax/) is a fully managed, highly available, in-memory cache for DynamoDB that delivers great performance.
+
+Dyngoose historically has supported DAX natively, however, DAX is not yet supported by aws-sdk v3 (see see [aws-sdk-js-v3#4263](https://github.com/aws/aws-sdk-js-v3/issues/4263)) so the support has been dropped until official DAX support is brought to `@aws-sdk/client-dynamodb`.
+
+
 
 #### Globally
 
