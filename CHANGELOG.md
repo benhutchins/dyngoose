@@ -1,3 +1,10 @@
+## [4.7.1](https://github.com/benhutchins/dyngoose/compare/v4.7.0...v4.7.1) (2023-09-15)
+
+
+### Bug Fixes
+
+* restore support for AWS XRAY ([1d972ba](https://github.com/benhutchins/dyngoose/commit/1d972ba1a5f521219cb2468f4fd91fdb25d243f7))
+
 # [4.7.0](https://github.com/benhutchins/dyngoose/compare/v4.6.0...v4.7.0) (2023-09-15)
 
 
