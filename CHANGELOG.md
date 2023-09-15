@@ -1,3 +1,15 @@
+# [4.7.0](https://github.com/benhutchins/dyngoose/compare/v4.6.0...v4.7.0) (2023-09-15)
+
+
+### Bug Fixes
+
+* re-add support for DYNAMO_ACCESS_KEY_ID & DYNAMO_SECRET_ACCESS_KEY ([b438325](https://github.com/benhutchins/dyngoose/commit/b43832504b17d6e716f277893aed0a65267e04e0))
+
+
+### Features
+
+* allow removing multiple properties or attributes ([4bb1ca4](https://github.com/benhutchins/dyngoose/commit/4bb1ca46ba50881e5ede2e3d05b13a8a2eb1d31d))
+
 # [4.6.0](https://github.com/benhutchins/dyngoose/compare/v4.5.0...v4.6.0) (2023-09-14)
 
 
