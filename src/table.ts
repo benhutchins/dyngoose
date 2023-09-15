@@ -434,12 +434,14 @@ export class Table {
    * @see {@link Table.remove} Remove an attribute by its property name.
    * @see {@link Table.removeAttributes} Remove several attributes by their property names.
    */
-  public removeAttribute(attributeName: string): this {
-    // delete the attribute as long as it existed and wasn't already null
-    if (!_.isNil(this.__attributes[attributeName]) || !this.__entireDocumentIsKnown) {
-      this.__attributes[attributeName] = { NULL: true }
-      this.__removedAttributes.push(attributeName)
-      _.pull(this.__updatedAttributes, attributeName)
+  public removeAttribute(...attributeNames: string[]): this {
+    for (const attributeName of attributeNames) {
+      // delete the attribute as long as it existed and wasn't already null
+      if (!_.isNil(this.__attributes[attributeName]) || !this.__entireDocumentIsKnown) {
+        this.__attributes[attributeName] = { NULL: true }
+        this.__removedAttributes.push(attributeName)
+        _.pull(this.__updatedAttributes, attributeName)
+      }
     }
     return this
   }
@@ -449,6 +451,8 @@ export class Table {
    *
    * @see {@link Table.remove} Remove an attribute by its property name.
    * @see {@link Table.removeAttribute} Remove a single attribute by its attribute name.
+   *
+   * @deprecated You can now pass multiple attributes to removeAttribute.
    */
   public removeAttributes(attributes: string[]): this {
     for (const attribute of attributes) {
@@ -483,22 +487,14 @@ export class Table {
   /**
    * Remove an attribute by its property name.
    *
-   * Replaced by {@link Table.remove}
-   * @deprecated Since 3.0.0, will be removed in 4.0.0
-   */
-  public del<P extends TableProperty<this>>(propertyName: P | string): this {
-    return this.remove(propertyName)
-  }
-
-  /**
-   * Remove an attribute by its property name.
-   *
    * @see {@link Table.removeAttribute} Remove a single attribute by its attribute name.
-   * @see {@link Table.removeAttributes} Remove several attributes by their property names.
    */
-  public remove<P extends TableProperty<this>>(propertyName: P | string): this {
-    const attribute = this.table.schema.getAttributeByPropertyName(propertyName as string)
-    return this.removeAttribute(attribute.name)
+  public remove<P extends TableProperty<this>>(...propertyNames: Array<P | string>): this {
+    for (const propertyName of propertyNames) {
+      const attribute = this.table.schema.getAttributeByPropertyName(propertyName as string)
+      this.removeAttribute(attribute.name)
+    }
+    return this
   }
 
   /**
