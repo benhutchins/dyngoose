@@ -431,16 +431,6 @@ export class Table {
   /**
    * Remove a single attribute by its attribute name.
    *
-   * Replaced by {@link Table.removeAttribute}.
-   * @deprecated Since 3.0.0, will be removed in 4.0.0
-   */
-  public deleteAttribute(attributeName: string): this {
-    return this.removeAttribute(attributeName)
-  }
-
-  /**
-   * Remove a single attribute by its attribute name.
-   *
    * @see {@link Table.remove} Remove an attribute by its property name.
    * @see {@link Table.removeAttributes} Remove several attributes by their property names.
    */
@@ -452,16 +442,6 @@ export class Table {
       _.pull(this.__updatedAttributes, attributeName)
     }
     return this
-  }
-
-  /**
-   * Mark several attributes to be removed.
-   *
-   * Replaced by {@link Table.removeAttributes}.
-   * @deprecated Since 3.0.0, will be removed in 4.0.0
-   */
-  public deleteAttributes(attributes: string[]): this {
-    return this.removeAttributes(attributes)
   }
 
   /**
