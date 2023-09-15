@@ -63,7 +63,6 @@
     "@aws-sdk/util-dynamodb": "^3.309.0",
     "amazon-dax-client": "^1.2.9",
     "async-sema": "^3.1.1",
-    "aws-xray-sdk-core": "^3.5.0",
     "lodash": "^4.17.21"
   },
   "config": {
@@ -84,5 +83,8 @@
   },
   "peerDependencies": {
     "@aws-sdk/client-dynamodb": "^3.279.0"
+  },
+  "optionalDependencies": {
+    "aws-xray-sdk-core": "^3.5.1"
   }
 }
