@@ -5,6 +5,7 @@ import { type Table } from './table'
 import { buildProjectionExpression } from './query/projection-expression'
 import { HelpfulError } from './errors'
 import { type AttributeMap } from './interfaces'
+import { type IRequestOptions } from './connections'
 
 export class BatchGet<T extends Table> {
   public static readonly MAX_BATCH_ITEMS = 100
@@ -69,7 +70,7 @@ export class BatchGet<T extends Table> {
     return this
   }
 
-  public async retrieve(): Promise<T[]> {
+  public async retrieve(requestOptions?: IRequestOptions): Promise<T[]> {
     const chunkSize = this.atomicity ? BatchGet.MAX_TRANSACT_ITEMS : BatchGet.MAX_BATCH_ITEMS
     return await Promise.all(
       chunk(this.items, chunkSize).map(async (chunkedItems) => {
@@ -117,11 +118,11 @@ export class BatchGet<T extends Table> {
           if (this.atomicity) {
             output = await this.dynamo.transactGetItems({
               TransactItems: transactItems,
-            })
+            }, requestOptions)
           } else {
             output = await this.dynamo.batchGetItem({
               RequestItems: requestMap,
-            })
+            }, requestOptions)
           }
         } catch (ex) {
           throw new HelpfulError(ex)
@@ -181,8 +182,8 @@ export class BatchGet<T extends Table> {
     })
   }
 
-  public async retrieveMapped(): Promise<Map<typeof Table, T[]>> {
-    const items = await this.retrieve()
+  public async retrieveMapped(requestOptions?: IRequestOptions): Promise<Map<typeof Table, T[]>> {
+    const items = await this.retrieve(requestOptions)
     const map = new Map<typeof Table, T[]>()
 
     for (const item of items) {

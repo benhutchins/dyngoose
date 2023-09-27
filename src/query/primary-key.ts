@@ -14,6 +14,7 @@ import { type Filters as QueryFilters, type UpdateConditions } from './filters'
 import { QueryOutput } from './output'
 import { buildProjectionExpression } from './projection-expression'
 import { MagicSearch, type MagicSearchInput } from './search'
+import { type IRequestOptions, isRequestOptions } from '../connections'
 
 type PrimaryKeyType = string | number | Date
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
@@ -127,10 +128,10 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
    *
    *   `.get(instanceOfTable)`
    */
-  public async get(filters: QueryFilters<T>, input?: PrimaryKeyGetInput): Promise<T | undefined>
-  public async get(hash: HashKeyType, range: RangeKeyType, input?: PrimaryKeyGetInput): Promise<T | undefined>
-  public async get(record: T, input?: PrimaryKeyGetInput): Promise<T | undefined>
-  public async get(hash: HashKeyType | T | QueryFilters<T>, range?: RangeKeyType | PrimaryKeyGetInput, input?: PrimaryKeyGetInput): Promise<T | undefined> {
+  public async get(filters: QueryFilters<T>, input?: PrimaryKeyGetInput, requestOptions?: IRequestOptions): Promise<T | undefined>
+  public async get(hash: HashKeyType, range: RangeKeyType, input?: PrimaryKeyGetInput, requestOptions?: IRequestOptions): Promise<T | undefined>
+  public async get(record: T, input?: PrimaryKeyGetInput, requestOptions?: IRequestOptions): Promise<T | undefined>
+  public async get(hash: HashKeyType | T | QueryFilters<T>, range?: RangeKeyType | PrimaryKeyGetInput, input?: PrimaryKeyGetInput | IRequestOptions, requestOptions?: IRequestOptions): Promise<T | undefined> {
     let record: T
 
     if (isDyngooseTableInstance(hash)) {
@@ -143,14 +144,15 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
       throw new QueryError('PrimaryKey.get called with unknown arguments')
     }
 
-    const getGetInput: Partial<PrimaryKeyGetGetItemInput> = input == null ? ((range == null || isKeyValue(range)) ? {} : range as PrimaryKeyGetInput) : input
+    const options = isRequestOptions(requestOptions) ? requestOptions : isRequestOptions(input) ? input : undefined
+    const getGetInput: Partial<PrimaryKeyGetGetItemInput> = input == null ? ((range == null || isKeyValue(range)) ? {} : range as PrimaryKeyGetInput) : isRequestOptions(input) ? {} : input
     getGetInput.key = record.getDynamoKey()
     const getItemInput = this.getGetInput(getGetInput as PrimaryKeyGetGetItemInput)
     const hasProjection = getItemInput.ProjectionExpression == null
     let dynamoRecord: GetItemOutput
 
     try {
-      dynamoRecord = await this.table.schema.dynamo.getItem(getItemInput)
+      dynamoRecord = await this.table.schema.dynamo.getItem(getItemInput, options)
     } catch (ex) {
       throw new HelpfulError(ex, this.table, getItemInput)
     }
@@ -168,14 +170,14 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
    *
    * @deprecated
    */
-  public async batchGet(inputs: Array<PrimaryKeyBatchInput<HashKeyType, RangeKeyType>>): Promise<T[]> {
+  public async batchGet(inputs: Array<PrimaryKeyBatchInput<HashKeyType, RangeKeyType>>, requestOptions?: IRequestOptions): Promise<T[]> {
     const batch = new BatchGet<T>()
 
     for (const input of inputs) {
       batch.get(this.fromKey(input[0], input[1]))
     }
 
-    return await batch.retrieve()
+    return await batch.retrieve(requestOptions)
   }
 
   /**
@@ -234,7 +236,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     return queryInput
   }
 
-  public async query(filters: QueryFilters<T>, input?: PrimaryKeyQueryInput): Promise<QueryOutput<T>> {
+  public async query(filters: QueryFilters<T>, input?: PrimaryKeyQueryInput, requestOptions?: IRequestOptions): Promise<QueryOutput<T>> {
     if (!has(filters, this.metadata.hash.propertyName)) {
       throw new QueryError('Cannot perform a query on the PrimaryKey index without specifying a hash key value')
     } else if (isArray(get(filters, this.metadata.hash.propertyName)) && get(filters, this.metadata.hash.propertyName)[0] !== '=') {
@@ -251,7 +253,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     let output: QueryCommandOutput
 
     try {
-      output = await this.table.schema.dynamo.query(queryInput)
+      output = await this.table.schema.dynamo.query(queryInput, requestOptions)
     } catch (ex) {
       throw new HelpfulError(ex, this.table, queryInput)
     }
@@ -294,11 +296,11 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     return scanInput
   }
 
-  public async scan(filters?: QueryFilters<T> | undefined | null, input?: PrimaryKeyScanInput): Promise<QueryOutput<T>> {
+  public async scan(filters?: QueryFilters<T> | undefined | null, input?: PrimaryKeyScanInput, requestOptions?: IRequestOptions): Promise<QueryOutput<T>> {
     const scanInput = this.getScanInput(input, filters == null ? undefined : filters)
     let output: ScanCommandOutput
     try {
-      output = await this.table.schema.dynamo.scan(scanInput)
+      output = await this.table.schema.dynamo.scan(scanInput, requestOptions)
     } catch (ex) {
       throw new HelpfulError(ex, this.table, scanInput)
     }

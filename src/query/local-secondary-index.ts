@@ -8,6 +8,7 @@ import { buildQueryExpression } from './expression'
 import { type Filters as QueryFilters } from './filters'
 import { QueryOutput } from './output'
 import { MagicSearch, type MagicSearchInput } from './search'
+import { type IRequestOptions } from '../connections'
 
 interface LocalSecondaryIndexQueryInput {
   rangeOrder?: 'ASC' | 'DESC'
@@ -50,7 +51,7 @@ export class LocalSecondaryIndex<T extends Table> {
     return queryInput
   }
 
-  public async query(filters: QueryFilters<T>, input: LocalSecondaryIndexQueryInput = {}): Promise<QueryOutput<T>> {
+  public async query(filters: QueryFilters<T>, input: LocalSecondaryIndexQueryInput = {}, requestOptions?: IRequestOptions): Promise<QueryOutput<T>> {
     if (!has(filters, this.tableClass.schema.primaryKey.hash.propertyName)) {
       throw new QueryError('Cannot perform a query on a LocalSecondaryIndex without specifying a hash key value')
     }
@@ -70,7 +71,7 @@ export class LocalSecondaryIndex<T extends Table> {
     const hasProjection = queryInput.ProjectionExpression == null
     let output: QueryCommandOutput
     try {
-      output = await this.tableClass.schema.dynamo.query(queryInput)
+      output = await this.tableClass.schema.dynamo.query(queryInput, requestOptions)
     } catch (ex) {
       throw new HelpfulError(ex, this.tableClass, queryInput)
     }
@@ -91,7 +92,7 @@ export class LocalSecondaryIndex<T extends Table> {
     return scanInput
   }
 
-  public async scan(filters: QueryFilters<T> | undefined | null, input: LocalSecondaryIndexScanInput = {}): Promise<QueryOutput<T>> {
+  public async scan(filters: QueryFilters<T> | undefined | null, input: LocalSecondaryIndexScanInput = {}, requestOptions?: IRequestOptions): Promise<QueryOutput<T>> {
     const scanInput = this.getScanInput(input)
     if (filters != null && Object.keys(filters).length > 0) {
       // don't pass the index metadata, avoids KeyConditionExpression
@@ -103,7 +104,7 @@ export class LocalSecondaryIndex<T extends Table> {
     const hasProjection = scanInput.ProjectionExpression == null
     let output: ScanCommandOutput
     try {
-      output = await this.tableClass.schema.dynamo.scan(scanInput)
+      output = await this.tableClass.schema.dynamo.scan(scanInput, requestOptions)
     } catch (ex) {
       throw new HelpfulError(ex, this.tableClass, scanInput)
     }

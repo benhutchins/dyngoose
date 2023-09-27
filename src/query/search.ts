@@ -13,6 +13,7 @@ import { type LocalSecondaryIndex } from './local-secondary-index'
 import { QueryOutput } from './output'
 import { type PrimaryKey } from './primary-key'
 import { buildProjectionExpression } from './projection-expression'
+import { type IRequestOptions } from '../connections'
 
 type Index<T extends Table> = PrimaryKey<T, any, any> | GlobalSecondaryIndex<T> | LocalSecondaryIndex<T> | string
 
@@ -231,9 +232,9 @@ export class MagicSearch<T extends Table> {
    *
    * A promise will be returned that will resolve to the results array upon completion.
    */
-  async exec(): Promise<QueryOutput<T>> {
+  async exec(requestOptions?: IRequestOptions): Promise<QueryOutput<T>> {
     const input = this.getInput()
-    return await this.page(input)
+    return await this.page(input, requestOptions)
   }
 
   /**
@@ -249,7 +250,7 @@ export class MagicSearch<T extends Table> {
    * It is recommended you apply a `.limit(minOrMore)` before calling `.minimum` to ensure
    * you do not load too many results as well.
   */
-  async minimum(minimum: number): Promise<QueryOutput<T>> {
+  async minimum(minimum: number, requestOptions?: IRequestOptions): Promise<QueryOutput<T>> {
     const input = this.getInput()
     const outputs: Array<QueryOutput<T>> = []
     let page: QueryOutput<T> | undefined
@@ -260,7 +261,7 @@ export class MagicSearch<T extends Table> {
         input.ExclusiveStartKey = page.lastEvaluatedKey
       }
 
-      page = await this.page(input)
+      page = await this.page(input, requestOptions)
       count += page.count
       outputs.push(page)
 
@@ -280,7 +281,7 @@ export class MagicSearch<T extends Table> {
    * This is also non-ideal for scans, for better performance use a segmented scan
    * via the Query.PrimaryKey.segmentedScan or Query.GlobalSecondaryIndex.segmentedScan.
    */
-  async all(): Promise<QueryOutput<T>> {
+  async all(requestOptions?: IRequestOptions): Promise<QueryOutput<T>> {
     const input = this.getInput()
     const outputs: Array<QueryOutput<T>> = []
     let page: QueryOutput<T> | undefined
@@ -291,7 +292,7 @@ export class MagicSearch<T extends Table> {
         input.ExclusiveStartKey = page.lastEvaluatedKey
       }
 
-      page = await this.page(input)
+      page = await this.page(input, requestOptions)
       outputs.push(page)
     }
 
@@ -404,14 +405,14 @@ export class MagicSearch<T extends Table> {
     return await this.exec()
   }
 
-  async page(input: ScanCommandInput | QueryCommandInput): Promise<QueryOutput<T>> {
+  async page(input: ScanCommandInput | QueryCommandInput, requestOptions?: IRequestOptions): Promise<QueryOutput<T>> {
     const hasProjection = input.ProjectionExpression == null
     let output: ScanCommandOutput | QueryCommandOutput
 
     // if we are filtering based on key conditions, run a query instead of a scan
     if ((input as QueryCommandInput).KeyConditionExpression != null) {
       try {
-        output = await this.tableClass.schema.dynamo.query(input)
+        output = await this.tableClass.schema.dynamo.query(input, requestOptions)
       } catch (ex) {
         throw new HelpfulError(ex, this.tableClass, input)
       }
@@ -423,7 +424,7 @@ export class MagicSearch<T extends Table> {
       }
 
       try {
-        output = await this.tableClass.schema.dynamo.scan(input)
+        output = await this.tableClass.schema.dynamo.scan(input, requestOptions)
       } catch (ex) {
         throw new HelpfulError(ex, this.tableClass, input)
       }
