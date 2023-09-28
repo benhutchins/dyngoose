@@ -1,4 +1,4 @@
-import { expect } from 'chai'
+import { expect, should } from 'chai'
 import * as Decorator from '../decorator'
 import { DocumentClient } from '../document-client'
 import { Table } from '../table'
@@ -53,6 +53,32 @@ describe('Query/LocalSecondaryIndex', () => {
       expect(res.records.length).to.eq(2)
       expect(res.records[0].count).to.eq(4)
       expect(res.records[1].count).to.eq(3)
+    })
+
+    it('should not find items when aborted', async () => {
+      const abortController = new AbortController()
+      await Card.documentClient.batchPut([
+        Card.new({ id: 10, title: 'a', count: 4 }),
+        Card.new({ id: 10, title: 'b', count: 3 }),
+        Card.new({ id: 10, title: 'c', count: 2 }),
+        Card.new({ id: 10, title: 'd', count: 1 }),
+      ])
+
+      abortController.abort()
+
+      let exception
+      try {
+        await Card.countIndex.query({
+          id: 10,
+          count: ['>', 2],
+        }, {
+          rangeOrder: 'DESC',
+        }, { abortSignal: abortController.signal })
+      } catch (ex) {
+        exception = ex
+      }
+
+      should().exist(exception)
     })
   })
 })

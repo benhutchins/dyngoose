@@ -1,4 +1,4 @@
-import { expect } from 'chai'
+import { expect, should } from 'chai'
 import { Table } from '../table'
 import { PrimaryKey } from './primary-key'
 
@@ -74,6 +74,22 @@ describe('Query/PrimaryKey', () => {
       expect(item).to.eq(undefined)
     })
 
+    it('should not find item using a query filter object when aborted', async () => {
+      const abortController = new AbortController()
+
+      await Card.new({ id: 10, title: 'abc' }).save()
+      abortController.abort()
+
+      let exception
+      try {
+        await primaryKey.get({ id: 10, title: 'abc' }, undefined, { abortSignal: abortController.signal })
+      } catch (ex) {
+        exception = ex
+      }
+
+      should().exist(exception)
+    })
+
     it('should find item using a query filter object', async () => {
       await Card.new({ id: 10, title: 'abc' }).save()
       const item = await primaryKey.get({ id: 10, title: 'abc' })
@@ -92,6 +108,22 @@ describe('Query/PrimaryKey', () => {
         expect(item.id).to.eq(10)
         expect(item.title).to.eq('abc')
       }
+    })
+
+    it('should not find item using hash and range arguments when aborted', async () => {
+      const abortController = new AbortController()
+      await Card.new({ id: 10, title: 'abc' }).save()
+
+      abortController.abort()
+
+      let exception
+      try {
+        await primaryKey.get(10, 'abc', undefined, { abortSignal: abortController.signal })
+      } catch (ex) {
+        exception = ex
+      }
+
+      should().exist(exception)
     })
 
     it('should allow date type to be the range', async () => {
@@ -187,6 +219,26 @@ describe('Query/PrimaryKey', () => {
       // Ordered by range key since it's "scan"
       expect(res.records[0].title).to.eq('aba')
       expect(res.records[1].title).to.eq('abc')
+    })
+
+    it('should not find items when aborted', async () => {
+      const abortController = new AbortController()
+
+      await Card.new({ id: 10, title: 'abc' }).save()
+      await Card.new({ id: 10, title: 'abd' }).save()
+      await Card.new({ id: 10, title: 'aba' }).save()
+      abortController.abort()
+
+      let exception
+      try {
+        await primaryKey.scan(null, {
+          limit: 2,
+        }, { abortSignal: abortController.signal })
+      } catch (ex) {
+        exception = ex
+      }
+
+      should().exist(exception)
     })
   })
 
