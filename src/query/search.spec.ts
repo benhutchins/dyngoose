@@ -1,4 +1,4 @@
-import { expect } from 'chai'
+import { expect, should } from 'chai'
 import { TestableTable } from '../setup-tests.spec'
 import { MagicSearch } from './search'
 
@@ -25,6 +25,24 @@ describe('Query/Search', () => {
     expect(result.count).to.eq(1)
     expect(result.records[0].title).to.eq('Table.search 0')
     expect(result.records[0].lowercaseString).to.eq('table search 0')
+  })
+
+  it('should not search when aborted', async () => {
+    const abortController = new AbortController()
+
+    const search = new MagicSearch<TestableTable>(TestableTable, { title: 'Table.search 0' })
+    const input = search.getInput()
+    expect(input.IndexName).to.eq('titleIndex')
+    abortController.abort()
+
+    let exception
+    try {
+      await search.exec({ abortSignal: abortController.signal })
+    } catch (ex) {
+      exception = ex
+    }
+
+    should().exist(exception)
   })
 
   it('should ignore index if you are using a special condition', async () => {
@@ -237,6 +255,26 @@ describe('Query/Search', () => {
       const output = await search.all()
       expect(output.length).to.eq(8)
     })
+
+    it('should not return results when aborted', async () => {
+      const abortController = new AbortController()
+      const search = new MagicSearch<TestableTable>(TestableTable)
+        .filter('title').contains('Table.search')
+        .limit(2)
+
+      // we set a limit and then called .all(), so it should page automatically until all results are found
+      // this is stupid and slow, it would be faster to remove the limit, but we are testing the paging logic of .all
+      abortController.abort()
+
+      let exception
+      try {
+        await search.all({ abortSignal: abortController.signal })
+      } catch (ex) {
+        exception = ex
+      }
+
+      should().exist(exception)
+    })
   })
 
   describe('#minimum', () => {
@@ -248,6 +286,25 @@ describe('Query/Search', () => {
       // we set a limit and then called .all(), so it should page automatically until all results are found
       const output = await search.minimum(5)
       expect(output.length).to.be.at.least(5)
+    })
+
+    it('should not return results when aborted', async () => {
+      const abortController = new AbortController()
+
+      const search = new MagicSearch<TestableTable>(TestableTable)
+        .filter('title').contains('Table.search')
+        .limit(2)
+
+      abortController.abort()
+
+      let exception
+      try {
+        await search.minimum(5, { abortSignal: abortController.signal })
+      } catch (ex) {
+        exception = ex
+      }
+
+      should().exist(exception)
     })
   })
 })

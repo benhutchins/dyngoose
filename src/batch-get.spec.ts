@@ -1,4 +1,4 @@
-import { expect } from 'chai'
+import { expect, should } from 'chai'
 import { sortBy } from 'lodash'
 import { BatchGet } from './batch-get'
 import { PrimaryKey } from './query/primary-key'
@@ -141,6 +141,25 @@ describe('BatchGet', () => {
     // now verify the results
     expect(results.length).eq(1)
     expect(results[0].id).eq(1)
+  })
+
+  it('should not return records when aborted', async () => {
+    const abortController = new AbortController()
+    const batch = new BatchGet<TestTable1>()
+    batch.get(TestTable1.primaryKey.fromKey(1))
+    batch.get(TestTable1.primaryKey.fromKey(42))
+    abortController.abort()
+
+    let exception
+    try {
+      await batch.retrieve({
+        abortSignal: abortController.signal,
+      })
+    } catch (ex) {
+      exception = ex
+    }
+
+    should().exist(exception)
   })
 
   it('should accept projection expressions', async () => {

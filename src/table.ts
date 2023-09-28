@@ -21,6 +21,7 @@ import { migrateTable } from './tables/migrate-table'
 import { type TablePropertyValue, type TableProperties, type TableProperty } from './tables/properties'
 import { Schema } from './tables/schema'
 import { isTrulyEmpty } from './utils/truly-empty'
+import { type IRequestOptions } from './connections'
 
 type StaticThis<T> = new() => T
 
@@ -142,8 +143,8 @@ export class Table {
     return await deleteTable(this.schema)
   }
 
-  public static async describeTable(): Promise<TableDescription> {
-    return await describeTable(this.schema)
+  public static async describeTable(requestOptions?: IRequestOptions): Promise<TableDescription> {
+    return await describeTable(this.schema, requestOptions)
   }
   // #endregion static methods
   // #endregion static

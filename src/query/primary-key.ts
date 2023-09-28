@@ -170,14 +170,14 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
    *
    * @deprecated
    */
-  public async batchGet(inputs: Array<PrimaryKeyBatchInput<HashKeyType, RangeKeyType>>, requestOptions?: IRequestOptions): Promise<T[]> {
+  public async batchGet(inputs: Array<PrimaryKeyBatchInput<HashKeyType, RangeKeyType>>): Promise<T[]> {
     const batch = new BatchGet<T>()
 
     for (const input of inputs) {
       batch.get(this.fromKey(input[0], input[1]))
     }
 
-    return await batch.retrieve(requestOptions)
+    return await batch.retrieve()
   }
 
   /**

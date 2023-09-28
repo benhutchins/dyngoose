@@ -90,6 +90,23 @@ describe('Query/GlobalSecondaryIndex', () => {
         expect(res.records[1].id).to.eq(11)
       })
 
+      it('should not return items when aborted', async () => {
+        const abortController = new AbortController()
+        await Card.new({ id: 10, title: 'abc' }).save()
+        await Card.new({ id: 11, title: 'abd' }).save()
+        await Card.new({ id: 12, title: 'abd' }).save()
+        abortController.abort()
+
+        let exception
+        try {
+          await Card.hashTitleIndex.query({ title: 'abd' }, undefined, { abortSignal: abortController.signal })
+        } catch (ex) {
+          exception = ex
+        }
+
+        should().exist(exception)
+      })
+
       it('should return an empty array when no items match', async () => {
         const res = await Card.hashTitleIndex.query({ title: '404' })
         expect(res[0]).to.not.eq(null)
@@ -173,6 +190,20 @@ describe('Query/GlobalSecondaryIndex', () => {
         expect(res1.records.map((r) => r.id)).to.have.all.members(cardIds)
         expect(cardIds).to.include.members(res2.records.map((r) => r.id))
         expect(cardIds).to.include.members(res3.records.map((r) => r.id))
+      })
+
+      it('should not return results when aborted', async () => {
+        const abortController = new AbortController()
+        abortController.abort()
+
+        let exception
+        try {
+          await Card.hashTitleIndex.scan(null, undefined, { abortSignal: abortController.signal })
+        } catch (ex) {
+          exception = ex
+        }
+
+        should().exist(exception)
       })
     })
   })
