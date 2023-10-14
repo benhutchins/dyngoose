@@ -1,3 +1,10 @@
+## [4.8.1](https://github.com/benhutchins/dyngoose/compare/v4.8.0...v4.8.1) (2023-10-14)
+
+
+### Bug Fixes
+
+* tracking when the entire document is loaded ([e22902a](https://github.com/benhutchins/dyngoose/commit/e22902add8aeaee20e596de6c0098b2139dd16b9))
+
 # [4.8.0](https://github.com/benhutchins/dyngoose/compare/v4.7.1...v4.8.0) (2023-10-14)
 
 
