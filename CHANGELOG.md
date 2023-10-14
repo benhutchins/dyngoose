@@ -1,3 +1,15 @@
+# [4.8.0](https://github.com/benhutchins/dyngoose/compare/v4.7.1...v4.8.0) (2023-10-14)
+
+
+### Bug Fixes
+
+* **afterSave:** updatedAttributes and deletedAttributes always empty ([c47aeb7](https://github.com/benhutchins/dyngoose/commit/c47aeb7e37fe074b8fe00db1fae231749a65013a))
+
+
+### Features
+
+* abort controller support ([77da825](https://github.com/benhutchins/dyngoose/commit/77da82534352ba956eefc26cc3c9bdeed1ab635f))
+
 ## [4.7.1](https://github.com/benhutchins/dyngoose/compare/v4.7.0...v4.7.1) (2023-09-15)
 
 

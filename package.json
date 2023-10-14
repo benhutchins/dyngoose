@@ -1,6 +1,6 @@
 {
   "name": "dyngoose",
-  "version": "4.7.1",
+  "version": "4.8.0",
   "type": "commonjs",
   "description": "Elegant DynamoDB object modeling for Typescript",
   "keywords": [
