@@ -157,7 +157,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     const getGetInput: Partial<PrimaryKeyGetGetItemInput> = input == null ? ((range == null || isKeyValue(range)) ? {} : range as PrimaryKeyGetInput) : input
     getGetInput.key = record.getDynamoKey()
     const getItemInput = this.getGetInput(getGetInput as PrimaryKeyGetGetItemInput)
-    const hasProjection = getItemInput.ProjectionExpression == null
+    const entireDocument = getItemInput.ProjectionExpression == null
     let dynamoRecord: GetItemOutput
 
     try {
@@ -167,7 +167,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     }
 
     if (dynamoRecord.Item != null) {
-      return this.table.fromDynamo(dynamoRecord.Item, !hasProjection)
+      return this.table.fromDynamo(dynamoRecord.Item, entireDocument)
     }
   }
 
