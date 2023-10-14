@@ -72,8 +72,9 @@ describe('Query/LocalSecondaryIndex', () => {
           id: 10,
           count: ['>', 2],
         }, {
+          abortSignal: abortController.signal,
           rangeOrder: 'DESC',
-        }, { abortSignal: abortController.signal })
+        })
       } catch (ex) {
         exception = ex
       }

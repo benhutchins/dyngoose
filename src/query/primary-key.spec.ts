@@ -82,7 +82,7 @@ describe('Query/PrimaryKey', () => {
 
       let exception
       try {
-        await primaryKey.get({ id: 10, title: 'abc' }, undefined, { abortSignal: abortController.signal })
+        await primaryKey.get({ id: 10, title: 'abc' }, { abortSignal: abortController.signal })
       } catch (ex) {
         exception = ex
       }
@@ -118,7 +118,7 @@ describe('Query/PrimaryKey', () => {
 
       let exception
       try {
-        await primaryKey.get(10, 'abc', undefined, { abortSignal: abortController.signal })
+        await primaryKey.get(10, 'abc', { abortSignal: abortController.signal })
       } catch (ex) {
         exception = ex
       }
@@ -232,8 +232,9 @@ describe('Query/PrimaryKey', () => {
       let exception
       try {
         await primaryKey.scan(null, {
+          abortSignal: abortController.signal,
           limit: 2,
-        }, { abortSignal: abortController.signal })
+        })
       } catch (ex) {
         exception = ex
       }

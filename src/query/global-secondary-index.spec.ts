@@ -99,7 +99,7 @@ describe('Query/GlobalSecondaryIndex', () => {
 
         let exception
         try {
-          await Card.hashTitleIndex.query({ title: 'abd' }, undefined, { abortSignal: abortController.signal })
+          await Card.hashTitleIndex.query({ title: 'abd' }, { abortSignal: abortController.signal })
         } catch (ex) {
           exception = ex
         }

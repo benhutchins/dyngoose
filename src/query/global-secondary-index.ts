@@ -9,9 +9,9 @@ import { type Filters as QueryFilters } from './filters'
 import { QueryOutput } from './output'
 import { buildProjectionExpression } from './projection-expression'
 import { MagicSearch, type MagicSearchInput } from './search'
-import { type IRequestOptions } from '../connections'
+import { toHttpHandlerOptions, type IRequestOptions } from '../connections'
 
-interface GlobalSecondaryIndexGetInput {
+interface GlobalSecondaryIndexGetInput extends IRequestOptions {
   /**
    * Allow Dyngoose to build the projection expression for your query.
    *
@@ -103,7 +103,7 @@ export class GlobalSecondaryIndex<T extends Table> {
    *
    * Avoid use whenever you do not have uniqueness for the GlobalSecondaryIndex's HASH + RANGE.
    */
-  public async get(filters: QueryFilters<T>, input: GlobalSecondaryIndexGetInput = {}, requestOptions?: IRequestOptions): Promise<T | undefined> {
+  public async get(filters: QueryFilters<T>, input: GlobalSecondaryIndexGetInput = {}): Promise<T | undefined> {
     if (!has(filters, this.metadata.hash.propertyName)) {
       throw new QueryError('Cannot perform .get() on a GlobalSecondaryIndex without specifying a hash key value')
     } else if (this.metadata.range != null && !has(filters, this.metadata.range.propertyName)) {
@@ -118,7 +118,7 @@ export class GlobalSecondaryIndex<T extends Table> {
     // DynamoDB will start the search at the first match and limit means it will only process
     // that document and return it, however, you cannot use any additional filters on this .get
     // method; for that, you need to use .query()
-    const results = await this.query(filters, input, requestOptions)
+    const results = await this.query(filters, input)
 
     if (results.count > 0) {
       return results[0]
@@ -178,7 +178,7 @@ export class GlobalSecondaryIndex<T extends Table> {
     return queryInput
   }
 
-  public async query(filters: QueryFilters<T>, input?: GlobalSecondaryIndexQueryInput, requestOptions?: IRequestOptions): Promise<QueryOutput<T>> {
+  public async query(filters: QueryFilters<T>, input?: GlobalSecondaryIndexQueryInput): Promise<QueryOutput<T>> {
     if (!has(filters, this.metadata.hash.propertyName)) {
       throw new QueryError('Cannot perform a query on a GlobalSecondaryIndex without specifying a hash key value')
     } else if (isArray(get(filters, this.metadata.hash.propertyName)) && get(filters, this.metadata.hash.propertyName)[0] !== '=') {
@@ -190,7 +190,7 @@ export class GlobalSecondaryIndex<T extends Table> {
     let output: QueryCommandOutput
 
     try {
-      output = await this.tableClass.schema.dynamo.query(queryInput, requestOptions)
+      output = await this.tableClass.schema.dynamo.query(queryInput, toHttpHandlerOptions(input))
     } catch (ex) {
       throw new HelpfulError(ex, this.tableClass, queryInput)
     }

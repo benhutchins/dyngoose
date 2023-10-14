@@ -132,6 +132,11 @@ card.set('number', 2, { operator: 'decrement' }) // if the current value had bee
 
 // Use the add or remove operator on Sets to only partially change an attribute
 card.set('owners', ['some value'], { operator: 'add' })
+
+// Use an abort controller all on read requests
+const abortController = new AbortController()
+await Card.primaryKey.get({ id: 10, title: 'abc' }, { abortSignal: abortController.signal })
+abortController.abort()
 ```
 
 ### TS Compiler Setting

@@ -8,9 +8,9 @@ import { buildQueryExpression } from './expression'
 import { type Filters as QueryFilters } from './filters'
 import { QueryOutput } from './output'
 import { MagicSearch, type MagicSearchInput } from './search'
-import { type IRequestOptions } from '../connections'
+import { toHttpHandlerOptions, type IRequestOptions } from '../connections'
 
-interface LocalSecondaryIndexQueryInput {
+interface LocalSecondaryIndexQueryInput extends IRequestOptions {
   rangeOrder?: 'ASC' | 'DESC'
   limit?: number
   exclusiveStartKey?: Key
@@ -51,7 +51,7 @@ export class LocalSecondaryIndex<T extends Table> {
     return queryInput
   }
 
-  public async query(filters: QueryFilters<T>, input: LocalSecondaryIndexQueryInput = {}, requestOptions?: IRequestOptions): Promise<QueryOutput<T>> {
+  public async query(filters: QueryFilters<T>, input: LocalSecondaryIndexQueryInput = {}): Promise<QueryOutput<T>> {
     if (!has(filters, this.tableClass.schema.primaryKey.hash.propertyName)) {
       throw new QueryError('Cannot perform a query on a LocalSecondaryIndex without specifying a hash key value')
     }
@@ -71,7 +71,7 @@ export class LocalSecondaryIndex<T extends Table> {
     const hasProjection = queryInput.ProjectionExpression == null
     let output: QueryCommandOutput
     try {
-      output = await this.tableClass.schema.dynamo.query(queryInput, requestOptions)
+      output = await this.tableClass.schema.dynamo.query(queryInput, toHttpHandlerOptions(input))
     } catch (ex) {
       throw new HelpfulError(ex, this.tableClass, queryInput)
     }
