@@ -24,6 +24,11 @@ type PrimaryKeyBatchInput<HashKeyType extends PrimaryKeyType, RangeKeyType exten
 
 interface PrimaryKeyGetInput {
   projectionExpression?: string
+  /**
+   * Use a strongly consistent read.
+   * Ensures you receive the most up-to-date data.
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html
+   */
   consistent?: boolean
   returnConsumedCapacity?: ReturnConsumedCapacity
 }
@@ -36,6 +41,11 @@ interface PrimaryKeyQueryInput {
   rangeOrder?: 'ASC' | 'DESC'
   limit?: number
   exclusiveStartKey?: Key
+  /**
+   * Use a strongly consistent read.
+   * Ensures you receive the most up-to-date data.
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html
+   */
   consistent?: boolean
   select?: 'COUNT'
 }

@@ -1,6 +1,6 @@
 import { type DeleteItemCommandOutput, type PutItemCommandOutput, type ReturnConsumedCapacity, type UpdateItemCommandOutput } from '@aws-sdk/client-dynamodb'
 import { type Table } from './table'
-import { type DynamoReturnValues } from './interfaces'
+import { type AttributeMap, type DynamoReturnValues } from './interfaces'
 import { type UpdateConditions } from './query/filters'
 
 interface BaseEvent<T extends Table> {
@@ -67,6 +67,7 @@ export interface BeforeSaveEvent<T extends Table> extends SaveEvent<T> {
 
 export interface AfterSaveEvent<T extends Table> extends BeforeSaveEvent<T> {
   output: PutItemCommandOutput | UpdateItemCommandOutput
+  originalValues: AttributeMap
   deletedAttributes: string[]
   updatedAttributes: string[]
 }

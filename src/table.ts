@@ -157,8 +157,8 @@ export class Table {
   // raw storage for all attributes this record (instance) has
   private __attributes: AttributeMap = {}
   private __original: AttributeMap = {}
-  private __updatedAttributes: string[] = []
-  private __removedAttributes: string[] = []
+  private __updatedAttributes = new Set<string>()
+  private __removedAttributes = new Set<string>()
   private __updateOperators: Record<string, UpdateOperator> = {}
   private __putRequired = true // true when this is a new record and a putItem is required, false when updateItem can be used
   private __entireDocumentIsKnown = true
@@ -205,8 +205,8 @@ export class Table {
     this.__attributes = values
 
     // this is an existing record in the database, so when we save it, we need to update
-    this.__updatedAttributes = []
-    this.__removedAttributes = []
+    this.__updatedAttributes = new Set()
+    this.__removedAttributes = new Set()
     this.__putRequired = false
     this.__entireDocumentIsKnown = entireDocument
 
@@ -231,7 +231,7 @@ export class Table {
 
     for (const attributeName of Object.keys(attributeMap)) {
       if (!_.isEqual(this.__attributes[attributeName], attributeMap[attributeName])) {
-        this.__updatedAttributes.push(attributeName)
+        this.__updatedAttributes.add(attributeName)
       }
     }
 
@@ -265,7 +265,7 @@ export class Table {
    * If you want to easily know if this record has updates pending, use {@link Table.hasChanges}.
    */
   public getUpdatedAttributes(): string[] {
-    return this.__updatedAttributes
+    return [...this.__updatedAttributes]
   }
 
   /**
@@ -276,7 +276,7 @@ export class Table {
    * If you want to easily know if this record has updates pending, use {@link Table.hasChanges}.
    */
   public getDeletedAttributes(): string[] {
-    return this.__removedAttributes
+    return [...this.__removedAttributes]
   }
 
   /**
@@ -393,10 +393,10 @@ export class Table {
     this.__attributes[attributeName] = attributeValue
 
     // track that this value was updated
-    this.__updatedAttributes.push(attributeName)
+    this.__updatedAttributes.add(attributeName)
 
     // ensure the attribute is not marked for being deleted
-    _.pull(this.__removedAttributes, attributeName)
+    this.__removedAttributes.delete(attributeName)
 
     return this
   }
@@ -440,8 +440,8 @@ export class Table {
       // delete the attribute as long as it existed and wasn't already null
       if (!_.isNil(this.__attributes[attributeName]) || !this.__entireDocumentIsKnown) {
         this.__attributes[attributeName] = { NULL: true }
-        this.__removedAttributes.push(attributeName)
-        _.pull(this.__updatedAttributes, attributeName)
+        this.__removedAttributes.add(attributeName)
+        this.__updatedAttributes.delete(attributeName)
       }
     }
     return this
@@ -517,7 +517,7 @@ export class Table {
    * Determines if this record has any attributes pending an update or deletion.
    */
   public hasChanges(): boolean {
-    return this.__updatedAttributes.length > 0 || this.__removedAttributes.length > 0
+    return this.__updatedAttributes.size > 0 || this.__removedAttributes.size > 0
   }
 
   /**
@@ -558,18 +558,25 @@ export class Table {
         output = await this.table.documentClient.update(this, beforeSaveEvent)
       }
 
+      // grab the current changes to pass to the afterSave event
+      const originalValues = this.getOriginalValues()
+      const updatedAttributes = this.getUpdatedAttributes()
+      const deletedAttributes = this.getDeletedAttributes()
+
       // reset internal tracking of changes attributes
       this.__putRequired = false
-      this.__removedAttributes = []
-      this.__updatedAttributes = []
+      this.__original = {}
+      this.__removedAttributes = new Set()
+      this.__updatedAttributes = new Set()
       this.__updateOperators = {}
 
       // trigger afterSave before clearing values, so the hook can determine what has been changed
       await this.afterSave({
         ...beforeSaveEvent,
         output,
-        deletedAttributes: this.__removedAttributes,
-        updatedAttributes: this.__updatedAttributes,
+        originalValues,
+        updatedAttributes,
+        deletedAttributes,
       })
 
       if (beforeSaveEvent.returnOutput === true) {

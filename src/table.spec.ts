@@ -21,6 +21,7 @@ describe('Table', () => {
       expect(reloadedCard.id).to.eq(10)
       expect(reloadedCard.get('id')).to.eq(10)
       expect(reloadedCard.title).to.eq('100')
+      expect(reloadedCard.getUpdatedAttributes().length).to.eq(0)
     }
   })
 
@@ -38,18 +39,21 @@ describe('Table', () => {
 
       await card.save()
 
-      const reloadedCard = await TestableTable.primaryKey.get(101, '101')
+      const reloadedCard = (await TestableTable.primaryKey.get(101, '101'))!
       expect(reloadedCard).to.be.instanceof(TestableTable)
 
-      if (reloadedCard != null) {
-        expect(reloadedCard.id).to.eq(101)
-        expect(reloadedCard.get('id')).to.eq(101)
-        expect(reloadedCard.title).to.eq('101')
-        expect(reloadedCard.generic).to.eq(null)
-        expect(reloadedCard.defaultedString).to.eq('SomeDefault')
-        expect(reloadedCard.testString).to.eq('value is set')
-        expect(reloadedCard.testNumberSet).to.deep.eq(new Set([1, 2, 3]))
-      }
+      expect(reloadedCard.id).to.eq(101)
+      expect(reloadedCard.get('id')).to.eq(101)
+      expect(reloadedCard.title).to.eq('101')
+      expect(reloadedCard.generic).to.eq(null)
+      expect(reloadedCard.defaultedString).to.eq('SomeDefault')
+      expect(reloadedCard.testString).to.eq('value is set')
+      expect(reloadedCard.testNumberSet).to.deep.eq(new Set([1, 2, 3]))
+      expect(reloadedCard.getUpdatedAttributes().length).to.eq(0)
+
+      reloadedCard.generic = 'should be considered an update'
+      expect(reloadedCard.getUpdatedAttributes()).to.deep.eq(['generic'])
+      expect(reloadedCard.getSaveOperation()).to.eq('update')
     })
   })
 
@@ -67,6 +71,7 @@ describe('Table', () => {
     expect(card.testNumber).to.eq(11, 'num eq 11')
 
     card.set('testNumber', 5, { operator: 'decrement' })
+    expect(card.getUpdatedAttributes()).to.deep.eq(['testNumber'])
     await card.save()
 
     const reloadedCard = await TestableTable.primaryKey.get(card)
@@ -87,6 +92,8 @@ describe('Table', () => {
 
     card.testString = ''
     expect(card.testString).to.eq(null, 'cleared strings become null, because DynamoDB does not allow empty string values')
+    expect(card.getUpdatedAttributes()).to.deep.eq([])
+    expect(card.getDeletedAttributes()).to.deep.eq(['testString'])
     await card.save()
 
     const reloadedCard = await TestableTable.primaryKey.get(10, '100')
