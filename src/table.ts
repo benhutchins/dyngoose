@@ -384,10 +384,8 @@ export class Table {
    * To set the value from a JavaScript object, use {@link Table.setAttribute}
   */
   public setAttributeDynamoValue(attributeName: string, attributeValue: AttributeValue): this {
-    // save the original value before we update the attributes value
-    if (!_.isUndefined(this.__attributes[attributeName]) && _.isUndefined(this.__original[attributeName])) {
-      this.__original[attributeName] = this.getAttributeDynamoValue(attributeName)
-    }
+    // store the original value
+    this.saveOriginalValue(attributeName)
 
     // store the new value
     this.__attributes[attributeName] = attributeValue
@@ -439,6 +437,7 @@ export class Table {
     for (const attributeName of attributeNames) {
       // delete the attribute as long as it existed and wasn't already null
       if (!_.isNil(this.__attributes[attributeName]) || !this.__entireDocumentIsKnown) {
+        this.saveOriginalValue(attributeName)
         this.__attributes[attributeName] = { NULL: true }
         this.__removedAttributes.add(attributeName)
         this.__updatedAttributes.delete(attributeName)
@@ -711,7 +710,7 @@ export class Table {
     const attributeValue = attribute.toDynamo(value)
 
     // avoid recording the value if it is unchanged, so we do not send it as an updated value during a save
-    if (params.force !== true && !_.isUndefined(this.__attributes[attribute.name]) && _.isEqual(this.__attributes[attribute.name], attributeValue)) {
+    if (params.force !== true && !_.isNil(this.__attributes[attribute.name]) && _.isEqual(this.__attributes[attribute.name], attributeValue)) {
       return this
     }
 
@@ -729,6 +728,13 @@ export class Table {
     const attributeValue = this.getAttributeDynamoValue(attribute.name)
     const value = attribute.fromDynamo(_.cloneDeep(attributeValue))
     return value
+  }
+
+  protected saveOriginalValue(attributeName: string): void {
+    // save the original value before we remove the attribute's value
+    if (!_.isNil(this.__attributes[attributeName]) && _.isNil(this.__original[attributeName])) {
+      this.__original[attributeName] = this.getAttributeDynamoValue(attributeName)
+    }
   }
 
   /**
