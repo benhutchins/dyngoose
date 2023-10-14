@@ -1,3 +1,10 @@
+## [4.8.2](https://github.com/benhutchins/dyngoose/compare/v4.8.1...v4.8.2) (2023-10-14)
+
+
+### Bug Fixes
+
+* store original value when removing an attribute ([0f444ab](https://github.com/benhutchins/dyngoose/commit/0f444abc4a9f3e367017ab38febabacee5900c35))
+
 ## [4.8.1](https://github.com/benhutchins/dyngoose/compare/v4.8.0...v4.8.1) (2023-10-14)
 
 
