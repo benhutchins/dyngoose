@@ -251,17 +251,10 @@ export class MagicSearch<T extends Table> {
    * you do not load too many results as well.
   */
   async minimum(minimum: number, requestOptions?: IRequestOptions): Promise<QueryOutput<T>> {
-    const input = this.getInput()
     const outputs: Array<QueryOutput<T>> = []
-    let page: QueryOutput<T> | undefined
     let count = 0
 
-    while (page == null || page.lastEvaluatedKey != null) {
-      if (page?.lastEvaluatedKey != null) {
-        input.ExclusiveStartKey = page.lastEvaluatedKey
-      }
-
-      page = await this.page(input, requestOptions)
+    for await (const page of this.iteratePages(requestOptions)) {
       count += page.count
       outputs.push(page)
 
@@ -280,19 +273,15 @@ export class MagicSearch<T extends Table> {
    * Be cautious. This can easily cause timeouts if you're using Lambda functions.
    * This is also non-ideal for scans, for better performance use a segmented scan
    * via the Query.PrimaryKey.segmentedScan or Query.GlobalSecondaryIndex.segmentedScan.
+   *
+   * For a more optimized process, look at:
+   * - iteratePages
+   * - iterateDocuments
    */
   async all(requestOptions?: IRequestOptions): Promise<QueryOutput<T>> {
-    const input = this.getInput()
     const outputs: Array<QueryOutput<T>> = []
-    let page: QueryOutput<T> | undefined
 
-    // if this is the first page, or if we have not hit the last page, continue loading records…
-    while (page == null || page.lastEvaluatedKey != null) {
-      if (page?.lastEvaluatedKey != null) {
-        input.ExclusiveStartKey = page.lastEvaluatedKey
-      }
-
-      page = await this.page(input, requestOptions)
+    for await (const page of this.iteratePages(requestOptions)) {
       outputs.push(page)
     }
 
@@ -405,7 +394,47 @@ export class MagicSearch<T extends Table> {
     return await this.exec()
   }
 
-  async page(input: ScanCommandInput | QueryCommandInput, requestOptions?: IRequestOptions): Promise<QueryOutput<T>> {
+  /**
+   * Async generator that returns a page of results.
+   *
+   * Usage example:
+   * ```typescript
+   *   for await (const page of search.iteratePages()) {
+   *     for (const item of page) {
+   *       // Do something
+   *     }
+   *   }
+   * ```
+   */
+  async * iteratePages(requestOptions?: IRequestOptions): AsyncGenerator<QueryOutput<T>> {
+    const input = this.getInput()
+    let page: QueryOutput<T> | undefined
+
+    // if this is the first page, or if we have not hit the last page, continue loading records…
+    while (page == null || page.lastEvaluatedKey != null) {
+      if (page?.lastEvaluatedKey != null) {
+        input.ExclusiveStartKey = page.lastEvaluatedKey
+      }
+
+      page = await this.page(input, requestOptions)
+      yield page
+    }
+  }
+
+  async * iterateDocuments(requestOptions?: IRequestOptions): AsyncGenerator<T> {
+    for await (const page of this.iteratePages(requestOptions)) {
+      for (const item of page) {
+        yield item
+      }
+    }
+  }
+
+  /**
+   * Get a page of documents. Primarily used internally, but to allow advanced
+   * uses, you are able to use `getInput()`, manipulate the scan/query input,
+   * then pass it into this method to run the query and get back your results.
+   */
+  private async page(input: ScanCommandInput | QueryCommandInput, requestOptions?: IRequestOptions): Promise<QueryOutput<T>> {
     const hasProjection = input.ProjectionExpression == null
     let output: ScanCommandOutput | QueryCommandOutput
 

@@ -23,6 +23,7 @@ Let's face it, all good databases need good model casting. DynamoDB is powerful 
 1. Amazon X-Ray support, see [Connections](./docs/Connections.md).
 1. Incredibly easy [local development](./docs/Development.md), with support for seeding a local database.
 1. Supports [conditional writes](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithItems.html#WorkingWithItems.ConditionalUpdate), see [Saving](./docs/Saving.md#saveconditions).
+1. Use `AsyncGenerators` to page through results efficiently, see [MagicSearch](./docs/MagicSearch.md).
 
 NOTE: DynamoDB Accelerator (DAX) support has been dropped as DAX is not yet supported by aws-sdk v3, see [aws-sdk-js-v3#4263](https://github.com/aws/aws-sdk-js-v3/issues/4263).
 

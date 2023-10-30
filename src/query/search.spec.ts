@@ -262,8 +262,6 @@ describe('Query/Search', () => {
         .filter('title').contains('Table.search')
         .limit(2)
 
-      // we set a limit and then called .all(), so it should page automatically until all results are found
-      // this is stupid and slow, it would be faster to remove the limit, but we are testing the paging logic of .all
       abortController.abort()
 
       let exception
@@ -300,6 +298,88 @@ describe('Query/Search', () => {
       let exception
       try {
         await search.minimum(5, { abortSignal: abortController.signal })
+      } catch (ex) {
+        exception = ex
+      }
+
+      should().exist(exception)
+    })
+  })
+
+  describe('#iteratePages', () => {
+    it('should execute the search query', async () => {
+      const search = new MagicSearch<TestableTable>(TestableTable)
+        .filter('title').contains('Table.search')
+        .limit(2)
+
+      let countPages = 0
+      let countItems = 0
+
+      for await (const page of search.iteratePages()) {
+        countPages++
+        countItems += page.length
+      }
+
+      expect(countPages).to.be.greaterThanOrEqual(4)
+      expect(countItems).to.be.greaterThanOrEqual(8)
+    })
+
+    it('should not return results when aborted', async () => {
+      const abortController = new AbortController()
+      const search = new MagicSearch<TestableTable>(TestableTable)
+        .filter('title').contains('Table.search')
+        .limit(2)
+
+      abortController.abort()
+
+      let exception
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        for await (const item of search.iteratePages({ abortSignal: abortController.signal })) {
+          //
+        }
+        await search.all({ abortSignal: abortController.signal })
+      } catch (ex) {
+        exception = ex
+      }
+
+      should().exist(exception)
+    })
+  })
+
+  describe('#iterateDocuments', () => {
+    it('should execute the search query', async () => {
+      const search = new MagicSearch<TestableTable>(TestableTable)
+        .filter('title').contains('Table.search')
+        .limit(2)
+
+      let count = 0
+      let lastItem: TestableTable | undefined
+
+      for await (const item of search.iterateDocuments()) {
+        count++
+        lastItem = item
+      }
+
+      expect(count).to.eq(8)
+      should().exist(lastItem)
+    })
+
+    it('should not return results when aborted', async () => {
+      const abortController = new AbortController()
+      const search = new MagicSearch<TestableTable>(TestableTable)
+        .filter('title').contains('Table.search')
+        .limit(2)
+
+      abortController.abort()
+
+      let exception
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        for await (const item of search.iterateDocuments({ abortSignal: abortController.signal })) {
+          //
+        }
+        await search.all({ abortSignal: abortController.signal })
       } catch (ex) {
         exception = ex
       }
