@@ -1,6 +1,6 @@
 # Query Output
 
-All query methods in Dyngoose, other than `Table.primaryKey.get(…)` and `Table.gsiIndex.get(…)` will return an object that matches the `Dyngoose.QueryOutput` interface. 
+All query methods in Dyngoose, other than `Table.primaryKey.get(…)`, `Table.gsiIndex.get(…)`, and `Table.search(…).iterateDocuments()` will return an object that matches the `Dyngoose.QueryOutput` interface. 
 
 See the [`src/query/output.ts`](https://github.com/benhutchins/dyngoose/blob/master/src/query/output.ts).
 

@@ -266,12 +266,15 @@ Uses an `AsyncGenerator` to page and yield a single page of results from DynamoD
 
 Similar to `query.exec()` this will execute your query and return your results.
 
-Yields a single instance of `Dyngoose.QueryOutput` at a time.
+Yields a single instance of [Dyngoose.QueryOutput](Output.md) at a time.
 
 Usage Example:
 
 ```typescript
-for await (const page of query.iteratePages()) {
+const search = Cat.search()
+  .filter(…)…
+
+for await (const page of search.iteratePages()) {
   // do something with the page, maybe you'd end up looping through the results
   for (const document of page) {
     // if you're only doing this, you can also use iterateDocuments()
@@ -290,7 +293,10 @@ Yields a single instance of your `Table` subclass at a time.
 Usage Example:
 
 ```typescript
-for await (const document of query.iterateDocuments()) {
+const search = Cat.search()
+  .filter(…)…
+
+for await (const document of search.iterateDocuments()) {
   // do something with the document
 }
 ```
@@ -301,7 +307,7 @@ Normally if a query result is more than the AWS query response limit, DynamoDB w
 
 Similar to `query.exec()` this will execute your query and return your results.
 
-The documents for all of the requests will be aggregated into a single `Dyngoose.QueryOutput` response.
+The documents for all of the requests will be aggregated into a single [Dyngoose.QueryOutput](Output.md) response.
 
 **This should be avoided under normal circumstances, paging is recommended.**
 
@@ -315,7 +321,7 @@ Similar to `query.all`, `query.minimum` will page internally for you, however, u
 
 Similar to `query.exec()` and `query.all()` this will execute your query and return your results.
 
-The documents for all of the requests will be aggregated into a single `Dyngoose.QueryOutput` response. If there are more objects, the request will contain a `LastEvaluatedKey` allowing you to continue paging with an additional operation.
+The documents for all of the requests will be aggregated into a single [Dyngoose.QueryOutput](Output.md) response. If there are more objects, the request will contain a `LastEvaluatedKey` allowing you to continue paging with an additional operation.
 
 ```typescript
 const output = await Cat.search().filter('name').eq('Will').minimum(25)
