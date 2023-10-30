@@ -260,7 +260,7 @@ export class Table {
    * Get the list of attributes pending update.
    *
    * The result includes attributes that have also been deleted. To get just
-   * the list of attributes pending deletion, use {@link Table.getDeletedAttributes}.
+   * the list of attributes pending removal, use {@link Table.getRemovedAttributes}.
    *
    * If you want to easily know if this record has updates pending, use {@link Table.hasChanges}.
    */
@@ -269,14 +269,23 @@ export class Table {
   }
 
   /**
-   * Get the list of attributes pending deletion.
+   * Get the list of attributes pending removal.
    *
    * To get all the attributes that have been updated, use {@link Table.getUpdatedAttributes}.
    *
    * If you want to easily know if this record has updates pending, use {@link Table.hasChanges}.
    */
-  public getDeletedAttributes(): string[] {
+  public getRemovedAttributes(): string[] {
     return [...this.__removedAttributes]
+  }
+
+  /**
+   * Use getRemovedAttributes.
+   *
+   * @deprecated
+   */
+  public getDeletedAttributes(): string[] {
+    return this.getRemovedAttributes()
   }
 
   /**
@@ -393,7 +402,7 @@ export class Table {
     // track that this value was updated
     this.__updatedAttributes.add(attributeName)
 
-    // ensure the attribute is not marked for being deleted
+    // ensure the attribute is not marked for removal
     this.__removedAttributes.delete(attributeName)
 
     return this
@@ -560,7 +569,7 @@ export class Table {
       // grab the current changes to pass to the afterSave event
       const originalValues = this.getOriginalValues()
       const updatedAttributes = this.getUpdatedAttributes()
-      const deletedAttributes = this.getDeletedAttributes()
+      const removedAttributes = this.getRemovedAttributes()
 
       // reset internal tracking of changes attributes
       this.__putRequired = false
@@ -575,7 +584,8 @@ export class Table {
         output,
         originalValues,
         updatedAttributes,
-        deletedAttributes,
+        removedAttributes,
+        deletedAttributes: removedAttributes,
       })
 
       if (beforeSaveEvent.returnOutput === true) {

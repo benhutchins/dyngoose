@@ -93,7 +93,7 @@ describe('Table', () => {
     card.testString = ''
     expect(card.testString).to.eq(null, 'cleared strings become null, because DynamoDB does not allow empty string values')
     expect(card.getUpdatedAttributes()).to.deep.eq([])
-    expect(card.getDeletedAttributes()).to.deep.eq(['testString'])
+    expect(card.getRemovedAttributes()).to.deep.eq(['testString'])
     await card.save()
 
     const reloadedCard = await TestableTable.primaryKey.get(10, '100')

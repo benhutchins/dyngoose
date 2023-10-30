@@ -70,7 +70,7 @@ export function getUpdateItemInput<T extends Table>(record: T, params?: UpdateIt
     }
   })
 
-  _.each(_.uniq(record.getDeletedAttributes()), (attrName, i) => {
+  _.each(_.uniq(record.getRemovedAttributes()), (attrName, i) => {
     const slug = `#DA${valueCounter}`
     attributeNameMap[slug] = attrName
     removes.push(slug)

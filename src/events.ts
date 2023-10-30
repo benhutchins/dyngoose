@@ -68,8 +68,13 @@ export interface BeforeSaveEvent<T extends Table> extends SaveEvent<T> {
 export interface AfterSaveEvent<T extends Table> extends BeforeSaveEvent<T> {
   output: PutItemCommandOutput | UpdateItemCommandOutput
   originalValues: AttributeMap
-  deletedAttributes: string[]
+  removedAttributes: string[]
   updatedAttributes: string[]
+
+  /**
+   * @deprecated
+   */
+  deletedAttributes: string[]
 }
 
 export interface DeleteEvent<T extends Table> extends BaseEvent<T> {
