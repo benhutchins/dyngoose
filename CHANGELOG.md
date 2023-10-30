@@ -1,3 +1,10 @@
+## [4.9.1](https://github.com/benhutchins/dyngoose/compare/v4.9.0...v4.9.1) (2023-10-30)
+
+
+### Bug Fixes
+
+* make MagicSearch.page public again ([b9de391](https://github.com/benhutchins/dyngoose/commit/b9de39152eb59ccdda5d0f0ac9663eee300f5be5))
+
 # [4.9.0](https://github.com/benhutchins/dyngoose/compare/v4.8.2...v4.9.0) (2023-10-30)
 
 
