@@ -1,3 +1,10 @@
+# [4.9.0](https://github.com/benhutchins/dyngoose/compare/v4.8.2...v4.9.0) (2023-10-30)
+
+
+### Features
+
+* async generators ([28cc5f3](https://github.com/benhutchins/dyngoose/commit/28cc5f34770d0aeb76d20ae4e66bd960f6446a2e))
+
 ## [4.8.2](https://github.com/benhutchins/dyngoose/compare/v4.8.1...v4.8.2) (2023-10-14)
 
 
