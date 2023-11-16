@@ -45,10 +45,6 @@ export class DateAttributeType extends AttributeType<Value, Metadata> implements
   }
 
   toDynamo(dt: Value): AttributeValue {
-    if (this.metadata?.nowOnUpdate === true) {
-      dt = new Date()
-    }
-
     if (this.metadata?.unixTimestamp === true || this.metadata?.millisecondTimestamp === true || this.metadata?.timeToLive === true) {
       return {
         N: this.parseDate(dt).toString(),
@@ -114,7 +110,7 @@ export class DateAttributeType extends AttributeType<Value, Metadata> implements
         // parse YYYY-MM-DD and ensure we create the Date object in UTC
         const b = dt.split('-').map((d) => parseInt(d, 10))
         dt = new Date(Date.UTC(b[0], --b[1], b[2]))
-      // if timestamp, assume the value is a timestamp
+      // if configured as a timestamp, assume the value is a numeric string as a timestamp
       } else if (this.metadata?.unixTimestamp === true || this.metadata?.timeToLive === true) {
         dt = new Date(stringToNumber(dt) * 1000)
       } else if (this.metadata?.millisecondTimestamp === true) {

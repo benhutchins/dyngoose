@@ -44,11 +44,13 @@ describe('AttributeType/Date', () => {
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
       // save again
+      const updatedAtBeforeSave = record.updatedAt
       await record.save({ force: true }) // using force save so it saves, ignoring the fact there are no changes
 
       expect(record.updatedAt).to.be.a('date')
       expect(record.updatedAt).to.be.at.least(later)
       expect(record.updatedAt).to.be.at.within(later, new Date())
+      expect(record.updatedAt).to.not.eq(updatedAtBeforeSave)
 
       expect(record.getAttributeDynamoValue('createdAt')).to.deep.eq({
         S: record.createdAt.toISOString(),
