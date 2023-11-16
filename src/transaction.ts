@@ -129,6 +129,16 @@ export class Transaction {
     return this
   }
 
+  /**
+   * Get the list of pending transact items.
+   */
+  public getTransactItems(): TransactWriteItem[] {
+    return this.list
+  }
+
+  /**
+   * Commit all the pending transact items to DynamoDB.
+   */
   public async commit(): Promise<TransactWriteItemsOutput> {
     return await transactWrite(this.dynamo, this.list)
   }
