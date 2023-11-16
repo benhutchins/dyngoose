@@ -1,3 +1,15 @@
+# [4.10.0](https://github.com/benhutchins/dyngoose/compare/v4.9.1...v4.10.0) (2023-11-16)
+
+
+### Bug Fixes
+
+* using a conditional check on a nowOnUpdate Date attribute ([074fe81](https://github.com/benhutchins/dyngoose/commit/074fe819eae8f4471cad702d9063e561ab0650b2))
+
+
+### Features
+
+* expose a way to get the Transaction write items ([d0d0c6a](https://github.com/benhutchins/dyngoose/commit/d0d0c6a2e1105c2afbb69a508a984eca4282c53f))
+
 ## [4.9.1](https://github.com/benhutchins/dyngoose/compare/v4.9.0...v4.9.1) (2023-10-30)
 
 
