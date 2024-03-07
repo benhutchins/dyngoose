@@ -1,3 +1,10 @@
+## [4.10.1](https://github.com/benhutchins/dyngoose/compare/v4.10.0...v4.10.1) (2024-03-07)
+
+
+### Bug Fixes
+
+* using not contains query filter ([98d3c7f](https://github.com/benhutchins/dyngoose/commit/98d3c7fb79eb617c1c79968d6614b23ea736a279))
+
 # [4.10.0](https://github.com/benhutchins/dyngoose/compare/v4.9.1...v4.10.0) (2023-11-16)
 
 
