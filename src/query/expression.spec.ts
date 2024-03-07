@@ -253,6 +253,21 @@ describe('query/expression', () => {
           ':v1': { BOOL: true },
         },
       })
+
+      expect(buildQueryExpression(schema, {
+        someString: ['not contains', 'hello world'],
+        someBool: true,
+      })).to.deep.equal({
+        FilterExpression: 'not contains(#a0, :v0) AND #a1 = :v1',
+        ExpressionAttributeNames: {
+          '#a0': 'someString',
+          '#a1': 'someBool',
+        },
+        ExpressionAttributeValues: {
+          ':v0': { S: 'hello world' },
+          ':v1': { BOOL: true },
+        },
+      })
     })
 
     it('works with includes/IN operator', () => {

@@ -262,7 +262,7 @@ class FilterExpressionQuery<T extends Table> {
           strValue = { B: _.isArray(strValue.BS) ? strValue.BS[0] : strValue.BS }
         }
 
-        const queryOperator = operator === 'beginsWith' ? 'begins_with' : operator.replace(/ /g, '_')
+        const queryOperator = operator === 'beginsWith' ? 'begins_with' : operator
         query = `${queryOperator}(${attrNameMappedTo}, ${variableName})`
         values[variableName] = strValue
         break
