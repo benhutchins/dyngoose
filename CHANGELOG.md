@@ -1,3 +1,10 @@
+## [4.10.2](https://github.com/benhutchins/dyngoose/compare/v4.10.1...v4.10.2) (2024-03-28)
+
+
+### Bug Fixes
+
+* querying maps when the attribute and property names don't match ([d05b57f](https://github.com/benhutchins/dyngoose/commit/d05b57f27c3a1c7d27bc64190c370291f0cadc23)), closes [#678](https://github.com/benhutchins/dyngoose/issues/678)
+
 ## [4.10.1](https://github.com/benhutchins/dyngoose/compare/v4.10.0...v4.10.1) (2024-03-07)
 
 
