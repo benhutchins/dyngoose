@@ -38,8 +38,9 @@ describe('query/expression', () => {
     public someStrings: Set<string>
 
     @Dyngoose.Attribute.Map<ISomeMap>({
+      name: 'someTestMap',
       attributes: {
-        first: Dyngoose.Attribute.String(),
+        first: Dyngoose.Attribute.String({ name: 'someFirst' }),
         second: Dyngoose.Attribute.String(),
       },
     })
@@ -106,8 +107,8 @@ describe('query/expression', () => {
       })).to.deep.equal({
         FilterExpression: '#a00.#a01 = :v0',
         ExpressionAttributeNames: {
-          '#a00': 'someMap',
-          '#a01': 'first',
+          '#a00': 'someTestMap',
+          '#a01': 'someFirst',
         },
         ExpressionAttributeValues: {
           ':v0': { S: 'bobby' },

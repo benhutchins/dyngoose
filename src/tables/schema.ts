@@ -7,6 +7,7 @@ import type * as Metadata from '../metadata'
 import * as Query from '../query'
 import { type ITable, type Table } from '../table'
 import { createTableInput } from './create-table-input'
+import { last } from 'lodash'
 
 export class Schema {
   public isDyngoose = true
@@ -172,25 +173,42 @@ export class Schema {
   }
 
   public getAttributeByPropertyName(propertyName: string): Attribute<any> {
-    let attribute: Attribute<any> | undefined
+    const attributes = this.getAttributePathByPropertyName(propertyName)
+    const attribute = last(attributes)
+
+    if (attribute == null) {
+      throw new SchemaError(`Schema for ${this.name} has no attribute by property name ${propertyName}`)
+    } else {
+      return attribute
+    }
+  }
+
+  public transformPropertyPathToAttributePath(propertyName: string): string {
+    const attributes = this.getAttributePathByPropertyName(propertyName)
+    const segments = attributes.map(attribute => attribute.name)
+    return segments.join('.')
+  }
+
+  public getAttributePathByPropertyName(propertyName: string): Array<Attribute<any>> {
+    const attributes: Array<Attribute<any>> = []
 
     if (propertyName.includes('.')) {
       const nameSegments = propertyName.split('.')
-      const firstSegment = nameSegments.shift()
+      const firstSegment = nameSegments.shift()!
+      const newSegments: string[] = []
+      let attribute = this.findAttributeByPropertyName(firstSegment)
 
-      if (firstSegment != null) {
-        for (const attr of this.attributes.values()) {
-          if (attr.propertyName === firstSegment) {
-            attribute = attr
-          }
-        }
+      if (attribute != null) {
+        attributes.push(attribute)
+        newSegments.push(attribute.name)
 
         for (const nameSegment of nameSegments) {
           if (attribute != null) {
-            const mapAttributes = (attribute.type as MapAttributeType<any>).attributes
-            mapAttributesFor: for (const mapAttribute of Object.values(mapAttributes)) {
-              if (mapAttribute.propertyName === nameSegment) {
-                attribute = mapAttribute
+            const children: Record<string, Attribute<any>> = (attribute.type as MapAttributeType<any>).attributes
+            mapAttributesFor: for (const childAttribute of Object.values(children)) {
+              if (childAttribute.propertyName === nameSegment) {
+                attribute = childAttribute
+                attributes.push(childAttribute)
                 break mapAttributesFor
               }
             }
@@ -198,18 +216,14 @@ export class Schema {
         }
       }
     } else {
-      for (const attr of this.attributes.values()) {
-        if (attr.propertyName === propertyName) {
-          attribute = attr
-        }
+      const attribute = this.findAttributeByPropertyName(propertyName)
+
+      if (attribute != null) {
+        attributes.push(attribute)
       }
     }
 
-    if (attribute == null) {
-      throw new SchemaError(`Schema for ${this.name} has no attribute by property name ${propertyName}`)
-    } else {
-      return attribute
-    }
+    return attributes
   }
 
   public addAttribute(attribute: Attribute<any>): Attribute<any> {
@@ -267,5 +281,13 @@ export class Schema {
     }
 
     return attributeMap
+  }
+
+  private findAttributeByPropertyName(propertyName: string): Attribute<any> | undefined {
+    for (const attribute of this.attributes.values()) {
+      if (attribute.propertyName === propertyName) {
+        return attribute
+      }
+    }
   }
 }

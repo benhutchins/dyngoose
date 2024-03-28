@@ -122,6 +122,17 @@ describe('Query/Search', () => {
     expect(result.count).to.eq(3)
   })
 
+  it('should support filtering on children of maps', async () => {
+    const search = new MagicSearch<TestableTable>(TestableTable)
+      .filter('testMap', 'property1').eq('test')
+    const input = search.getInput()
+    expect(input.FilterExpression).to.eq('#a00.#a01 = :v0')
+    expect(input.ExpressionAttributeNames).to.deep.eq({
+      '#a00': 'someMap',
+      '#a01': 'someProperty1',
+    })
+  })
+
   it('ConsistentRead defaults to false', async () => {
     const search = new MagicSearch<TestableTable>(TestableTable)
     const input = search.getInput()

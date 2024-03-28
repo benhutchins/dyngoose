@@ -105,8 +105,9 @@ class FilterExpressionQuery<T extends Table> {
     }
   }
 
-  private handleFilter(attrName: string, value: any, push = true): QueryFilterQuery {
-    const attribute = this.schema.getAttributeByPropertyName(attrName)
+  private handleFilter(propertyName: string, value: any, push = true): QueryFilterQuery {
+    const attribute = this.schema.getAttributeByPropertyName(propertyName)
+    const attrName = this.schema.transformPropertyPathToAttributePath(propertyName)
 
     let filter: Filter<any>
 

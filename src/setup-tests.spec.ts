@@ -82,6 +82,14 @@ export class TestableTable extends Dyngoose.Table {
 
   @Dyngoose.Attribute.String({ name: 'testAttributeNameNotMatchingPropertyName' })
   public testAttributeNaming: string
+
+  @Dyngoose.Attribute.Map({
+    name: 'someMap',
+    attributes: {
+      property1: Dyngoose.Attribute.String({ name: 'someProperty1' }),
+    },
+  })
+  public testMap?: { property1?: string }
 }
 
 before(async () => {
