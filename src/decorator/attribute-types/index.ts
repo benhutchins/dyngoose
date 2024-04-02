@@ -60,15 +60,18 @@ export interface AttributeDefinition {
   getAttribute: (record: Table, propertyName: string) => any
 }
 
-export function Attribute<T extends keyof AttributeTypeMap>(type?: T, metadata?: AttributeMetadataMap[T]): AttributeDefinition {
+export function Attribute<T extends keyof AttributeTypeMap>(typeOrMetadata?: T | Metadata.AttributeType.Dynamic, metadata?: AttributeMetadataMap[T]): AttributeDefinition {
+  const type = typeof typeOrMetadata === 'string' ? typeOrMetadata : 'Dynamic'
+  metadata = metadata ?? (typeof typeOrMetadata === 'string' ? undefined : typeOrMetadata)
+
   const define = function (record: Table, propertyName: string): void {
-    const AttributeTypeClass: any = AttributeTypes[type ?? 'Dynamic']
+    const AttributeTypeClass: any = AttributeTypes[type]
     const decorator = new AttributeTypeClass(record, propertyName, metadata)
     decorator.decorate()
   }
 
   define.getAttribute = function (record: Table, propertyName: string): any {
-    const AttributeTypeClass: any = AttributeTypes[type ?? 'Dynamic']
+    const AttributeTypeClass: any = AttributeTypes[type]
     const decorator = new AttributeTypeClass(record, propertyName, metadata)
     return decorator.attribute
   }

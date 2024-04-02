@@ -19,6 +19,20 @@ You can also [define custom types](#custom-attribute-types).
 | [`@Dyngoose.Attribute.Any`](dyngooseattributeany) | `S` | `Object` | Stores an object as a JSON-encoded string in DynamoDB, does not allow querying or filtering of child attributes. |
 | [`@Dyngoose.Attribute.Date`](dyngooseattributedate) | `S` or `N` | `Date` | Stores a Date value. By default stores values in a ISO 8601 formatted string. You can use options to store values as Unix timestamps. |
 
+#### Attribute vs Property Name
+
+By default, attributes will be saved to the DynamoDB using the property name you assign on your `Table` class. You can override this by providing an explicit `name` set on your attribute's configuration:
+
+```typescript
+// in the below example, the attribute name will be 'userId' in DynamoDB
+@Dyngoose.Attribute.String()
+userId: string
+
+// in the below example, the attribute name will be 'user_id' in DynamoDB
+@Dyngoose.Attribute.String({ name: 'user_id' })
+userId: string
+```
+
 #### Alternative Decorator Style
 
 Dyngoose also allows all the official attribute types to be defined simply as `Dyngoose.Attribute('String')` if you prefer. You can pass your options as a second argument.
@@ -43,6 +57,7 @@ utility. The additional options available from the converter are exposed on the 
   marshallOptions: {},
   unmarshallOptions: {},
 })
+someProperty: string | number | any
 ```
 
 ##### Limitations of Dynamic Attributes
@@ -77,6 +92,7 @@ The `String` attribute supports additional settings:
   // forces the value to uppercase
   uppercase: true,
 })
+stringProperty: string
 ```
 
 These options are also available on the `Dyngoose.Attribute.StringSet` type.
@@ -120,6 +136,7 @@ The `Date` attribute supports additional settings:
   // defaults to current time when a record is created or updated
   nowOnUpdate: true,
 })
+dateProperty: Date
 ```
 
 #### Dyngoose.Attribute.List
