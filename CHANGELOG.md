@@ -1,3 +1,11 @@
+# [4.11.0](https://github.com/benhutchins/dyngoose/compare/v4.10.2...v4.11.0) (2024-04-02)
+
+
+### Features
+
+* add someOf an allOf filter condition utilities ([d6c3f65](https://github.com/benhutchins/dyngoose/commit/d6c3f65d2bd775052acf89b4172231fd49d8b300))
+* allow creation of Dynamic attribute with only metadata ([62d7a52](https://github.com/benhutchins/dyngoose/commit/62d7a521ee227457479d32d40b2e1a7a2eff276b)), closes [#673](https://github.com/benhutchins/dyngoose/issues/673)
+
 ## [4.10.2](https://github.com/benhutchins/dyngoose/compare/v4.10.1...v4.10.2) (2024-03-28)
 
 
