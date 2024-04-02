@@ -4,12 +4,16 @@ import { MagicSearch } from './search'
 
 describe('Query/Search', () => {
   before(async () => {
-    const sets = { testStringSet: new Set(['search']), testStringSetArray: ['search'] }
+    const sets = {
+      testStringSet: new Set(['search', 'search1', 'search2']),
+      testStringSetArray: ['search', 'search3', 'search4'],
+    }
+
     await TestableTable.documentClient.batchPut([
       TestableTable.new({ id: 500, title: 'Table.search 0', lowercaseString: 'table search 0', ...sets }),
       TestableTable.new({ id: 501, title: 'Table.search 1', lowercaseString: 'table search 1', ...sets }),
       TestableTable.new({ id: 502, title: 'Table.search 2', lowercaseString: 'table search 2', ...sets }),
-      TestableTable.new({ id: 503, title: 'Table.search 3', lowercaseString: 'table search 3' }),
+      TestableTable.new({ id: 503, title: 'Table.search 3', lowercaseString: 'table search 3', testStringSet: ['search10'] }),
       TestableTable.new({ id: 504, title: 'Table.search 4', lowercaseString: 'reject the search 4' }),
       TestableTable.new({ id: 504, title: 'Table.search 5', lowercaseString: 'magic' }),
       TestableTable.new({ id: 504, title: 'Table.search 6', lowercaseString: 'search' }),
@@ -94,6 +98,16 @@ describe('Query/Search', () => {
     expect(result.count).to.eq(3)
   })
 
+  it('should support includes operator', async () => {
+    const search = new MagicSearch<TestableTable>(TestableTable)
+      .filter('lowercaseString').includes('search', 'magic')
+    const input = search.getInput()
+    expect(input.IndexName).to.be.a('undefined')
+    expect(input.FilterExpression).to.eq('#a0 IN (:v00, :v01)')
+    const result = await search.exec()
+    expect(result.count).to.eq(3)
+  })
+
   it('should support AND and OR operators together', async () => {
     const search = new MagicSearch<TestableTable>(TestableTable)
       .filter('title').contains('Table.search')
@@ -110,7 +124,7 @@ describe('Query/Search', () => {
     expect(result.count).to.eq(3)
   })
 
-  it('should support filtering on sets', async () => {
+  it('should support contains filtering on sets', async () => {
     const search = new MagicSearch<TestableTable>(TestableTable)
       .filter('testStringSet').contains('search')
       .and()
@@ -118,6 +132,26 @@ describe('Query/Search', () => {
     const input = search.getInput()
     expect(input.IndexName).to.be.a('undefined')
     expect(input.FilterExpression).to.eq('contains(#a0, :v0) AND contains(#a1, :v0)')
+    const result = await search.exec()
+    expect(result.count).to.eq(3)
+  })
+
+  it('should support someOf filtering on sets', async () => {
+    const search = new MagicSearch<TestableTable>(TestableTable)
+      .filter('testStringSet').someOf(['search1', 'search10'])
+    const input = search.getInput()
+    expect(input.IndexName).to.be.a('undefined')
+    expect(input.FilterExpression).to.eq('(contains(#a0, :v0) OR contains(#a0, :v1))')
+    const result = await search.exec()
+    expect(result.count).to.eq(4) // 3 records contain search1, 1 record will contain search10
+  })
+
+  it('should support allOf filtering on sets', async () => {
+    const search = new MagicSearch<TestableTable>(TestableTable)
+      .filter('testStringSetArray').allOf(['search3', 'search4'])
+    const input = search.getInput()
+    expect(input.IndexName).to.be.a('undefined')
+    expect(input.FilterExpression).to.eq('contains(#a0, :v0) AND contains(#a0, :v1)')
     const result = await search.exec()
     expect(result.count).to.eq(3)
   })

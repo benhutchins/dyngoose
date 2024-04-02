@@ -73,10 +73,11 @@ The available methods on `Dyngoose.Condition` are:
 | `.gte(value)` | `.filter('count').gte(100)` | Attribute must be greater than or equal to specified value. Works on `Number`, `String`, and `Date` attribute types. |
 | `.beginsWith(value)` | `.filter('name').beginsWith('John')` | Attribute must start with specified value. |
 | `.between(start, end)` | `.filter('dateOfBirth').between(Date.parse('1990-01-01'), Date.parse('1999-12-31'))` | Looks for any record where the attribute value is between the given range. Works on `Number`, `String`, and `Date` attribute types. |
-| `.includes(...value)` | `.filter('numbers').includes(1, 2, 3)` | Looks within a [Set Attribute](Attributes.md#set-attributes) for any of the specified values. Values must match exactly. |
-| `.excludes(...value)` | `.filter('skills').excludes('magic', 'sorcery')` | Looks within a [Set Attribute](Attributes.md#set-attributes) to verify no value matches the specified values. Values must match exactly. Using `.not().includes()` has the same effect. |
-| `.contains(value)` | `.filter('email').contains('@example.com')` | Looks at a value to see if it contains the given substring. This can be performed on a [Set Attribute](Attributes.md#set-attributes) to look for partial matches instead of exact matches. |
-| `.not().contains(value)` | `.filter('email').not().contains('@example.com')` | Similar to `contains`, except the exact opposite. Values must not contain the given substring. |
+| `.includes([...value])` | `.filter('numbers').includes([1, 2, 3])` | Attribute value must match one of the specified values. Works only on String, Number, and Binary attributes. |
+| `.excludes([...value])` | `.filter('numbers').excludes([1, 2, 3])` | Attribute value must not match any of the specified values. Works only on String, Number, and Binary attributes. |
+| `.contains(value)` | `.filter('email').contains('@example.com')`<br>`.filter('phoneNumbers').contains('+12345678901')` | Looks at a value to see if it contains the given substring. This can be performed on a [Set Attribute](Attributes.md#set-attributes) to determine if the set contains the value provided (this usage is similar to `someOf`, but only accepts a single value). |
+| `.someOf([...values])` | `.filter('referenceIds').someOf(['id1', 'id2'])` | Set attribute must contain at least one of the specified values. |
+| `.allOf([...values])` | `.filter('referenceIds').allOf(['id1', 'id2'])` | Set attribute must contain all of the specified values. |
 | `.null()` | `.filter('someProperty').null()` | Attribute value must exist and the value must be null. |
 | `.not().null()` | `.filter('someProperty').not().null()` | Attribute value value must exist and have any value other than null. |
 | `.exists()` | `.filter('someProperty').exists()` | Attribute must exist, value can be anything, including `NULL`. |

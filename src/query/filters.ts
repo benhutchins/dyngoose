@@ -2,9 +2,11 @@ import { type Table } from '../table'
 
 export type AttributeNames<T extends Table> = Exclude<Exclude<keyof T, keyof Table>, () => any>
 
-export type ContainsType<Type> = Type extends Array<infer E>
-  ? E
-  : Type extends Set<infer E> ? E : Type
+export type ContainsType<Type> = Type extends Array<infer E> | Set<infer E> ? E : Type
+
+export type IntersectsType<Type> = Type extends Array<infer E> | Set<infer E> ? E : never
+
+export type SimpleTypesOnly<Type> = Type extends string | number | bigint | number | bigint ? Type : never
 
 export type Filter<Type> =
   ['=', Type] |

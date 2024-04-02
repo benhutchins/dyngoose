@@ -1,5 +1,6 @@
+import { flatten } from 'lodash'
 import { type Table } from '../dyngoose'
-import { type ContainsType, type Filter } from './filters'
+import { type SimpleTypesOnly, type ContainsType, type Filter, type IntersectsType } from './filters'
 import { type MagicSearch } from './search'
 
 export class Condition<T extends Table, Attr, AttributeValueType> {
@@ -142,43 +143,59 @@ export class Condition<T extends Table, Attr, AttributeValueType> {
   }
 
   /**
-   * Checks for matching elements in a list.
+   * Check if the attribute value matches of one of the given values.
    *
-   * If any of the values specified are equal to the item attribute, the expression evaluates to true.
+   * If the attribute value matches any of the values specified, the expression evaluates to true.
    *
-   * This is a rather complicated method, so here is a simple example.
+   * Can provide up to 100 values to compare against.
    *
-   * **Example documents:**
-   *   [ { "name": "Bob "}, { "name": "Robert" }, { "name": "Robby" } ]
-   *
-   * **Example condition:**
-   *   `filter('name').includes(['Bob', 'Robert'])`
-   *
-   * **Example result:**
-   *   [ { "name": "Bob "}, { "name": "Robert" } ]
-   *
-   * Works for String, Number, or Binary (not a set type) attribute.
-   * Does not work on sets.
+   * Works for String, Number, or Binary (not a set type) attributes. **Note: Does not work on sets.**
    */
-  includes(...values: AttributeValueType extends any[] ? never : AttributeValueType[]): MagicSearch<T> {
+  includes(...values: Array<SimpleTypesOnly<AttributeValueType>> | Array<Array<SimpleTypesOnly<AttributeValueType>>>): MagicSearch<T> {
     if (this._not) {
-      this.filter = ['excludes', values]
+      this.filter = ['excludes', flatten(values)]
     } else {
-      this.filter = ['includes', values]
+      this.filter = ['includes', flatten(values)]
     }
     return this.finalize()
   }
 
   /**
-   * A utility method, identical as if you did `.not().includes(…)`
+   * Check if the attribute value does NOT match any of the given values.
+   *
+   * This is a utility method, identical as if you did `.not().includes(…)`
+   *
+   * Works for String, Number, or Binary (not a set type) attributes. **Note: Does not work on sets.**
    */
-  excludes(...values: AttributeValueType extends any[] ? never : AttributeValueType[]): MagicSearch<T> {
+  excludes(...values: Array<SimpleTypesOnly<AttributeValueType>>): MagicSearch<T> {
     if (this._not) {
-      this.filter = ['includes', values]
+      this.filter = ['includes', flatten(values)]
     } else {
-      this.filter = ['excludes', values]
+      this.filter = ['excludes', flatten(values)]
     }
     return this.finalize()
+  }
+
+  /**
+   * Checks if a Set contains any of the provided values in a list.
+   *
+   * If any of the values specified are contained in the attribute's Set, the expression evaluates to true.
+   *
+   * Works for StringSet, NumberSet, or BinarySet attributes.
+   */
+  someOf(...values: Array<IntersectsType<AttributeValueType>> | Array<Array<IntersectsType<AttributeValueType>>>): MagicSearch<T> {
+    return this.intersects('some', values)
+  }
+
+  /**
+   * Checks if a Set contains all of the provided values in a list.
+   *
+   * If every one of the values are contained with the attribute's Set, the expression evaluates to true.
+   *
+   * Works for StringSet, NumberSet, or BinarySet attributes.
+   */
+  allOf(...values: Array<IntersectsType<AttributeValueType>> | Array<Array<IntersectsType<AttributeValueType>>>): MagicSearch<T> {
+    return this.intersects('all', values)
   }
 
   /**
@@ -209,12 +226,37 @@ export class Condition<T extends Table, Attr, AttributeValueType> {
     return this.finalize()
   }
 
+  private intersects(allOrSome: 'all' | 'some', values: Array<IntersectsType<AttributeValueType>> | Array<Array<IntersectsType<AttributeValueType>>>): MagicSearch<T> {
+    const key = this.key as any
+    const filters: any[] = [] // any is because of the Exclude on beginsWith
+    const operator: 'contains' | 'not contains' = this._not ? 'not contains' : 'contains'
+    const options = flatten(values)
+
+    for (let i = 0; i < options.length; i++) {
+      const value = options[i]
+      const filter: Filter<AttributeValueType> = [operator, value]
+      filters.push({ [key]: filter })
+
+      if (allOrSome === 'some' && i !== options.length - 1) {
+        filters.push('OR')
+      }
+    }
+
+    if (allOrSome === 'some') {
+      this.search.parenthesis(group => group.addFilterGroup(filters))
+    } else {
+      this.search.addFilterGroup(filters)
+    }
+
+    return this.search
+  }
+
   private finalize(): MagicSearch<T> {
     const key = this.key as any
     this.search.addFilterGroup([
       {
-        [key]: this.filter as any, // any is because of the Exclude on beginsWith
-      },
+        [key]: this.filter,
+      } as any, // any is because of the Exclude on beginsWith
     ])
 
     return this.search
