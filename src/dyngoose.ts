@@ -2,7 +2,7 @@ import { type TableDescription } from '@aws-sdk/client-dynamodb'
 
 import { BatchGet } from './batch-get'
 import { BatchWrite } from './batch-write'
-import * as Config from './config'
+import Config from './config'
 import * as Connection from './connections'
 import * as Decorator from './decorator'
 import { DynamoAttributeType } from './dynamo-attribute-types'

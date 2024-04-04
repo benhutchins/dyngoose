@@ -39,10 +39,25 @@ You can also provide your credentials from within your process.
 ###### Global
 
 ```typescript
+// Dyngoose provides a wrapper for the aws-sdk v3 DynamoDB Client that adds x-ray support
 Dyngoose.Config.defaultConnection = new Dyngoose.Connection.DynamoDBConnection({
+  endpoint: '…',
   region: '…',
-  accessKeyId: '…',
-  secretAccessKey: '…',
+  credentials: {
+    accessKeyId: '…',
+    secretAccessKey: '…',
+  },
+})
+
+// or you can provide a DynamoDB Client directly
+import { DynamoDB } from '@aws-sdk/client-dynamodb'
+Dyngoose.Config.defaultConnection = new DynamoDB({
+  endpoint: '…',
+  region: '…',
+  credentials: {
+    accessKeyId: '…',
+    secretAccessKey: '…',
+  },
 })
 ```
 

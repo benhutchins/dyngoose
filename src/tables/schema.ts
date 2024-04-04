@@ -8,6 +8,7 @@ import * as Query from '../query'
 import { type ITable, type Table } from '../table'
 import { createTableInput } from './create-table-input'
 import { last } from 'lodash'
+import Config from '../config'
 
 export class Schema {
   public isDyngoose = true
@@ -36,7 +37,15 @@ export class Schema {
   /**
    * Holds the DynamoDB Client for the table
    */
-  public dynamo: DynamoDB
+  public get dynamo(): DynamoDB {
+    return this.__dynamo ?? Config.defaultConnection.client
+  }
+
+  public set dynamo(client: DynamoDB) {
+    this.__dynamo = client
+  }
+
+  private __dynamo?: DynamoDB
 
   // List of attributes this table has
   private readonly attributes = new Map<string, Attribute<any>>()
