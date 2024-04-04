@@ -1,3 +1,10 @@
+## [4.11.1](https://github.com/benhutchins/dyngoose/compare/v4.11.0...v4.11.1) (2024-04-04)
+
+
+### Bug Fixes
+
+* ability to set default DynamoDB Connection globally and easily ([31123d6](https://github.com/benhutchins/dyngoose/commit/31123d6c6d7568b4e4275bf03075a5e8f6f607c7)), closes [#680](https://github.com/benhutchins/dyngoose/issues/680)
+
 # [4.11.0](https://github.com/benhutchins/dyngoose/compare/v4.10.2...v4.11.0) (2024-04-02)
 
 
