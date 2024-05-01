@@ -56,7 +56,7 @@
     "eslint-config-standard-with-typescript": "^34.0.1",
     "husky": "^8.0.3",
     "mocha": "9.1.2",
-    "semantic-release": "^21.0.1",
+    "semantic-release": "^23.0.8",
     "typescript": "^5.0.4"
   },
   "dependencies": {
