@@ -1,3 +1,10 @@
+## [4.11.2](https://github.com/benhutchins/dyngoose/compare/v4.11.1...v4.11.2) (2024-06-05)
+
+
+### Bug Fixes
+
+* passing conditions from PrimaryKey.update to Table.update ([32a6807](https://github.com/benhutchins/dyngoose/commit/32a6807819184931d4ea947de7dae8df6c8128ba)), closes [#699](https://github.com/benhutchins/dyngoose/issues/699)
+
 ## [4.11.1](https://github.com/benhutchins/dyngoose/compare/v4.11.0...v4.11.1) (2024-04-04)
 
 
