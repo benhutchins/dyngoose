@@ -393,6 +393,6 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
    * It then has the Table.Schema build the DynamoDB.UpdateItemInput with all the requested changes.
    */
   public async update(input: PrimaryKeyUpdateItem<T, HashKeyType, RangeKeyType>): Promise<void> {
-    await this.fromKey(input.hash, input.range).fromJSON(input.changes).save(input.conditions)
+    await this.fromKey(input.hash, input.range).fromJSON(input.changes).save({ conditions: input.conditions })
   }
 }
