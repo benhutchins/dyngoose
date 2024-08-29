@@ -25,9 +25,11 @@ jobs:
       - name: Lint
         run: npm run lint
       - name: Test
-        run: npm test
+        run: npm run test:ci
         env:
           DYNAMO_ENDPOINT: http://localhost:8000
+      - name: Test ESM
+        run: npm run test:esm
       - name: Publish
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         # npm will not execute `prepublisnOnly` lifecycle hook if user is root.

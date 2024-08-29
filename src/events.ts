@@ -1,7 +1,8 @@
-import { type DeleteItemCommandOutput, type PutItemCommandOutput, type ReturnConsumedCapacity, type UpdateItemCommandOutput } from '@aws-sdk/client-dynamodb'
-import { type Table } from './table'
-import { type AttributeMap, type DynamoReturnValues } from './interfaces'
-import { type UpdateConditions } from './query/filters'
+import type { DeleteItemCommandOutput, PutItemCommandOutput, ReturnConsumedCapacity, UpdateItemCommandOutput } from '@aws-sdk/client-dynamodb'
+
+import type { AttributeMap, DynamoReturnValues } from './interfaces'
+import type { UpdateConditions } from './query/filters'
+import type { Table } from './table'
 
 interface BaseEvent<T extends Table> {
   /**

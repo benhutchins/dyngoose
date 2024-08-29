@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import type { Construct } from 'constructs'
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
+import type { Construct } from 'constructs'
 import { readdir } from 'fs/promises'
 import { isNil } from 'lodash'
 import { join } from 'path'
-import { type IThroughputAutoScalingCapacity } from '../interfaces'
+
+import type { IThroughputAutoScalingCapacity } from '../interfaces'
+import { Table } from '../table'
 import {
   DEFAULT_AUTOSCALING_MAX_CAPACITY,
   DEFAULT_AUTOSCALING_MIN_CAPACITY,
@@ -12,8 +14,7 @@ import {
   DEFAULT_READ_CAPACITY,
   DEFAULT_WRITE_CAPACITY,
 } from '../tables/defaults'
-import { Table } from '../table'
-import { type Schema } from '../tables/schema'
+import type { Schema } from '../tables/schema'
 
 export interface CreateCDKTablesInput {
   scope: Construct
@@ -51,20 +52,20 @@ export function createCDKTable(scope: Construct, schema: Schema, tableProps: Par
   }
 
   if (tableProps.billingMode == null) {
-    if (schema.options.billingMode === 'PAY_PER_REQUEST') {
+    if (schema.options?.billingMode === 'PAY_PER_REQUEST') {
       tableProps.billingMode = dynamodb.BillingMode.PAY_PER_REQUEST
-    } else if (schema.options.billingMode === 'PROVISIONED') {
+    } else if (schema.options?.billingMode === 'PROVISIONED') {
       tableProps.billingMode = dynamodb.BillingMode.PROVISIONED
       tableProps.readCapacity = schema.throughput?.read ?? DEFAULT_READ_CAPACITY
       tableProps.writeCapacity = schema.throughput?.write ?? DEFAULT_WRITE_CAPACITY
     }
   }
 
-  if (tableProps.pointInTimeRecovery == null && schema.options.backup === true) {
+  if (tableProps.pointInTimeRecovery == null && schema.options?.backup === true) {
     tableProps.pointInTimeRecovery = true
   }
 
-  if (tableProps.encryption == null && schema.options.encrypted === true) {
+  if (tableProps.encryption == null && schema.options?.encrypted === true) {
     tableProps.encryption = dynamodb.TableEncryption.AWS_MANAGED
   }
 
@@ -72,7 +73,7 @@ export function createCDKTable(scope: Construct, schema: Schema, tableProps: Par
     tableProps.timeToLiveAttribute = schema.timeToLiveAttribute.name
   }
 
-  if (tableProps.stream == null && schema.options.stream != null) {
+  if (tableProps.stream == null && schema.options?.stream != null) {
     if (typeof schema.options.stream === 'boolean') {
       tableProps.stream = dynamodb.StreamViewType.NEW_AND_OLD_IMAGES
     } else if (schema.options.stream.StreamViewType != null) {
@@ -82,7 +83,7 @@ export function createCDKTable(scope: Construct, schema: Schema, tableProps: Par
 
   const table = new dynamodb.Table(scope, `${schema.name}Table`, tableProps as any)
 
-  if (schema.options.billingMode === 'PROVISIONED') {
+  if (schema.options?.billingMode === 'PROVISIONED') {
     let autoScaling = schema.throughput?.autoScaling
 
     if (autoScaling === true) {
@@ -154,7 +155,7 @@ export async function createCDKTables(input: CreateCDKTablesInput): Promise<dyna
   const tableFiles = await readdir(input.tablesDirectory)
   const tables: Array<typeof Table> = []
   const resources: dynamodb.Table[] = []
-  const log = input.log == null ? console.log : input.log
+  const log = input.log ?? console.log
   log('Running Dyngoose CDK generation utility…')
 
   for (const file of tableFiles) {

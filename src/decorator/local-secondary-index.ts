@@ -1,5 +1,5 @@
 import { SchemaError } from '../errors'
-import { type ITable } from '../table'
+import type { ITable } from '../table'
 
 export function LocalSecondaryIndex(sortKeyName: string, options: { name?: string } = {}) {
   return (tableClass: ITable<any>, propertyName: string) => {
@@ -11,7 +11,7 @@ export function LocalSecondaryIndex(sortKeyName: string, options: { name?: strin
     }
 
     tableClass.schema.localSecondaryIndexes.push({
-      name: options.name == null ? propertyName : options.name,
+      name: options.name ?? propertyName,
       propertyName,
       range,
     })

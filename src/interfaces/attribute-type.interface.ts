@@ -1,6 +1,7 @@
-import { type AttributeValue } from '@aws-sdk/client-dynamodb'
-import { type Attribute } from '../attribute'
-import { type DynamoAttributeTypes } from '../dynamo-attribute-types'
+import type { AttributeValue } from '@aws-sdk/client-dynamodb'
+
+import type { Attribute } from '../attribute'
+import type { DynamoAttributeTypes } from '../dynamo-attribute-types'
 
 export interface IAttributeType<Value> {
   type: DynamoAttributeTypes

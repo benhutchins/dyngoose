@@ -1,27 +1,28 @@
-import {
-  type AttributeValue,
-  type PutItemOutput,
-  type UpdateItemOutput,
-  type TableDescription,
-  type PutItemCommandOutput,
-  type UpdateItemCommandOutput,
-  type DeleteItemCommandOutput,
+import type {
+  AttributeValue,
+  DeleteItemCommandOutput,
+  PutItemCommandOutput,
+  PutItemOutput,
+  TableDescription,
+  UpdateItemCommandOutput,
+  UpdateItemOutput,
 } from '@aws-sdk/client-dynamodb'
 import * as _ from 'lodash'
-import { type Attribute } from './attribute'
+
+import type { Attribute } from './attribute'
+import type { IRequestOptions } from './connections'
 import { DocumentClient } from './document-client'
 import type * as Events from './events'
-import { type AttributeMap, type SetPropParams, type UpdateOperator } from './interfaces'
-import { type Filters } from './query/filters'
+import type { AttributeMap, SetPropParams, UpdateOperator } from './interfaces'
+import type { Filters } from './query/filters'
 import { MagicSearch, type MagicSearchInput } from './query/search'
 import { createTable } from './tables/create-table'
 import { deleteTable } from './tables/delete-table'
 import { describeTable } from './tables/describe-table'
 import { migrateTable } from './tables/migrate-table'
-import { type TablePropertyValue, type TableProperties, type TableProperty } from './tables/properties'
+import type { TableProperties, TableProperty,TablePropertyValue } from './tables/properties'
 import { Schema } from './tables/schema'
 import { isTrulyEmpty } from './utils/truly-empty'
-import { type IRequestOptions } from './connections'
 
 type StaticThis<T> = new() => T
 
@@ -30,7 +31,7 @@ export class Table {
   // #region static properties
   public static get schema(): Schema {
     if (this.__schema == null) {
-      this.__schema = new Schema(this as any)
+      this.__schema = new Schema(this)
     }
 
     return this.__schema
@@ -65,7 +66,13 @@ export class Table {
   public static new<T extends Table>(this: StaticThis<T>, values?: TableProperties<T>): T {
     const record = new this().applyDefaults()
     if (values != null) {
-      record.setValues(_.omitBy(values, (v) => v === undefined) as any)
+      for (const key in values) {
+        if (values[key as keyof typeof values] === undefined) {
+          delete values[key as keyof typeof values]
+        }
+      }
+
+      record.setValues(values)
     }
     return record
   }

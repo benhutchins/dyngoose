@@ -1,11 +1,12 @@
 import * as _ from 'lodash'
-import { type Attribute } from '../attribute'
+
+import type { Attribute } from '../attribute'
 import { QueryError } from '../errors'
-import { type AttributeMap } from '../interfaces'
+import type { AttributeMap } from '../interfaces'
 import type * as Metadata from '../metadata'
-import { type Table } from '../table'
-import { type Schema } from '../tables/schema'
-import { type ComplexFilters, type Filter, type Filters } from './filters'
+import type { Table } from '../table'
+import type { Schema } from '../tables/schema'
+import type { ComplexFilters, Filter, Filters } from './filters'
 
 interface Expression {
   ExpressionAttributeNames: Record<string, string>
@@ -146,7 +147,8 @@ class FilterExpressionQuery<T extends Table> {
       } else if (_.isArray(filters)) {
         conditions.push(this.parseComplexFilters(filters, true))
       } else {
-        _.each(filters, (value, propName) => {
+        for (const propName in filters) {
+          const value = filters[propName as keyof typeof filters]
           const queryValue = this.handleFilter(propName, value, false)
           const attribute = this.schema.getAttributeByPropertyName(propName)
 
@@ -168,7 +170,7 @@ class FilterExpressionQuery<T extends Table> {
               conditions.push(queryValue.query)
             }
           }
-        })
+        }
       }
     }
 

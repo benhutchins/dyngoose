@@ -1,4 +1,4 @@
-import { type AttributeMetadata } from '../attribute'
+import type { AttributeMetadata } from '../attribute'
 
 type Value = any
 

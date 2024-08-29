@@ -1,6 +1,7 @@
-import { type DescribeTableCommandInput, type TableDescription } from '@aws-sdk/client-dynamodb'
-import { type Schema } from './schema'
-import { type IRequestOptions } from '../connections'
+import type { DescribeTableCommandInput, TableDescription } from '@aws-sdk/client-dynamodb'
+
+import type { IRequestOptions } from '../connections'
+import type { Schema } from './schema'
 
 export async function describeTable(schema: Schema, requestOptions?: IRequestOptions): Promise<TableDescription> {
   const params: DescribeTableCommandInput = {
@@ -8,5 +9,5 @@ export async function describeTable(schema: Schema, requestOptions?: IRequestOpt
   }
 
   const result = await schema.dynamo.describeTable(params, requestOptions)
-  return result.Table as TableDescription
+  return result.Table!
 }

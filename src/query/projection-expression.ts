@@ -1,5 +1,6 @@
 import { uniq } from 'lodash'
-import { type ITable, type Table } from '../table'
+
+import type { ITable, Table } from '../table'
 
 interface IProjectionExpression {
   ProjectionExpression: string

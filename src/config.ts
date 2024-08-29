@@ -1,4 +1,5 @@
 import { DynamoDB } from '@aws-sdk/client-dynamodb'
+
 import { type Connection, DynamoDBConnection } from './connections'
 
 /**
@@ -39,5 +40,5 @@ export default class Config {
   }
 
   // this is to avoid a type error, but we should probably convert this class to something else
-  public useless: boolean
+  public useless: undefined
 }

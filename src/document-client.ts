@@ -1,21 +1,22 @@
-import {
-  type DeleteItemInput,
-  type TransactWriteItem,
-  type TransactWriteItemsOutput,
-  type BatchWriteItemOutput,
-  type UpdateItemInput,
-  type PutItemInput,
-  type UpdateItemCommandOutput,
-  type PutItemCommandOutput,
-  type DeleteItemCommandOutput,
+import type {
+  BatchWriteItemOutput,
+  DeleteItemCommandOutput,
+  DeleteItemInput,
+  PutItemCommandOutput,
+  PutItemInput,
+  TransactWriteItem,
+  TransactWriteItemsOutput,
+  UpdateItemCommandOutput,
+  UpdateItemInput,
 } from '@aws-sdk/client-dynamodb'
+
 import { HelpfulError } from './errors'
 import { batchWrite, type WriteRequestMap } from './query/batch-write'
 import { buildQueryExpression } from './query/expression'
-import { type UpdateConditions } from './query/filters'
+import type { UpdateConditions } from './query/filters'
 import { transactWrite } from './query/transact-write'
 import { getUpdateItemInput, type UpdateItemInputParams } from './query/update-item-input'
-import { type ITable, type Table } from './table'
+import type { ITable, Table } from './table'
 
 interface PutItemInputParams<T extends Table> extends UpdateItemInputParams<T> {
 }
@@ -48,7 +49,7 @@ export class DocumentClient<T extends Table> {
     const input = this.getPutInput(record, params)
     try {
       return await this.tableClass.schema.dynamo.putItem(input)
-    } catch (ex) {
+    } catch (ex: any) {
       throw new HelpfulError(ex, this.tableClass, input)
     }
   }
@@ -61,7 +62,7 @@ export class DocumentClient<T extends Table> {
     const input = this.getUpdateInput(record, params)
     try {
       return await this.tableClass.schema.dynamo.updateItem(input)
-    } catch (ex) {
+    } catch (ex: any) {
       throw new HelpfulError(ex, this.tableClass, input)
     }
   }
@@ -120,7 +121,7 @@ export class DocumentClient<T extends Table> {
     const input = this.getDeleteInput(record, conditions)
     try {
       return await this.tableClass.schema.dynamo.deleteItem(input)
-    } catch (ex) {
+    } catch (ex: any) {
       throw new HelpfulError(ex, this.tableClass, input)
     }
   }

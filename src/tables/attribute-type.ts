@@ -1,15 +1,16 @@
-import { type AttributeValue } from '@aws-sdk/client-dynamodb'
+import type { AttributeValue } from '@aws-sdk/client-dynamodb'
+
 import { Attribute } from '../attribute'
-import { type DynamoAttributeTypes } from '../dynamo-attribute-types'
-import { type IAttributeType } from '../interfaces'
-import { type AttributeMetadata } from '../metadata/attribute'
-import { type ITable, type Table } from '../table'
-import { type Schema } from './schema'
+import type { DynamoAttributeTypes } from '../dynamo-attribute-types'
+import type { IAttributeType } from '../interfaces'
+import type { AttributeMetadata } from '../metadata/attribute'
+import type { ITable, Table } from '../table'
+import type { Schema } from './schema'
 
 export class AttributeType<Value, Metadata extends AttributeMetadata<Value>> implements IAttributeType<Value> {
-  public type: DynamoAttributeTypes
+  public type!: DynamoAttributeTypes
 
-  private __attribute: Attribute<any>
+  private __attribute?: Attribute<any>
 
   constructor(
     protected record: Table,

@@ -1,9 +1,10 @@
-import { type AttributeValue } from '@aws-sdk/client-dynamodb'
+import type { AttributeValue } from '@aws-sdk/client-dynamodb'
 import { trim } from 'lodash'
+
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
 import { ValidationError } from '../../errors'
-import { type IAttributeType } from '../../interfaces'
-import { type StringAttributeMetadata } from '../../metadata/attribute-types/string.metadata'
+import type { IAttributeType } from '../../interfaces'
+import type { StringAttributeMetadata } from '../../metadata/attribute-types/string.metadata'
 import { AttributeType } from '../../tables/attribute-type'
 
 type Value = string

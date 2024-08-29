@@ -1,7 +1,8 @@
-import { type AttributeValue } from '@aws-sdk/client-dynamodb'
+import type { AttributeValue } from '@aws-sdk/client-dynamodb'
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
+
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
-import { type ListAttributeMetadata } from '../../metadata/attribute-types/list.metadata'
+import type { ListAttributeMetadata } from '../../metadata/attribute-types/list.metadata'
 import { AttributeType } from '../../tables/attribute-type'
 
 type Value = any[]

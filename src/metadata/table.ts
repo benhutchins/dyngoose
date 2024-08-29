@@ -1,5 +1,6 @@
-import { type DynamoDB, type StreamSpecification } from '@aws-sdk/client-dynamodb'
-import { type IThroughput } from '../interfaces'
+import type { DynamoDB, StreamSpecification } from '@aws-sdk/client-dynamodb'
+
+import type { IThroughput } from '../interfaces'
 
 export interface TableMetadata {
   /**

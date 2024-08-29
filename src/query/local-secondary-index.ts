@@ -1,14 +1,15 @@
-import { type QueryCommandInput, type QueryCommandOutput, type ScanCommandInput, type ScanCommandOutput, type Select } from '@aws-sdk/client-dynamodb'
+import type { QueryCommandInput, QueryCommandOutput, ScanCommandInput, ScanCommandOutput, Select } from '@aws-sdk/client-dynamodb'
 import { has } from 'lodash'
+
+import { type IRequestOptions,toHttpHandlerOptions } from '../connections'
 import { HelpfulError, QueryError } from '../errors'
-import { type Key } from '../interfaces/key.interface'
+import type { Key } from '../interfaces/key.interface'
 import type * as Metadata from '../metadata'
-import { type ITable, type Table } from '../table'
+import type { ITable, Table } from '../table'
 import { buildQueryExpression } from './expression'
-import { type Filters as QueryFilters } from './filters'
+import type { Filters as QueryFilters } from './filters'
 import { QueryOutput } from './output'
 import { MagicSearch, type MagicSearchInput } from './search'
-import { toHttpHandlerOptions, type IRequestOptions } from '../connections'
 
 interface LocalSecondaryIndexQueryInput extends IRequestOptions {
   rangeOrder?: 'ASC' | 'DESC'
@@ -72,7 +73,7 @@ export class LocalSecondaryIndex<T extends Table> {
     let output: QueryCommandOutput
     try {
       output = await this.tableClass.schema.dynamo.query(queryInput, toHttpHandlerOptions(input))
-    } catch (ex) {
+    } catch (ex: any) {
       throw new HelpfulError(ex, this.tableClass, queryInput)
     }
     return QueryOutput.fromDynamoOutput(this.tableClass, output, hasProjection)
@@ -105,7 +106,7 @@ export class LocalSecondaryIndex<T extends Table> {
     let output: ScanCommandOutput
     try {
       output = await this.tableClass.schema.dynamo.scan(scanInput, requestOptions)
-    } catch (ex) {
+    } catch (ex: any) {
       throw new HelpfulError(ex, this.tableClass, scanInput)
     }
     return QueryOutput.fromDynamoOutput(this.tableClass, output, hasProjection)

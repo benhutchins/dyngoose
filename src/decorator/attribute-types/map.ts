@@ -1,14 +1,15 @@
-import { type AttributeValue } from '@aws-sdk/client-dynamodb'
+import type { AttributeValue } from '@aws-sdk/client-dynamodb'
+import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
 import { each, find, get, isFunction, isObject } from 'lodash'
-import { type Attribute } from '../../attribute'
+
+import type { Attribute } from '../../attribute'
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
 import { ValidationError } from '../../errors'
-import { type AttributeMap, type IAttributeType } from '../../interfaces'
-import { type MapAttributeMetadata, type MapBaseValue } from '../../metadata/attribute-types/map.metadata'
-import { type Table } from '../../table'
+import type { AttributeMap, IAttributeType } from '../../interfaces'
+import type { MapAttributeMetadata, MapBaseValue } from '../../metadata/attribute-types/map.metadata'
+import type { Table } from '../../table'
 import { AttributeType } from '../../tables/attribute-type'
 import { isTrulyEmpty } from '../../utils/truly-empty'
-import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
 
 export class MapAttributeType<Value extends MapBaseValue> extends AttributeType<Value, MapAttributeMetadata<Value>>
   implements IAttributeType<Value> {
@@ -72,7 +73,7 @@ export class MapAttributeType<Value extends MapBaseValue> extends AttributeType<
   }
 
   fromDynamo(attributeValue: AttributeValue): Value {
-    const mapValue: AttributeMap = attributeValue.M == null ? {} : attributeValue.M
+    const mapValue: AttributeMap = attributeValue.M ?? {}
     const map: any = {}
 
     for (const attributeName of Object.keys(mapValue)) {

@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   dynamodb:
     image: amazon/dynamodb-local

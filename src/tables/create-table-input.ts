@@ -1,9 +1,19 @@
-import { type CreateTableCommandInput, type GlobalSecondaryIndex, type KeySchemaElement, type LocalSecondaryIndex } from '@aws-sdk/client-dynamodb'
+import { type CreateTableCommandInput, type GlobalSecondaryIndex, type KeySchemaElement, type LocalSecondaryIndex,ScalarAttributeType } from '@aws-sdk/client-dynamodb'
 import { uniqBy } from 'lodash'
-import { type Attribute } from '../attribute'
+
+import type { DynamoAttributeTypes } from '../dynamo-attribute-types'
 import { SchemaError } from '../errors'
-import { type Schema } from './schema'
 import { DEFAULT_READ_CAPACITY, DEFAULT_WRITE_CAPACITY } from './defaults'
+import type { Schema } from './schema'
+
+function getScalarAttributeType(type: DynamoAttributeTypes, errorMessage: string): ScalarAttributeType {
+  switch (type) {
+    case 'B': return ScalarAttributeType.B
+    case 'N': return ScalarAttributeType.N
+    case 'S': return ScalarAttributeType.S
+    default: throw new Error(`Non-Scalar Attribute Type. ${errorMessage}. Attribute type must be a String, Number, or Boolean`)
+  }
+}
 
 export function createTableInput(schema: Schema, forCloudFormation = false): CreateTableCommandInput {
   const params: CreateTableCommandInput = {
@@ -11,7 +21,7 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Cre
     AttributeDefinitions: [
       {
         AttributeName: schema.primaryKey.hash.name,
-        AttributeType: schema.primaryKey.hash.type.type,
+        AttributeType: getScalarAttributeType(schema.primaryKey.hash.type.type, `Table ${schema.name} Hash Attribute ${schema.primaryKey.hash.name}`),
       },
     ],
     KeySchema: [
@@ -34,7 +44,7 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Cre
   if (schema.primaryKey.range != null) {
     params.AttributeDefinitions!.push({
       AttributeName: schema.primaryKey.range.name,
-      AttributeType: schema.primaryKey.range.type.type,
+      AttributeType: getScalarAttributeType(schema.primaryKey.range.type.type, `Table ${schema.name} Range Attribute ${schema.primaryKey.range.name}`),
     })
 
     params.KeySchema!.push({
@@ -95,7 +105,10 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Cre
       if (params.AttributeDefinitions!.find((ad) => indexMetadata.range.name === ad.AttributeName) == null) {
         params.AttributeDefinitions!.push({
           AttributeName: indexMetadata.range.name,
-          AttributeType: indexMetadata.range.type.type,
+          AttributeType: getScalarAttributeType(
+            indexMetadata.range.type.type,
+            `Table ${schema.name} Index ${indexMetadata.name} Range Attribute ${indexMetadata.range.name}`,
+          ),
         })
       }
 
@@ -103,9 +116,8 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Cre
         IndexName: indexMetadata.name,
         KeySchema,
         Projection: {
-          ProjectionType: indexMetadata.projection == null ? 'ALL' : indexMetadata.projection,
+          ProjectionType: indexMetadata.projection ?? 'ALL',
         },
-        // Projection: indexMetadata.projection,
       }
 
       if (indexMetadata.nonKeyAttributes != null && indexMetadata.nonKeyAttributes.length > 0) {
@@ -131,16 +143,22 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Cre
       if (params.AttributeDefinitions!.find((ad) => indexMetadata.hash.name === ad.AttributeName) == null) {
         params.AttributeDefinitions!.push({
           AttributeName: indexMetadata.hash.name,
-          AttributeType: indexMetadata.hash.type.type,
+          AttributeType: getScalarAttributeType(
+            indexMetadata.hash.type.type,
+            `Table ${schema.name} Index ${indexMetadata.name} Hash Attribute ${indexMetadata.hash.name}`,
+          ),
         })
       }
 
       if (indexMetadata.range != null) {
         // make sure the rangeKey is defined in the AttributeDefinitions
-        if (params.AttributeDefinitions!.find((ad) => (indexMetadata.range as Attribute<any>).name === ad.AttributeName) == null) {
+        if (params.AttributeDefinitions!.find((ad) => indexMetadata.range!.name === ad.AttributeName) == null) {
           params.AttributeDefinitions!.push({
             AttributeName: indexMetadata.range.name,
-            AttributeType: indexMetadata.range.type.type,
+            AttributeType: getScalarAttributeType(
+              indexMetadata.range.type.type,
+              `Table ${schema.name} Index ${indexMetadata.name} Range Attribute ${indexMetadata.range.name}`,
+            ),
           })
         }
 
@@ -151,13 +169,13 @@ export function createTableInput(schema: Schema, forCloudFormation = false): Cre
       }
 
       // by default, indexes will share the same throughput as the table
-      const throughput = indexMetadata.throughput == null ? schema.throughput : indexMetadata.throughput
+      const throughput = indexMetadata.throughput ?? schema.throughput
 
       const index: GlobalSecondaryIndex = {
         IndexName: indexMetadata.name,
         KeySchema,
         Projection: {
-          ProjectionType: indexMetadata.projection == null ? 'ALL' : indexMetadata.projection,
+          ProjectionType: indexMetadata.projection ?? 'ALL',
         },
       }
 

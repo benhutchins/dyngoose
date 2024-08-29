@@ -1,7 +1,8 @@
-import { type ScanOutput, type QueryOutput as DynQueryOutput, type ConsumedCapacity } from '@aws-sdk/client-dynamodb'
-import { type Table } from '..'
-import { type Key } from '../interfaces/key.interface'
-import { type ITable } from '../table'
+import type { ConsumedCapacity,QueryOutput as DynQueryOutput, ScanOutput } from '@aws-sdk/client-dynamodb'
+
+import type { Table } from '..'
+import type { Key } from '../interfaces/key.interface'
+import type { ITable } from '../table'
 
 export class QueryOutput<T extends Table> extends Array<T> {
   public static fromDynamoOutput<T extends Table>(
@@ -24,10 +25,10 @@ export class QueryOutput<T extends Table> extends Array<T> {
     }
 
     const queryOutput = new QueryOutput(items, tableClass)
-    queryOutput.count = output.Count == null ? items.length : output.Count
-    queryOutput.scannedCount = output.ScannedCount as number
+    queryOutput.count = output.Count ?? items.length
+    queryOutput.scannedCount = output.ScannedCount!
     queryOutput.lastEvaluatedKey = output.LastEvaluatedKey
-    queryOutput.consumedCapacity = output.ConsumedCapacity as ConsumedCapacity
+    queryOutput.consumedCapacity = output.ConsumedCapacity!
 
     return queryOutput
   }
@@ -87,10 +88,10 @@ export class QueryOutput<T extends Table> extends Array<T> {
     return queryOutput
   }
 
-  count: number
-  scannedCount: number
+  count!: number
+  scannedCount!: number
   lastEvaluatedKey?: Key
-  consumedCapacity: ConsumedCapacity
+  consumedCapacity!: ConsumedCapacity
 
   /**
    * The items returned from DynamoDB

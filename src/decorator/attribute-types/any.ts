@@ -1,7 +1,8 @@
-import { type AttributeValue } from '@aws-sdk/client-dynamodb'
+import type { AttributeValue } from '@aws-sdk/client-dynamodb'
+
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
-import { type IAttributeType } from '../../interfaces'
-import { type AnyAttributeMetadata } from '../../metadata/attribute-types/any.metadata'
+import type { IAttributeType } from '../../interfaces'
+import type { AnyAttributeMetadata } from '../../metadata/attribute-types/any.metadata'
 import { AttributeType } from '../../tables/attribute-type'
 
 type Value = any
@@ -18,7 +19,7 @@ export class AnyAttributeType extends AttributeType<Value, Metadata> implements 
 
   fromDynamo(attributeValue: AttributeValue): Value | null {
     try {
-      return JSON.parse(attributeValue.S as string)
+      return JSON.parse(attributeValue.S!)
     } catch (ex) {
       return null
     }

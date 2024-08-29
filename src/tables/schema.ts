@@ -1,28 +1,29 @@
-import { type CreateTableInput, type DynamoDB } from '@aws-sdk/client-dynamodb'
-import { type Attribute } from '../attribute'
-import { type MapAttributeType } from '../decorator/attribute-types/map'
+import type { CreateTableInput, DynamoDB } from '@aws-sdk/client-dynamodb'
+import { last } from 'lodash'
+
+import type { Attribute } from '../attribute'
+import Config from '../config'
+import type { MapAttributeType } from '../decorator/attribute-types/map'
 import { SchemaError } from '../errors'
-import { type AttributeMap, type IThroughput } from '../interfaces'
+import type { AttributeMap, IThroughput } from '../interfaces'
 import type * as Metadata from '../metadata'
 import * as Query from '../query'
-import { type ITable, type Table } from '../table'
+import type { ITable, Table } from '../table'
 import { createTableInput } from './create-table-input'
-import { last } from 'lodash'
-import Config from '../config'
 
 export class Schema {
   public isDyngoose = true
-  public options: Metadata.Table
+  public options!: Metadata.Table
 
   /**
    * The TableName in DynamoDB
    */
   public get name(): string {
-    return this.options?.name == null ? '' : this.options.name
+    return this.options.name ?? ''
   }
 
   // Default Index, which every table must have
-  public primaryKey: Metadata.Index.PrimaryKey
+  public primaryKey!: Metadata.Index.PrimaryKey
   public timeToLiveAttribute?: Attribute<Date>
 
   // Additional table indexes
@@ -298,5 +299,7 @@ export class Schema {
         return attribute
       }
     }
+
+    return undefined
   }
 }

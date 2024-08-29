@@ -2,6 +2,7 @@
 import { readdir, readFile } from 'fs/promises'
 import * as _ from 'lodash'
 import { join } from 'path'
+
 import type { PrimaryKey } from '../query'
 import type { Table } from '../table'
 import { isDyngooseTableClass } from './is'
@@ -13,7 +14,7 @@ export interface SeedTablesInput extends MigrateTablesInput {
 }
 
 export default async function seedTables(input: SeedTablesInput): Promise<void> {
-  const log = input.log == null ? console.log : input.log
+  const log = input.log ?? console.log
   const seedFiles = await readdir(input.seedsDirectory)
   const tableFileSuffix = input.tableFileSuffix.substr(0, 1) === '.' ? input.tableFileSuffix : `.${input.tableFileSuffix}`
 
@@ -45,8 +46,8 @@ export default async function seedTables(input: SeedTablesInput): Promise<void> 
     if (records.length > 0) {
       const modelName = file.replace(/.seed.(json|js)/, '')
       const modelPath = join(input.tablesDirectory, `${modelName}${tableFileSuffix}`)
-      const prefix = input.tableNamePrefix == null ? '' : input.tableNamePrefix
-      const suffix = input.tableNameSuffix == null ? '' : input.tableNameSuffix
+      const prefix = input.tableNamePrefix ?? ''
+      const suffix = input.tableNameSuffix ?? ''
 
       log(`Seeding ${modelName}`)
 
@@ -61,7 +62,7 @@ export default async function seedTables(input: SeedTablesInput): Promise<void> 
           for (const data of records) {
             if (input.preventDuplication === true) {
               const hashKey = ExportedTable.schema.primaryKey.hash.name
-              const rangeKey = ExportedTable.schema.primaryKey.range == null ? null : ExportedTable.schema.primaryKey.range.name
+              const rangeKey = ExportedTable.schema.primaryKey.range?.name
               const primaryKey = (ExportedTable as any)[ExportedTable.schema.primaryKey.propertyName] as PrimaryKey<Table, any, any>
               const existingRecord = await primaryKey.get(data[hashKey], rangeKey == null ? undefined : data[rangeKey])
 

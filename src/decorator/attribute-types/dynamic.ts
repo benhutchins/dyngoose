@@ -1,10 +1,11 @@
-import { type AttributeValue } from '@aws-sdk/client-dynamodb'
-import { type IAttributeType } from '../../interfaces'
-import { type DynamicAttributeValue, type DynamicAttributeMetadata } from '../../metadata/attribute-types/dynamic.metadata'
-import { type Table } from '../../table'
-import { AttributeType } from '../../tables/attribute-type'
+import type { AttributeValue } from '@aws-sdk/client-dynamodb'
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
+
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
+import type { IAttributeType } from '../../interfaces'
+import type { DynamicAttributeMetadata,DynamicAttributeValue } from '../../metadata/attribute-types/dynamic.metadata'
+import type { Table } from '../../table'
+import { AttributeType } from '../../tables/attribute-type'
 
 export class DynamicAttributeType extends AttributeType<DynamicAttributeValue, DynamicAttributeMetadata>
   implements IAttributeType<DynamicAttributeValue> {
