@@ -1,5 +1,6 @@
-import { type marshallOptions, type unmarshallOptions } from '@aws-sdk/util-dynamodb'
-import { type AttributeMetadata } from '../attribute'
+import type { marshallOptions, unmarshallOptions } from '@aws-sdk/util-dynamodb'
+
+import type { AttributeMetadata } from '../attribute'
 
 export type DynamicAttributeValue = any
 

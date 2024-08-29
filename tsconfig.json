@@ -1,18 +1,29 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es2019",
-    "noImplicitAny": true,
+    "incremental": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
     "sourceMap": true,
-    "declaration": true,
-    "outDir": "lib",
+    "strict": true,
+    "strictNullChecks": true,
+    "moduleResolution": "node",
+    "stripInternal": true,
+    "noEmit": true,
+    "lib": ["esnext", "dom"],
+    "target": "esnext",
+    "baseUrl": ".",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "esModuleInterop": true,
-    "strictNullChecks": true,
-    "moduleResolution": "node"
-  },
-  "include": [
-    "src"
-  ]
+    "allowSyntheticDefaultImports": true,
+    // "isolatedModules": true,
+    "paths": {
+      "dyngoose": ["./src/index"],
+      "dyngoose/decorator": ["./src/decorator/index"],
+      "dyngoose/errors": ["./src/errors/index"],
+      "dyngoose/query": ["./src/query/index"],
+      "dyngoose/utils": ["./src/utils/index"],
+      "dyngoose/internal/*": ["./src/internal/*"]
+    }
+  }
 }

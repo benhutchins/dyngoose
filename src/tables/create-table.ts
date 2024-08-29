@@ -1,5 +1,6 @@
 import { type TableDescription, waitUntilTableExists } from '@aws-sdk/client-dynamodb'
-import { type Schema } from './schema'
+
+import type { Schema } from './schema'
 
 export async function createTable(schema: Schema, waitForReady = true): Promise<TableDescription> {
   const res = await schema.dynamo.createTable(schema.createTableInput())
@@ -29,5 +30,5 @@ export async function createTable(schema: Schema, waitForReady = true): Promise<
     }
   }
 
-  return res.TableDescription as TableDescription
+  return res.TableDescription!
 }

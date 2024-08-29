@@ -1,9 +1,10 @@
-import { type ReturnConsumedCapacity, type UpdateItemCommandInput } from '@aws-sdk/client-dynamodb'
+import type { ReturnConsumedCapacity, UpdateItemCommandInput } from '@aws-sdk/client-dynamodb'
 import * as _ from 'lodash'
-import { type AttributeMap, type DynamoReturnValues } from '../interfaces'
-import { type Table } from '../table'
+
+import type { AttributeMap, DynamoReturnValues } from '../interfaces'
+import type { Table } from '../table'
 import { buildQueryExpression } from './expression'
-import { type UpdateConditions } from './filters'
+import type { UpdateConditions } from './filters'
 
 export interface UpdateItemInputParams<T extends Table> {
   conditions?: UpdateConditions<T>

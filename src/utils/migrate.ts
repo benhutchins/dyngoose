@@ -2,7 +2,8 @@
 import { readdirSync } from 'fs'
 import * as _ from 'lodash'
 import { join } from 'path'
-import { type Table } from '../table'
+
+import type { Table } from '../table'
 import { isDyngooseTableClass } from './is'
 
 export interface MigrateTablesInput {
@@ -22,9 +23,9 @@ export interface MigrateTablesInput {
 export default async function migrateTables(input: MigrateTablesInput): Promise<void> {
   const tableFiles = readdirSync(input.tablesDirectory)
   const tables: Array<typeof Table> = []
-  const log = input.log == null ? console.log : input.log
-  const prefix = input.tableNamePrefix == null ? '' : input.tableNamePrefix
-  const suffix = input.tableNameSuffix == null ? '' : input.tableNameSuffix
+  const log = input.log ?? console.log
+  const prefix = input.tableNamePrefix ?? ''
+  const suffix = input.tableNameSuffix ?? ''
   log('Running Dyngoose migration utility…')
 
   for (const file of tableFiles) {

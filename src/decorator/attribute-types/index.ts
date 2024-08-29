@@ -1,5 +1,5 @@
-import { type Metadata, type Table } from '../..'
-import { type MapBaseValue } from '../../metadata/attribute-types/map.metadata'
+import type { Metadata, Table } from '../..'
+import type { MapBaseValue } from '../../metadata/attribute-types/map.metadata'
 import { AnyAttributeType } from './any'
 import { BinaryAttributeType } from './binary'
 import { BinarySetAttributeType } from './binary-set'

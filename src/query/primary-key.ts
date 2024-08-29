@@ -1,20 +1,22 @@
-import { type BatchWriteItemOutput, type DeleteItemInput, type DeleteItemOutput, type DeleteRequest, type GetItemInput, type GetItemOutput, type QueryCommandInput, type QueryCommandOutput, type ReturnConsumedCapacity, type ScanCommandInput, type ScanCommandOutput, type WriteRequest } from '@aws-sdk/client-dynamodb'
+import type { BatchWriteItemOutput, DeleteItemInput, DeleteItemOutput, DeleteRequest, GetItemInput, GetItemOutput, QueryCommandInput, QueryCommandOutput, ReturnConsumedCapacity, ScanCommandInput, ScanCommandOutput, WriteRequest } from '@aws-sdk/client-dynamodb'
 import { get, has, isArray, isDate, isObject } from 'lodash'
+
 import { BatchGet } from '../batch-get'
+import { type IRequestOptions, toHttpHandlerOptions } from '../connections'
 import { HelpfulError, QueryError } from '../errors'
-import { type AttributeMap } from '../interfaces'
-import { type Key } from '../interfaces/key.interface'
+import type { AttributeMap } from '../interfaces'
+import type { Key } from '../interfaces/key.interface'
 import type * as Metadata from '../metadata'
-import { type ITable, type Table } from '../table'
-import { type TableProperties } from '../tables/properties'
+import type { ITable, Table } from '../table'
+import type { TableProperties } from '../tables/properties'
 import { isDyngooseTableInstance } from '../utils/is'
+import { requireHashKeyEqualsOperator } from '../utils/require-hash-key-equals-operator'
 import { batchWrite, type WriteRequestMap } from './batch-write'
 import { buildQueryExpression } from './expression'
-import { type Filters as QueryFilters, type UpdateConditions } from './filters'
+import type { Filters as QueryFilters, UpdateConditions } from './filters'
 import { QueryOutput } from './output'
 import { buildProjectionExpression } from './projection-expression'
 import { MagicSearch, type MagicSearchInput } from './search'
-import { type IRequestOptions, toHttpHandlerOptions } from '../connections'
 
 type PrimaryKeyType = string | number | Date
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
@@ -110,7 +112,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
     const input = this.getDeleteItemInput(hash, range)
     try {
       return await this.table.schema.dynamo.deleteItem(input)
-    } catch (ex) {
+    } catch (ex: any) {
       throw new HelpfulError(ex, this.table, input)
     }
   }
@@ -154,7 +156,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
       throw new QueryError('PrimaryKey.get called with unknown arguments')
     }
 
-    const getGetInput: Partial<PrimaryKeyGetGetItemInput> = input == null ? ((range == null || isKeyValue(range)) ? {} : range as PrimaryKeyGetInput) : input
+    const getGetInput: Partial<PrimaryKeyGetGetItemInput> = input ?? ((range == null || isKeyValue(range)) ? {} : range as PrimaryKeyGetInput)
     getGetInput.key = record.getDynamoKey()
     const getItemInput = this.getGetInput(getGetInput as PrimaryKeyGetGetItemInput)
     const entireDocument = getItemInput.ProjectionExpression == null
@@ -162,7 +164,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
 
     try {
       dynamoRecord = await this.table.schema.dynamo.getItem(getItemInput, toHttpHandlerOptions(getGetInput))
-    } catch (ex) {
+    } catch (ex: any) {
       throw new HelpfulError(ex, this.table, getItemInput)
     }
 
@@ -246,11 +248,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
   }
 
   public async query(filters: QueryFilters<T>, input?: PrimaryKeyQueryInput): Promise<QueryOutput<T>> {
-    if (!has(filters, this.metadata.hash.propertyName)) {
-      throw new QueryError('Cannot perform a query on the PrimaryKey index without specifying a hash key value')
-    } else if (isArray(get(filters, this.metadata.hash.propertyName)) && get(filters, this.metadata.hash.propertyName)[0] !== '=') {
-      throw new QueryError('DynamoDB only supports using equal operator for the HASH key')
-    }
+    requireHashKeyEqualsOperator(filters, this.metadata.hash.propertyName)
 
     const queryInput = this.getQueryInput(input)
     const hasProjection = queryInput.ProjectionExpression == null
@@ -263,7 +261,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
 
     try {
       output = await this.table.schema.dynamo.query(queryInput, toHttpHandlerOptions(input))
-    } catch (ex) {
+    } catch (ex: any) {
       throw new HelpfulError(ex, this.table, queryInput)
     }
 
@@ -306,11 +304,11 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
   }
 
   public async scan(filters?: QueryFilters<T> | undefined | null, input?: PrimaryKeyScanInput): Promise<QueryOutput<T>> {
-    const scanInput = this.getScanInput(input, filters == null ? undefined : filters)
+    const scanInput = this.getScanInput(input, filters ?? undefined)
     let output: ScanCommandOutput
     try {
       output = await this.table.schema.dynamo.scan(scanInput, toHttpHandlerOptions(input))
-    } catch (ex) {
+    } catch (ex: any) {
       throw new HelpfulError(ex, this.table, scanInput)
     }
     const hasProjection = scanInput.ProjectionExpression == null
@@ -348,7 +346,8 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
         throw new QueryError('Cannot perform a .get() on a PrimaryKey with additional filters, use .query() instead')
       }
 
-      hash = get(filters, this.metadata.hash.propertyName)
+      const queryFilters = filters as QueryFilters<T>
+      hash = get(queryFilters, this.metadata.hash.propertyName)
 
       if (isArray(hash)) {
         if (hash[0] === '=') {
@@ -359,7 +358,7 @@ export class PrimaryKey<T extends Table, HashKeyType extends PrimaryKeyType, Ran
       }
 
       if (this.metadata.range != null) {
-        range = get(filters, this.metadata.range.propertyName)
+        range = get(queryFilters, this.metadata.range.propertyName)
 
         if (isArray(hash)) {
           if (hash[0] === '=') {

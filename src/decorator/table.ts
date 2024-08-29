@@ -1,5 +1,5 @@
-import { type TableMetadata } from '../metadata/table'
-import { type ITable } from '../table'
+import type { TableMetadata } from '../metadata/table'
+import type { ITable } from '../table'
 
 export function Table(metadata: TableMetadata) {
   return (table: ITable<any>) => {

@@ -1,11 +1,12 @@
-import { flatten, filter, isArray, isEqual, chunk } from 'lodash'
-import { type BatchGetItemOutput, type DynamoDB, type Get, type KeysAndAttributes, type TransactGetItem, type TransactGetItemsOutput } from '@aws-sdk/client-dynamodb'
+import type { BatchGetItemOutput, DynamoDB, Get, KeysAndAttributes, TransactGetItem, TransactGetItemsOutput } from '@aws-sdk/client-dynamodb'
+import { chunk,filter, flatten, isArray, isEqual } from 'lodash'
+
 import Config from './config'
-import { type Table } from './table'
-import { buildProjectionExpression } from './query/projection-expression'
+import type { IRequestOptions } from './connections'
 import { HelpfulError } from './errors'
-import { type AttributeMap } from './interfaces'
-import { type IRequestOptions } from './connections'
+import type { AttributeMap } from './interfaces'
+import { buildProjectionExpression } from './query/projection-expression'
+import type { Table } from './table'
 
 export class BatchGet<T extends Table> {
   public static readonly MAX_BATCH_ITEMS = 100
@@ -34,7 +35,7 @@ export class BatchGet<T extends Table> {
    * @see {@link https://github.com/benhutchins/dyngoose/blob/master/docs/Connections.md}.
    */
   constructor(connection?: DynamoDB) {
-    this.dynamo = connection == null ? Config.defaultConnection.client : connection
+    this.dynamo = connection ?? Config.defaultConnection.client
   }
 
   public setConnection(dynamo: DynamoDB): this {
@@ -124,11 +125,12 @@ export class BatchGet<T extends Table> {
               RequestItems: requestMap,
             }, requestOptions)
           }
-        } catch (ex) {
+        } catch (ex: any) {
           throw new HelpfulError(ex)
         }
 
-        const responses = output.Responses == null ? [] : output.Responses
+
+        const responses = output.Responses ?? []
 
         if (responses.length === 0) {
           return []

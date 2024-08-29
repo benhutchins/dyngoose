@@ -1,8 +1,9 @@
 import { uniq } from 'lodash'
+
 import { SchemaError } from '../errors'
-import { type IThroughput } from '../interfaces'
+import type { IThroughput } from '../interfaces'
 import type * as Metadata from '../metadata'
-import { type ITable } from '../table'
+import type { ITable } from '../table'
 
 interface GlobalSecondaryIndexOptionsBase {
   name?: string
@@ -61,7 +62,7 @@ export function GlobalSecondaryIndex(options: GlobalSecondaryIndexOptions) {
 
     const index: Metadata.Index.GlobalSecondaryIndex = {
       propertyName,
-      name: options.name == null ? propertyName : options.name,
+      name: options.name ?? propertyName,
       hash: table.schema.getAttributeByName(primaryKey),
       range: sortKey == null ? undefined : table.schema.getAttributeByName(sortKey),
       projection: options.projection,

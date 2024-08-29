@@ -2,6 +2,7 @@
 import { readdir } from 'fs/promises'
 import * as _ from 'lodash'
 import { join } from 'path'
+
 import { Table } from '../table'
 import type { MigrateTablesInput } from './migrate'
 
@@ -9,9 +10,9 @@ export default async function createCloudFormationResources(input: MigrateTables
   const tableFiles = await readdir(input.tablesDirectory)
   const tables: Array<typeof Table> = []
   const resources: any = {}
-  const log = input.log == null ? console.log : input.log
-  const prefix = input.tableNamePrefix == null ? '' : input.tableNamePrefix
-  const suffix = input.tableNameSuffix == null ? '' : input.tableNameSuffix
+  const log = input.log ?? console.log
+  const prefix = input.tableNamePrefix ?? ''
+  const suffix = input.tableNameSuffix ?? ''
   log('Running Dyngoose CloudFormation template generation utility…')
 
   for (const file of tableFiles) {
@@ -31,7 +32,7 @@ export default async function createCloudFormationResources(input: MigrateTables
     const properties = SomeTable.schema.createCloudFormationResource()
     const tableName = properties.TableName as string
     let resourceName: string
-    if (typeof SomeTable.schema.options.cloudFormationResourceName === 'string') {
+    if (typeof SomeTable.schema.options?.cloudFormationResourceName === 'string') {
       resourceName = SomeTable.schema.options.cloudFormationResourceName
     } else {
       resourceName = _.upperFirst(SomeTable.name)

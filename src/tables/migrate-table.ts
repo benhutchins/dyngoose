@@ -7,17 +7,18 @@ import {
   waitUntilTableExists,
 } from '@aws-sdk/client-dynamodb'
 import * as _ from 'lodash'
+
 import { SchemaError } from '../errors'
 import { createTable } from './create-table'
 import { describeTable } from './describe-table'
-import { type Schema } from './schema'
+import type { Schema } from './schema'
 
 export async function migrateTable(schema: Schema, waitForReady = false): Promise<TableDescription> {
   let description: TableDescription
 
   try {
     description = await describeTable(schema)
-  } catch (err) {
+  } catch (err: any) {
     if (err.name === 'ResourceNotFoundException') {
       return await createTable(schema, waitForReady)
     } else {
@@ -60,7 +61,7 @@ export async function migrateTable(schema: Schema, waitForReady = false): Promis
         // assign a default value for NonKeyAttributes to prevent comparison issues, fixes #645
         !_.isEqual({ NonKeyAttributes: undefined, ...oldIndex.Projection }, { NonKeyAttributes: undefined, ...newIndex.Projection })
       ) {
-        const oldIndexName = oldIndex.IndexName == null ? '' : oldIndex.IndexName
+        const oldIndexName = oldIndex.IndexName ?? ''
         // you can only updated ProvisionedThroughput, which is useless to do on the DynamoDB development server
         // so really we want to verify we're not attempting to change an index's KeySchema or Projection, if we
         // are, error and warn developer… they need to rename the index so the old one is deleted

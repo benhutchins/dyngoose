@@ -1,5 +1,6 @@
 import { DynamoDB } from '@aws-sdk/client-dynamodb'
 import { expect } from 'chai'
+
 import { DynamoDBConnection } from './dynamodb-connection'
 
 describe(DynamoDBConnection.name, () => {

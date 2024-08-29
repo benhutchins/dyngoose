@@ -1,7 +1,6 @@
 {
   "name": "dyngoose",
   "version": "4.11.2",
-  "type": "commonjs",
   "description": "Elegant DynamoDB object modeling for Typescript",
   "keywords": [
     "dynamo",
@@ -12,18 +11,49 @@
     "aws-dynamodb",
     "typescript"
   ],
-  "main": "lib/index.js",
-  "typings": "lib/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js",
+      "default": "./dist/esm/index.js"
+    },
+    "./utils": {
+      "types": "./dist/types/utils/index.d.ts",
+      "require": "./dist/cjs/utils/index.js",
+      "import": "./dist/esm/utils/index.js",
+      "default": "./dist/esm/utils/index.js"
+    },
+    "./query": {
+      "types": "./dist/types/query/index.d.ts",
+      "require": "./dist/cjs/query/index.js",
+      "import": "./dist/esm/query/index.js",
+      "default": "./dist/esm/query/index.js"
+    },
+    "./internal/*": {
+      "types": "./dist/types/internal/*.d.ts",
+      "require": "./dist/cjs/internal/*.js",
+      "import": "./dist/esm/internal/*.js",
+      "default": "./dist/esm/internal/*.js"
+    }
+  },
   "scripts": {
-    "prebuild": "check-engine && rm -rf lib",
-    "build": "tsc",
+    "prebuild": "check-engine && npm run clean",
+    "build": "npm run compile && node tools/create-esm-package.js",
+    "compile": "tsc -b ./src/tsconfig.cjs.json ./src/tsconfig.cjs.spec.json ./src/tsconfig.esm.json ./src/tsconfig.types.json ./src/tsconfig.types.spec.json ./spec/tsconfig.json",
+    "clean": "rm -rf ./build",
     "watch": "tsc --watch",
-    "pretest": "npm run build",
-    "test": "env AWS_REGION=us-east-1 AWS_ACCESS_KEY_ID=abcde AWS_SECRET_ACCESS_KEY=abcde mocha --timeout 20000 --recursive lib",
-    "test:local": "env DYNAMO_ENDPOINT=http://127.0.0.1:8000 npm test",
+    "pretest": "npm run compile",
+    "test": "env DYNAMO_ENDPOINT=http://127.0.0.1:8000 npm run test:ci",
+    "test:esm": "node spec/module-test-spec.mjs",
+    "test:ci": "env AWS_REGION=us-east-1 AWS_ACCESS_KEY_ID=abcde AWS_SECRET_ACCESS_KEY=abcde TS_NODE_PROJECT=tsconfig.mocha.json mocha --config spec/.mocharc.cjs \"spec/**/*.spec.ts\"",
     "prepublishOnly": "npm run build",
-    "lint": "eslint 'src/**/*.ts'",
-    "autofix": "eslint --fix 'src/**/*.ts'",
+    "lint": "eslint src spec",
+    "autofix": "eslint --fix src spec",
     "prepare": "husky install"
   },
   "repository": {
@@ -31,36 +61,40 @@
     "url": "git+https://github.com/benhutchins/dyngoose.git"
   },
   "engines": {
-    "node": ">=12.4.0"
+    "node": ">=18.0.0"
   },
-  "author": "Benjamin Hutchins",
+  "author": "Benjamin Hutchins <ben@hutchins.co>",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/benhutchins/dyngoose/issues"
   },
   "homepage": "https://github.com/benhutchins/dyngoose#readme",
   "devDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.309.0",
-    "@commitlint/cli": "^17.5.1",
-    "@commitlint/config-conventional": "^17.4.4",
+    "@aws-sdk/client-dynamodb": "^3.637.0",
+    "@commitlint/cli": "^19.4.1",
+    "@commitlint/config-conventional": "^19.4.1",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@types/chai": "4.3.4",
-    "@types/lodash": "^4.14.192",
-    "@types/mocha": "9.0.0",
-    "@types/node": "^18.15.11",
+    "@types/lodash": "^4.14.202",
+    "@types/mocha": "10.0.7",
+    "@types/node": "^20.16.2",
+    "@typescript-eslint/utils": "^8.3.0",
     "aws-cdk-lib": "^2.73.0",
     "chai": "4.3.7",
-    "check-engine": "1.10.1",
-    "eslint": "^8.38.0",
-    "eslint-config-standard-with-typescript": "^34.0.1",
+    "check-engine": "1.12.0",
+    "eslint": "^8.56.0",
+    "eslint-config-love": "^63.0.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
     "husky": "^8.0.3",
-    "mocha": "9.1.2",
+    "mocha": "10.7.3",
     "semantic-release": "^21.0.1",
-    "typescript": "^5.0.4"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
   },
   "dependencies": {
-    "@aws-sdk/util-dynamodb": "^3.309.0",
+    "@aws-sdk/util-dynamodb": "^3.637.0",
     "async-sema": "^3.1.1",
     "lodash": "^4.17.21"
   },
@@ -81,9 +115,9 @@
     ]
   },
   "peerDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.279.0"
+    "@aws-sdk/client-dynamodb": "^3.637.0"
   },
   "optionalDependencies": {
-    "aws-xray-sdk-core": "^3.5.1"
+    "aws-xray-sdk-core": "^3.9.0"
   }
 }

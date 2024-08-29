@@ -1,9 +1,10 @@
-import { type BatchWriteItemOutput, type DynamoDB, type WriteRequest } from '@aws-sdk/client-dynamodb'
+import type { BatchWriteItemOutput, DynamoDB, WriteRequest } from '@aws-sdk/client-dynamodb'
 import { RateLimit } from 'async-sema'
 import * as _ from 'lodash'
+
 import Config from './config'
-import { type Table } from './table'
 import { BatchError, HelpfulError } from './errors'
+import type { Table } from './table'
 
 type BatchWriteItemRequestMap = Record<string, WriteRequest[]>
 
@@ -51,7 +52,7 @@ export class BatchWrite {
     */
     breakOnException?: boolean
   } = {}) {
-    this.dynamo = options.connection == null ? Config.defaultConnection.client : options.connection
+    this.dynamo = options.connection ?? Config.defaultConnection.client
 
     if (this.options.maxItemsPerBatch != null && this.options.maxItemsPerBatch > BatchWrite.MAX_BATCH_ITEMS) {
       throw new Error(`maxItemsPerBatch cannot be greater than ${BatchWrite.MAX_BATCH_ITEMS}`)
@@ -102,8 +103,8 @@ export class BatchWrite {
   }
 
   public async commit(): Promise<BatchWriteItemOutput> {
-    const limit = RateLimit(this.options.maxParallelWrites == null ? BatchWrite.MAX_PARALLEL_WRITES : this.options.maxParallelWrites)
-    const chunks = _.chunk(this.list, this.options.maxItemsPerBatch == null ? BatchWrite.MAX_BATCH_ITEMS : this.options.maxItemsPerBatch)
+    const limit = RateLimit(this.options.maxParallelWrites ?? BatchWrite.MAX_PARALLEL_WRITES)
+    const chunks = _.chunk(this.list, this.options.maxItemsPerBatch ?? BatchWrite.MAX_BATCH_ITEMS)
     const exceptions: HelpfulError[] = []
 
     const promises = chunks.map(async (chunk) => {
@@ -131,7 +132,7 @@ export class BatchWrite {
 
       try {
         return await this.dynamo.batchWriteItem({ RequestItems: mergedMap })
-      } catch (ex) {
+      } catch (ex: any) {
         // save the exception to stop all future chunks, because without this the other chunks would continue
         // this is not perfect, because operations that are in-progress will still continue, although they
         // might fail as well for the same reason as the first exception

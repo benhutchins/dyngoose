@@ -1,12 +1,13 @@
-import { type AttributeValue } from '@aws-sdk/client-dynamodb'
+import type { AttributeValue } from '@aws-sdk/client-dynamodb'
 import { every, isArray, isSet, uniq } from 'lodash'
+
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
 import { ValidationError } from '../../errors'
-import { type IAttributeType } from '../../interfaces'
-import { type NumberSetAttributeMetadata, type NumberSetValue } from '../../metadata/attribute-types/number-set.metadata'
-import { type NumberValue } from '../../metadata/attribute-types/number.metadata'
+import type { IAttributeType } from '../../interfaces'
+import type { NumberValue } from '../../metadata/attribute-types/number.metadata'
+import type { NumberSetAttributeMetadata, NumberSetValue } from '../../metadata/attribute-types/number-set.metadata'
 import { AttributeType } from '../../tables/attribute-type'
-import { isNumber, numberToString, stringToNumber } from './utils'
+import { isNumber, numberToString, stringToNumber } from '../../utils'
 
 type Metadata = NumberSetAttributeMetadata
 

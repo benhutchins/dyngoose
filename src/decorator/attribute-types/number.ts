@@ -1,10 +1,11 @@
-import { type AttributeValue } from '@aws-sdk/client-dynamodb'
+import type { AttributeValue } from '@aws-sdk/client-dynamodb'
+
 import { DynamoAttributeType } from '../../dynamo-attribute-types'
 import { ValidationError } from '../../errors'
-import { type IAttributeType } from '../../interfaces'
-import { type NumberAttributeMetadata } from '../../metadata/attribute-types/number.metadata'
+import type { IAttributeType } from '../../interfaces'
+import type { NumberAttributeMetadata } from '../../metadata/attribute-types/number.metadata'
 import { AttributeType } from '../../tables/attribute-type'
-import { isNumber, numberToString, stringToNumber } from './utils'
+import { isNumber, numberToString, stringToNumber } from '../../utils'
 
 type Value = number | bigint
 type Metadata = NumberAttributeMetadata

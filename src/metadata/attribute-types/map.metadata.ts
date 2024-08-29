@@ -1,6 +1,7 @@
-import { type NativeAttributeValue, type marshallOptions, type unmarshallOptions } from '@aws-sdk/util-dynamodb'
-import { type AttributeDefinition } from '../../decorator/attribute-types'
-import { type AttributeMetadata } from '../attribute'
+import type { marshallOptions, NativeAttributeValue, unmarshallOptions } from '@aws-sdk/util-dynamodb'
+
+import type { AttributeDefinition } from '../../decorator/attribute-types'
+import type { AttributeMetadata } from '../attribute'
 
 export type MapBaseValue = Record<string, NativeAttributeValue>
 

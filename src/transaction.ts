@@ -1,10 +1,11 @@
-import { type Delete, type DynamoDB, type Put, type TransactWriteItem, type TransactWriteItemsOutput } from '@aws-sdk/client-dynamodb'
+import type { Delete, DynamoDB, Put, TransactWriteItem, TransactWriteItemsOutput } from '@aws-sdk/client-dynamodb'
+
 import Config from './config'
 import { buildQueryExpression } from './query/expression'
-import { type UpdateConditions } from './query/filters'
+import type { UpdateConditions } from './query/filters'
 import { transactWrite } from './query/transact-write'
 import { getUpdateItemInput } from './query/update-item-input'
-import { type Table } from './table'
+import type { Table } from './table'
 
 export class Transaction {
   private dynamo: DynamoDB
@@ -29,7 +30,7 @@ export class Transaction {
    * @see {@link https://github.com/benhutchins/dyngoose/blob/master/docs/Connections.md}.
    */
   constructor(connection?: DynamoDB) {
-    this.dynamo = connection == null ? Config.defaultConnection.client : connection
+    this.dynamo = connection ?? Config.defaultConnection.client
   }
 
   public setConnection(dynamo: DynamoDB): this {
@@ -120,7 +121,7 @@ export class Transaction {
       ConditionCheck: {
         TableName: tableClass.schema.name,
         Key: record.getDynamoKey(),
-        ConditionExpression: conditionExpression.FilterExpression as string,
+        ConditionExpression: conditionExpression.FilterExpression!,
         ExpressionAttributeNames: conditionExpression.ExpressionAttributeNames,
         ExpressionAttributeValues: conditionExpression.ExpressionAttributeValues,
       },

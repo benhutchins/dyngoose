@@ -1,8 +1,9 @@
-import { type AttributeValue } from '@aws-sdk/client-dynamodb'
+import type { AttributeValue } from '@aws-sdk/client-dynamodb'
 import * as _ from 'lodash'
+
 import { ValidationError } from './errors'
-import { type IAttributeType } from './interfaces'
-import { type AttributeMetadata } from './metadata/attribute'
+import type { IAttributeType } from './interfaces'
+import type { AttributeMetadata } from './metadata/attribute'
 import { isTrulyEmpty } from './utils/truly-empty'
 
 export class Attribute<Value> {
@@ -13,7 +14,7 @@ export class Attribute<Value> {
     public readonly type: IAttributeType<Value>,
     public metadata: AttributeMetadata<Value> = {},
   ) {
-    this.name = this.metadata.name == null ? this.propertyName : this.metadata.name
+    this.name = this.metadata.name ?? this.propertyName
   }
 
   /**

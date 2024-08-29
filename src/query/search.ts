@@ -1,19 +1,20 @@
-import { type QueryCommandInput, type QueryCommandOutput, type ScanCommandInput, type ScanCommandOutput } from '@aws-sdk/client-dynamodb'
+import type { QueryCommandInput, QueryCommandOutput, ScanCommandInput, ScanCommandOutput } from '@aws-sdk/client-dynamodb'
 import { get, has, includes, isArray } from 'lodash'
-import { type Attribute } from '../attribute'
+
+import type { Attribute } from '../attribute'
+import type { IRequestOptions } from '../connections'
 import { HelpfulError, QueryError } from '../errors'
-import { type Metadata } from '../index'
-import { type Key } from '../interfaces/key.interface'
-import { type ITable, type Table } from '../table'
+import type { Metadata } from '../index'
+import type { Key } from '../interfaces/key.interface'
+import type { ITable, Table } from '../table'
 import { Condition } from './condition'
 import { buildQueryExpression, keyConditionAllowedOperators } from './expression'
-import { type AttributeNames, type ComplexFilters, type Filter, type Filters } from './filters'
-import { type GlobalSecondaryIndex } from './global-secondary-index'
-import { type LocalSecondaryIndex } from './local-secondary-index'
+import type { AttributeNames, ComplexFilters, Filter, Filters } from './filters'
+import type { GlobalSecondaryIndex } from './global-secondary-index'
+import type { LocalSecondaryIndex } from './local-secondary-index'
 import { QueryOutput } from './output'
-import { type PrimaryKey } from './primary-key'
+import type { PrimaryKey } from './primary-key'
 import { buildProjectionExpression } from './projection-expression'
-import { type IRequestOptions } from '../connections'
 
 type Index<T extends Table> = PrimaryKey<T, any, any> | GlobalSecondaryIndex<T> | LocalSecondaryIndex<T> | string
 
@@ -445,7 +446,7 @@ export class MagicSearch<T extends Table> {
     if ((input as QueryCommandInput).KeyConditionExpression != null) {
       try {
         output = await this.tableClass.schema.dynamo.query(input, requestOptions)
-      } catch (ex) {
+      } catch (ex: any) {
         throw new HelpfulError(ex, this.tableClass, input)
       }
     } else {
@@ -457,7 +458,7 @@ export class MagicSearch<T extends Table> {
 
       try {
         output = await this.tableClass.schema.dynamo.scan(input, requestOptions)
-      } catch (ex) {
+      } catch (ex: any) {
         throw new HelpfulError(ex, this.tableClass, input)
       }
     }
@@ -509,7 +510,7 @@ export class MagicSearch<T extends Table> {
         continue
       }
 
-      const hashFilter: Filter<any> = get(filters, hash.name)
+      const hashFilter = get(filters, hash.name) as Filter<any>
 
       // if there is an operator, ensure it is allowed as a key expression
       if (isArray(hashFilter)) {
@@ -530,7 +531,7 @@ export class MagicSearch<T extends Table> {
         continue
       }
 
-      const rangeFilter: Filter<any> = get(filters, range.name)
+      const rangeFilter = get(filters, range.name) as Filter<any>
 
       // if there is an operator, ensure it is allowed as a key expression
       if (isArray(rangeFilter)) {

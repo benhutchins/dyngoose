@@ -1,14 +1,15 @@
 import { flatten } from 'lodash'
-import { type Table } from '../dyngoose'
-import { type SimpleTypesOnly, type ContainsType, type Filter, type IntersectsType } from './filters'
-import { type MagicSearch } from './search'
+
+import type { Table } from '../table'
+import type { ContainsType, Filter, IntersectsType,SimpleTypesOnly } from './filters'
+import type { MagicSearch } from './search'
 
 export class Condition<T extends Table, Attr, AttributeValueType> {
   private readonly key: Attr | string
   private _not = false
-  private filter: Filter<AttributeValueType>
+  private filter!: Filter<AttributeValueType>
 
-  constructor(private readonly search: MagicSearch<T>, attributeName: Attr) {
+  constructor(private readonly search: MagicSearch<T>, attributeName: Attr | string) {
     this.key = attributeName
     return this
   }

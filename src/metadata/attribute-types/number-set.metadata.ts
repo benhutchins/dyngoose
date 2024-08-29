@@ -1,5 +1,5 @@
-import { type AttributeMetadata } from '../attribute'
-import { type NumberValue } from './number.metadata'
+import type { AttributeMetadata } from '../attribute'
+import type { NumberValue } from './number.metadata'
 
 export type NumberSetValue = Set<NumberValue> | number[]
 
