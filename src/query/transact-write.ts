@@ -1,5 +1,6 @@
 import { type DynamoDB, type TransactWriteItemsOutput, type TransactWriteItem } from '@aws-sdk/client-dynamodb'
 import { chunk } from 'lodash'
+import { HelpfulError } from '../errors'
 
 // this is limit of dynamoDB
 const MAX_ITEMS = 25
@@ -11,9 +12,13 @@ export async function transactWrite(
   const chunks = chunk(requests, MAX_ITEMS)
   await Promise.all(
     chunks.map(async (transactItems) => {
-      return await documentClient.transactWriteItems({
-        TransactItems: transactItems,
-      })
+      try {
+        return await documentClient.transactWriteItems({
+          TransactItems: transactItems,
+        })
+      } catch (ex) {
+        throw new HelpfulError(ex, undefined, { TransactItems: transactItems })
+      }
     }),
   )
 
