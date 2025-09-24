@@ -1,3 +1,10 @@
+# [4.12.0](https://github.com/benhutchins/dyngoose/compare/v4.11.2...v4.12.0) (2025-09-24)
+
+
+### Features
+
+* throw HelpfulError from Transactions ([#714](https://github.com/benhutchins/dyngoose/issues/714)) ([565f8f9](https://github.com/benhutchins/dyngoose/commit/565f8f9efd550790666aede0653727e05d19a4e1))
+
 ## [4.11.2](https://github.com/benhutchins/dyngoose/compare/v4.11.1...v4.11.2) (2024-06-05)
 
 
