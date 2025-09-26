@@ -51,7 +51,7 @@
     "@types/node": "^18.15.11",
     "aws-cdk-lib": "^2.73.0",
     "chai": "4.3.7",
-    "check-engine": "1.10.1",
+    "check-engine": "1.12.0",
     "eslint": "^8.38.0",
     "eslint-config-standard-with-typescript": "^34.0.1",
     "husky": "^8.0.3",
